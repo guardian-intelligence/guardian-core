@@ -1,0 +1,351 @@
+{
+  "crypto_posture": {
+    "status": "ACTIVE",
+    "policy_version": 1,
+    "axiom": "PQC and modern hashes adopted day one; legacy only for external compat",
+    "nist_snapshot": {
+      "captured_at": "2026-02-07",
+      "publications": [
+        {
+          "id": "FIPS-203",
+          "title": "ML-KEM",
+          "status": "FINAL",
+          "published": "2024-08-13",
+          "notes": "Planning Note (2025-04-02): NIST identified issues to be corrected in a future revision"
+        },
+        {
+          "id": "FIPS-204",
+          "title": "ML-DSA",
+          "status": "FINAL",
+          "published": "2024-08-13",
+          "notes": "Planning Note (2025-12-18): NIST identified issues to be corrected in a future revision"
+        },
+        {
+          "id": "FIPS-205",
+          "title": "SLH-DSA",
+          "status": "FINAL",
+          "published": "2024-08-13"
+        },
+        {
+          "id": "SP-800-227",
+          "title": "Recommendations for Key-Encapsulation Mechanisms",
+          "status": "FINAL",
+          "published": "2025-09-18"
+        },
+        {
+          "id": "FIPS-206",
+          "title": "FN-DSA",
+          "status": "DRAFT",
+          "published": null
+        }
+      ],
+      "track_watch": [
+        {
+          "name": "HQC",
+          "status": "SELECTED_BACKUP_TRACK",
+          "announced": "2025-03-11"
+        },
+        {
+          "name": "SP-800-56C-update",
+          "status": "IN_REVIEW_FOR_PQC_HYBRID",
+          "announced": "2025-12-11"
+        },
+        {
+          "name": "FIPS-203-rev",
+          "status": "CORRECTION_ANNOUNCED",
+          "announced": "2025-04-02",
+          "action": "Review ML-KEM-768 implementation on publication"
+        },
+        {
+          "name": "FIPS-204-rev",
+          "status": "CORRECTION_ANNOUNCED",
+          "announced": "2025-12-18",
+          "action": "Review ML-DSA-65 implementation on publication"
+        }
+      ]
+    },
+    "primary_hash": {
+      "algo": "BLAKE3",
+      "basis": "BLAKE3 specification; Bao used as optional verified streaming framing",
+      "output": "256-bit default, XOF",
+      "perf": "2-4x faster than SHA-256, parallelizable",
+      "tree_hash": "native Merkle tree mode",
+      "uses": [
+        "content_addressing",
+        "receipt_hashing",
+        "outbox_action_digests",
+        "audit_log_integrity",
+        "dolt_commit_tagging",
+        "ipc_envelope_hashing"
+      ]
+    },
+    "sha256_retained": [
+      "sigstore_cosign_fulcio",
+      "slsa_provenance",
+      "github_actions_oidc",
+      "oci_image_digests"
+    ],
+    "nif": {
+      "crate": "blake3",
+      "scheduler": "dirty_cpu",
+      "crash_isolation": "NIF fault can crash entire BEAM VM; node restart required; Tier2+ remains blocked until integrity checks pass",
+      "targets": [
+        "x86_64-linux-gnu"
+      ],
+      "dev_targets_optional": [
+        "aarch64-apple-darwin"
+      ],
+      "api": [
+        "Guardian.Crypto.Blake3.hash/1",
+        "Guardian.Crypto.Blake3.keyed_hash/2",
+        "Guardian.Crypto.Blake3.Hasher"
+      ]
+    },
+    "pqc": {
+      "status": "active from phase 0",
+      "algorithms": [
+        {
+          "purpose": "key_encapsulation",
+          "algo": "ML-KEM-768",
+          "alias": "Kyber",
+          "fips": "203 (2024)",
+          "pub_key_b": 1184,
+          "priv_key_b": 2400,
+          "output_b": 1088,
+          "output_label": "ciphertext"
+        },
+        {
+          "purpose": "digital_signature",
+          "algo": "ML-DSA-65",
+          "alias": "Dilithium",
+          "fips": "204 (2024)",
+          "pub_key_b": 1952,
+          "priv_key_b": 4032,
+          "output_b": 3309,
+          "output_label": "signature"
+        },
+        {
+          "purpose": "hash_based_signature_backup",
+          "algo": "SLH-DSA-SHA2-192f",
+          "alias": "SPHINCS+",
+          "fips": "205 (2024)",
+          "pub_key_b": 48,
+          "priv_key_b": 96,
+          "output_b": 16224,
+          "output_label": "signature",
+          "security_category": 3,
+          "activation_policy": "Only when ML-DSA-65 NIF unavailable AND operator explicit approval",
+          "downgrade_treatment": "SECURITY_EVENT_AND_AUDIT"
+        }
+      ],
+      "hybrid": {
+        "primary": "ML-DSA-65",
+        "fallback": "Ed25519",
+        "encoding": "concatenated sigs with algo id prefix",
+        "remove_when": "all components support PQC verification",
+        "downgrade_policy": "tier2_plus_fail_closed"
+      },
+      "nif": {
+        "crate": "pqcrypto",
+        "alt": "liboqs direct bindings",
+        "key_isolation": "opaque refs or sealed binaries, never raw bytes to Elixir",
+        "api": [
+          "Guardian.Crypto.PQC.sign",
+          "Guardian.Crypto.PQC.verify",
+          "Guardian.Crypto.PQC.encapsulate",
+          "Guardian.Crypto.PQC.decapsulate"
+        ]
+      }
+    },
+    "classic_retained": [
+      {
+        "algo": "Ed25519",
+        "for": "hybrid signature fallback",
+        "remove_when": "all verifiers support ML-DSA"
+      },
+      {
+        "algo": "X25519",
+        "for": "ephemeral key agreement (Noise)",
+        "remove_when": "all peers support ML-KEM"
+      },
+      {
+        "algo": "AES-256-GCM",
+        "for": "symmetric encryption (at rest, TLS)",
+        "remove_when": "none (quantum-resistant at 256-bit)"
+      },
+      {
+        "algo": "HMAC-SHA-256",
+        "for": "webhook signature verification",
+        "remove_when": "external API migration"
+      },
+      {
+        "algo": "SHA-256",
+        "for": "Sigstore, OCI, SLSA",
+        "remove_when": "ecosystem migration"
+      }
+    ],
+    "byte_reqs": [
+      {
+        "id": "CRYPTO-BYTE-001",
+        "rule": "canonical encoding before hash/sign; protobuf or JCS per artifact"
+      },
+      {
+        "id": "CRYPTO-BYTE-002",
+        "rule": "bounded decode before trust; pre-decode size cap, post-decode collection bounds"
+      },
+      {
+        "id": "CRYPTO-BYTE-003",
+        "rule": "binary protocol parsing via Elixir pattern match; zero-copy, no overflows"
+      },
+      {
+        "id": "CRYPTO-BYTE-004",
+        "rule": "digest-first boundaries; hash+selector over raw payload across trust boundaries"
+      },
+      {
+        "id": "CRYPTO-BYTE-005",
+        "rule": "constant-time comparison; crypto.hash_equals/2 or NIF-level; never =="
+      }
+    ],
+    "keys": [
+      {
+        "type": "root_signing (ML-DSA-65)",
+        "storage": "NixOS systemd-creds (production authority)",
+        "rotation": "annual or on suspicion"
+      },
+      {
+        "type": "root_signing_dev",
+        "storage": "dev-only secure store; never release authority",
+        "rotation": "quarterly or on suspicion"
+      },
+      {
+        "type": "capability_signing",
+        "storage": "derived from root via kem_kdf_profile (mode-pinned, context-bound)",
+        "rotation": "per-session or per-day"
+      },
+      {
+        "type": "ipc_envelope (AES-256-GCM)",
+        "storage": "process memory, zeroized on shutdown",
+        "rotation": "per-boot"
+      },
+      {
+        "type": "container_auth_token",
+        "storage": "env injection, never persisted",
+        "rotation": "per-container-run"
+      }
+    ],
+    "zeroization": {
+      "strategy": "NIF-managed memory with Rust Zeroize trait",
+      "elixir_refs": "opaque handles, not raw key bytes",
+      "cleanup": "process termination triggers NIF cleanup callbacks",
+      "fallback": "overwrite with random bytes before releasing reference"
+    },
+    "verification_targets": [
+      {
+        "op": "blake3 hash (<1MB)",
+        "target": "<1ms"
+      },
+      {
+        "op": "blake3 hash (streaming)",
+        "target": "proportional, parallelizable"
+      },
+      {
+        "op": "ML-DSA-65 sign",
+        "target": "<5ms"
+      },
+      {
+        "op": "ML-DSA-65 verify",
+        "target": "<2ms"
+      },
+      {
+        "op": "ML-KEM-768 encapsulate",
+        "target": "<1ms"
+      },
+      {
+        "op": "ML-KEM-768 decapsulate",
+        "target": "<1ms"
+      }
+    ],
+    "startup_requirements": [
+      {
+        "id": "CRYPTO-STARTUP-001",
+        "rule": "Probe required algorithms at boot: BLAKE3, ML-KEM-768, ML-DSA-65"
+      },
+      {
+        "id": "CRYPTO-STARTUP-002",
+        "rule": "If required primitive unavailable, fail closed for tier2_plus operations"
+      },
+      {
+        "id": "CRYPTO-STARTUP-003",
+        "rule": "Emit security event on algorithm downgrade attempt; deny operation"
+      }
+    ],
+    "sp800_227_kem_requirements": [
+      {
+        "id": "KEM-REQ-001",
+        "rule": "KEMs are used only for key establishment, never direct payload encryption"
+      },
+      {
+        "id": "KEM-REQ-002",
+        "rule": "Decapsulation error behavior is constant-policy and non-oracular"
+      },
+      {
+        "id": "KEM-REQ-003",
+        "rule": "KEM parameter choices are explicit and version-pinned in policy"
+      },
+      {
+        "id": "KEM-REQ-004",
+        "rule": "KEM shared secrets MUST pass through kem_kdf_profile with required context fields; direct secret use is prohibited"
+      }
+    ],
+    "algorithm_policy": {
+      "required_tier2_plus": [
+        "ML-KEM-768",
+        "ML-DSA-65",
+        "BLAKE3"
+      ],
+      "allowed_hybrid_transitional": [
+        "Ed25519",
+        "X25519"
+      ],
+      "prohibited_for_new_designs": [
+        "RSA-PKCS1v1_5",
+        "SHA-1",
+        "MD5"
+      ],
+      "policy_change_requires": [
+        "version_bump",
+        "audit_event",
+        "rollout_plan",
+        "rollback_plan"
+      ]
+    },
+    "compliance": [
+      "Algorithm implementation targets NIST FIPS 203/204/205 specifications and SP 800-227 usage guidance; no independent conformance testing has been performed",
+      "Algorithm conformance does not constitute FIPS 140 module validation; these are tracked separately per SP-CRYPTO-005",
+      "Blake3 not NIST-approved; SHA-256 for FIPS-required paths",
+      "AES-256-GCM satisfies FIPS 197/SP 800-38D",
+      "No claim of FIPS 140 module validation unless explicitly documented with module certificate evidence"
+    ],
+    "kem_kdf_profile": {
+      "default_mode": "BLAKE3-derive_key-v1",
+      "fips_mode": "HKDF-SHA-384",
+      "mode_selection_policy": {
+        "tier0_tier1": "default_mode permitted",
+        "tier2_plus": "fips_mode REQUIRED for NIST compliance; BLAKE3 mode only if FIPS compliance explicitly not claimed",
+        "release_artifacts": "fips_mode REQUIRED"
+      },
+      "compliance_note": "BLAKE3-derive_key-v1 is not an SP 800-56C Rev. 2 approved construct. HKDF-SHA-384 is approved. Mode selection determines NIST compliance status of derived keys.",
+      "context_fields": [
+        "protocol_id",
+        "session_id",
+        "sender_id",
+        "receiver_id",
+        "policy_version"
+      ],
+      "min_salt_bytes": 32,
+      "min_context_bytes": 16,
+      "max_context_bytes": 1024,
+      "output_key_bytes": 32
+    }
+  }
+}

@@ -11,7 +11,7 @@
   },
   "payload": {
     "version": "1.0.0",
-    "principle_count": 48,
+    "principle_count": 53,
     "principles": [
       {
         "id": "PRIN-001",
@@ -357,6 +357,46 @@
         "statement": "Counterexamples should result in stronger guards, contracts, or primitives.",
         "law_refs": ["LAW-19", "LAW-17"],
         "defect_refs": ["RECURRING_FAILURE_UNADDRESSED"]
+      },
+      {
+        "id": "PRIN-049",
+        "name": "Bounded Utility With Reversible First Moves",
+        "title": "Maximize progress while preserving option value",
+        "statement": "Under uncertainty, choose actions that maximize expected mission value subject to hard safety constraints while preferring reversible probes before irreversible commitments.",
+        "law_refs": ["LAW-09", "LAW-12", "LAW-18", "LAW-15"],
+        "mechanism_refs": ["MECH-ORIENTATION-COMPILER", "MECH-OUTBOX"]
+      },
+      {
+        "id": "PRIN-050",
+        "name": "Calibrated Causal Updating",
+        "title": "Update beliefs from interventions, not correlation alone",
+        "statement": "Decision confidence should be calibrated and revised using causal evidence, counterfactual checks, and explicit uncertainty accounting.",
+        "law_refs": ["LAW-01", "LAW-15", "LAW-19"],
+        "mechanism_refs": ["MECH-ORIENTATION-COMPILER", "MECH-AUDIT-LINEAGE"]
+      },
+      {
+        "id": "PRIN-051",
+        "name": "Adversarial Incentive Robustness",
+        "title": "Design for strategic manipulation resistance",
+        "statement": "Assume external actors can optimize against policy; require mechanism and gate designs that remain safe under spoofing, coercion, and incentive gaming.",
+        "law_refs": ["LAW-05", "LAW-09", "LAW-14", "LAW-17"],
+        "mechanism_refs": ["MECH-CAPABILITY-TOKENS", "MECH-AUDIT-LINEAGE"]
+      },
+      {
+        "id": "PRIN-052",
+        "name": "Empathic Multi-Objective Alignment",
+        "title": "Optimize safety, autonomy, dignity, and fairness together",
+        "statement": "Guardian decisions should trade off multiple human values explicitly, with extra protection for vulnerable users and transparent rationale when objectives conflict.",
+        "law_refs": ["LAW-14", "LAW-18", "LAW-19"],
+        "mechanism_refs": ["MECH-PROFILE-PROPOSALS", "MECH-AUDIT-LINEAGE"]
+      },
+      {
+        "id": "PRIN-053",
+        "name": "Governance Under Strategic Uncertainty",
+        "title": "Use explicit conflict resolution and phased commitments",
+        "statement": "When laws, delegates, or signals conflict, apply deterministic meta-policy and phased commitments that can be audited, challenged, and refined after action.",
+        "law_refs": ["LAW-13", "LAW-16", "LAW-19", "LAW-20"],
+        "mechanism_refs": ["MECH-WAVE-FSM", "MECH-AUDIT-LINEAGE"]
       }
     ]
   }

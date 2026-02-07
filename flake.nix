@@ -23,6 +23,8 @@
             pkgs.git
             pkgs.docker-client
             pkgs.age
+            pkgs.beam.packages.erlang_27.elixir_1_18
+            pkgs.beam.packages.erlang_27.erlang
           ];
 
           shellHook = ''
@@ -34,6 +36,10 @@
               echo "error: expected bun $BUN_VERSION_PIN, got $actual_bun_version" >&2
               exit 1
             fi
+
+            export MIX_HOME="$PWD/.nix-mix"
+            export HEX_HOME="$PWD/.nix-hex"
+            export PATH="$MIX_HOME/bin:$MIX_HOME/escripts:$PATH"
           '';
         };
       }

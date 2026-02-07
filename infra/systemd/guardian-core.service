@@ -1,0 +1,21 @@
+[Unit]
+Description=Guardian Core — Personal Claude assistant
+After=network.target docker.service
+
+[Service]
+Type=simple
+ExecStart={{PROJECT_ROOT}}/platform/_build/prod/rel/guardian/bin/guardian start
+WorkingDirectory={{PROJECT_ROOT}}
+Restart=always
+RestartSec=5
+Environment=HOME={{HOME}}
+Environment=PATH={{HOME}}/.nix-profile/bin:/usr/local/bin:/usr/bin:/bin
+Environment=MIX_ENV=prod
+Environment=GUARDIAN_PROJECT_ROOT={{PROJECT_ROOT}}
+Environment=ASSISTANT_NAME=Rumi
+
+StandardOutput=append:{{PROJECT_ROOT}}/logs/guardian-core.log
+StandardError=append:{{PROJECT_ROOT}}/logs/guardian-core.error.log
+
+[Install]
+WantedBy=default.target

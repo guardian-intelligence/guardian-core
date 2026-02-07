@@ -12,7 +12,7 @@ logs/
 # Secrets
 *.keys.json
 .env
-server/.env
+platform/.env
 
 # Template backups (BCP rolling backups inside containers)
 _backups/
@@ -27,5 +27,16 @@ _backups/
 # Nix
 result
 .direnv/
+.nix-mix/
+.nix-hex/
+
+# Elixir / Phoenix
+platform/_build/
+platform/deps/
+platform/*.ez
+platform/.elixir_ls/
 
 agents-sdk-docs
+
+
+secrets/

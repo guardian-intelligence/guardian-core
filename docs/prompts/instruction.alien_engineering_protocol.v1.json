@@ -38,10 +38,7 @@
         "docs/theory",
         "docs/security",
         "documents/prompts",
-        "RFC_ADAPTIVE_ORIENTATION_KERNEL.md",
-        "OODA_WAVE_RUNTIME_REARCHITECTURE.md",
-        "MCP_FREE_ARCHITECTURE_AMENDMENT.md",
-        "INBOUND_CALLS_FOUNDATION_PLAN.md"
+        "RFC_ADAPTIVE_ORIENTATION_KERNEL.md"
       ]
     },
     "lex": {

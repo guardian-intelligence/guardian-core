@@ -4,17 +4,26 @@ Personal assistant. See [README.md](README.md) for philosophy and setup. See [do
 
 ## Quick Context
 
-Single Node.js process that connects to WhatsApp, routes messages to Claude Agent SDK running in Docker containers. Each group has isolated filesystem and memory.
+Elixir OTP application that connects to WhatsApp (via supervised Node.js Port), routes messages to Claude Agent SDK running in Docker containers. Each group has isolated filesystem and memory. Phoenix handles webhook API (GitHub tools, ElevenLabs signatures).
 
 ## Key Files
 
 | File | Purpose |
 |------|---------|
-| `src/index.ts` | Main app: WhatsApp connection, message routing, IPC |
-| `src/config.ts` | Trigger pattern, paths, intervals |
-| `src/container-runner.ts` | Spawns agent containers with mounts |
-| `src/task-scheduler.ts` | Runs scheduled tasks |
-| `src/db.ts` | SQLite operations |
+| `platform/lib/guardian/kernel/supervisor.ex` | Kernel supervisor (rest_for_one) |
+| `platform/lib/guardian/kernel/whatsapp/bridge.ex` | WhatsApp connection via Node.js Port |
+| `platform/lib/guardian/kernel/whatsapp/message_router.ex` | Message routing with composite cursor |
+| `platform/lib/guardian/kernel/container_runner.ex` | Spawns agent containers with mounts |
+| `platform/lib/guardian/kernel/task_scheduler.ex` | Runs scheduled tasks (cron/interval/once) |
+| `platform/lib/guardian/kernel/ipc_watcher.ex` | Polls IPC directories for container messages |
+| `platform/lib/guardian/kernel/state.ex` | In-memory state with periodic JSON flush |
+| `platform/lib/guardian/kernel/config.ex` | All kernel paths and config |
+| `platform/lib/guardian/repo.ex` | Ecto.Repo (SQLite3) |
+| `platform/lib/guardian/github.ex` | GitHub App auth + API client |
+| `platform/lib/guardian_web/router.ex` | Phoenix API routes |
+| `container/agent-runner/` | Claude Agent SDK runner (TypeScript, runs in Docker) |
+| `container/shared/` | Shared TS types (IPC protocol, schemas) |
+| `container/whatsapp-bridge/` | Thin Baileys bridge (JSON stdio) |
 | `groups/{name}/CLAUDE.md` | Per-group memory (isolated) |
 
 ## Skills
@@ -24,45 +33,57 @@ Single Node.js process that connects to WhatsApp, routes messages to Claude Agen
 | `/setup` | First-time installation, authentication, service configuration |
 | `/customize` | Adding channels, integrations, changing behavior |
 | `/debug` | Container issues, logs, troubleshooting |
-| `/self-update` | Deploy brain (Guardian Core) or server (webhook API) |
+| `/self-update` | Deploy brain (Guardian Core) or platform (Phoenix API) |
 
 ## Development
 
-Run commands directly—don't tell the user to run them.
+Run commands directly — don't tell the user to run them.
 
 ```bash
-bun run dev          # Run with hot reload
-bun run build        # Compile TypeScript
-bun run typecheck    # Type-check without emitting
-bun run test             # Run tests
-./container/build.sh # Rebuild agent container
+# Elixir App
+cd platform && mix phx.server   # Start on port 4000 (kernel disabled in dev)
+cd platform && mix test         # Run all tests
+cd platform && mix compile --warnings-as-errors  # Typecheck
+
+# Container
+./container/build.sh            # Rebuild agent container image
 ```
 
 ## Deploying Updates
 
-Two systems: **brain** (Guardian Core, local) and **server** (webhook API, rumi-vps). Use `/self-update` for guided deployment.
+Two systems: **brain** (Guardian Core, local) and **platform** (Elixir Phoenix, rumi-vps). Use `/self-update` for guided deployment. All deploy/ops tasks are Elixir Mix tasks in `platform/`.
 
 ```bash
 # Brain (Guardian Core)
-bun run deploy:brain            # Smart deploy (detects what changed)
-bun run deploy:brain:app        # Host app only (TypeScript changes)
-bun run deploy:brain:container  # Container image only (Dockerfile/agent-runner)
-bun run deploy:brain:all        # Full rebuild of everything
+cd platform && mix deploy.brain               # Smart deploy (detects what changed)
+cd platform && mix deploy.brain --app         # Host app only (Elixir changes)
+cd platform && mix deploy.brain --container   # Container image only (Dockerfile/agent-runner)
+cd platform && mix deploy.brain --all         # Full rebuild of everything
+cd platform && mix deploy.brain --dry-run     # Show plan without executing
 
-# Server (webhook API → rumi-vps)
-bun run deploy:server           # rsync + restart on rumi-vps
+# Platform (Elixir Phoenix → rumi-vps)
+cd platform && mix deploy.platform            # test, rsync, build release, restart
+cd platform && mix deploy.platform --dry-run  # Show plan without executing
+
+# Secrets Management
+cd platform && mix secrets.backup             # Encrypt .env files to age archives
+cd platform && mix secrets.restore            # Decrypt archives to local .env files
+cd platform && mix secrets.deploy             # Decrypt + push to VPS + restart services
+cd platform && mix secrets.verify             # Check remote file perms + service health
+
+# Template Backup
+cd platform && mix templates.commit           # Auto-commit template file changes
 ```
 
-`bun run deploy` is kept as an alias for `deploy:brain` (backwards compat).
-
-The brain deploy script (`scripts/deploy.ts`) handles:
-1. `bun install` (if app changed)
-2. Typecheck + tests (aborts on failure)
-3. `tsc` build
-4. Container image rebuild (if needed)
-5. Install launchd plist from template (resolves `{{PLACEHOLDERS}}`)
-6. Restart the launchd service
-7. Verify the service is running
+The brain deploy pipeline:
+1. `mix deps.get` (if app changed)
+2. `mix compile --warnings-as-errors` (aborts on failure)
+3. `mix test` (aborts on failure)
+4. `mix release --overwrite` (builds Elixir release)
+5. Container image rebuild (if needed)
+6. Install launchd/systemd template (resolves `{{PLACEHOLDERS}}`)
+7. Restart the service
+8. Verify the service is running
 
 Manual service management:
 ```bash

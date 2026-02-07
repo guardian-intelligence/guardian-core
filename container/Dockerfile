@@ -50,6 +50,9 @@ WORKDIR /app
 # Copy package files first for better caching
 COPY agent-runner/package.json agent-runner/bun.lock ./
 
+# Copy shared package (pre-built by build.sh)
+COPY .shared-cache/ /app/node_modules/@guardian/shared/
+
 # Install dependencies
 RUN bun install
 

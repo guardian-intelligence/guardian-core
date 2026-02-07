@@ -1,0 +1,144 @@
+{
+  "incident_response": {
+    "severity": [
+      { "lvl": "Critical", "desc": "Active exploitation or immediate safety/integrity risk", "target": "Immediate" },
+      { "lvl": "High", "desc": "Major security impact without confirmed active exploitation", "target": "24h" },
+      { "lvl": "Medium", "desc": "Material but bounded security weakness", "target": "7d" },
+      { "lvl": "Low", "desc": "Minor security debt or process gap", "target": "30d" }
+    ],
+    "rules": [
+      "Contain first, investigate second",
+      "Prefer fail-closed over uncertain continuation",
+      "Preserve evidence as digests+logs+receipts without mutating originals",
+      "Record timeline, scope, decisions, recovery actions",
+      "Open remediation work with explicit verification criteria"
+    ],
+    "playbooks": [
+      {
+        "id": "IR-SECRET-LEAK",
+        "triggers": [
+          "Credential exposure in repo, logs, artifacts, or external channels"
+        ],
+        "actions": [
+          "Revoke leaked credentials",
+          "Rotate adjacent potentially-exposed credentials",
+          "Audit access/usage logs for abuse",
+          "Preserve evidence and incident timeline"
+        ],
+        "checks": [
+          "Disable affected automation if credential scope unclear",
+          "Confirm no secrets in release artifacts, logs, or error channels"
+        ]
+      },
+      {
+        "id": "IR-IDENTITY-FRESHNESS",
+        "triggers": [
+          "Replayed or forged capability tokens",
+          "Stale/expired voice identity trust accepted for Tier 2+",
+          "Suspected wave lease expiry bypass",
+          "Voice identity spoofing with high-confidence false match"
+        ],
+        "actions": [
+          "Deny Tier 2+ actuation on affected trust state",
+          "Force refresh capability tokens and identity trust anchors",
+          "Invalidate cached trust decisions for suspect tokens/sessions",
+          "Preserve proof artifacts and verification logs"
+        ],
+        "goal": "No actuation under stale or unverifiable identity authority"
+      },
+      {
+        "id": "IR-RECEIPT-AUTH",
+        "triggers": [
+          "Invalid ML-DSA-65 signatures on authoritative facts",
+          "Failed Blake3 digest verification on receipts/outbox",
+          "Mismatched inclusion proofs or corrupted outbox receipt integrity"
+        ],
+        "actions": [
+          "Treat affected facts as non-authoritative",
+          "Halt promotion/actuation paths consuming those facts",
+          "Fall back to stricter verification paths",
+          "Emit defects and isolate impacted producers"
+        ]
+      },
+      {
+        "id": "IR-DELEGATION-WIDENING",
+        "triggers": [
+          "Downstream OTP process capability wider than parent authority",
+          "Stop predicate weakening across supervision hierarchy",
+          "Unauthorized scope/budget expansion in agent containers"
+        ],
+        "actions": [
+          "Revoke affected delegation chain",
+          "Deny dependent operations",
+          "Preserve delegation artifacts and policy traces",
+          "Patch and test strict-subset and meet enforcement"
+        ]
+      },
+      {
+        "id": "IR-DEPENDENCY-VULN",
+        "triggers": [
+          "Known vulnerability in direct or transitive dependency"
+        ],
+        "actions": [
+          "Assess exploitability in Guardian context",
+          "Block release for affected versions until mitigated",
+          "Upgrade/replace dependency and add regression test",
+          "Publish advisory where required"
+        ]
+      },
+      {
+        "id": "IR-MALICIOUS-DEPENDENCY",
+        "triggers": [
+          "Evidence of dependency compromise or malicious behavior"
+        ],
+        "actions": [
+          "Remove dependency immediately",
+          "Rebuild from clean state",
+          "Audit build-script, network, and filesystem behavior",
+          "Report upstream through ecosystem channels"
+        ]
+      },
+      {
+        "id": "IR-NIF-CRASH",
+        "triggers": [
+          "Rustler NIF segfault/panic causing BEAM VM crash",
+          "Repeated NIF-related process restarts by supervisor",
+          "Unexpected BEAM VM restart with NIF crash dump present"
+        ],
+        "actions": [
+          "Check Dolt data integrity for partial writes/corruption",
+          "Verify wave state recovery post-restart",
+          "Inspect NIF crash dump for root cause",
+          "Disable affected NIF path; fall back to pure Elixir if available",
+          "Patch NIF code and run fuzz tests on triggering input class",
+          "Restart service and verify normal operation"
+        ],
+        "goal": "No data loss or authority state corruption from NIF crash"
+      }
+    ],
+    "evidence": [
+      "Record incident start time and detection source",
+      "Record Blake3 hashes of key artifacts and log bundles",
+      "Capture relevant receipt IDs and hashes",
+      "Capture affected identity, capability, and policy version data",
+      "Timestamp containment actions"
+    ],
+    "notification": {
+      "model": "Single-operator, no escalation chain",
+      "channels": ["WhatsApp", "voice"],
+      "includes": ["severity", "what_happened", "impact", "containment_actions", "next_actions"]
+    },
+    "closure": [
+      "Containment verified",
+      "Root cause documented",
+      "Regression controls (tests, policy, tooling) in place",
+      "Remediation evidence linked"
+    ],
+    "contacts": [
+      { "role": "Owner/Operator", "resp": "Triage, coordinate, execute remediation" },
+      { "role": "Security contact", "resp": "Receive external reports, coordinate disclosure" }
+    ],
+    "reporting_channel": "GitHub Security Advisories private disclosure",
+    "crypto": { "hash": "Blake3", "pqc": ["ML-KEM-768", "ML-DSA-65"], "status": "active_day1" }
+  }
+}

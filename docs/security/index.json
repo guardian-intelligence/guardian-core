@@ -1,0 +1,135 @@
+{
+  "index": {
+    "scope": "Single-operator Elixir/OTP assistant with Dolt and capability-gated adapters; production target is NixOS",
+    "source_of_truth": [
+      "docs/security/index.json",
+      "docs/security/security_policy.json",
+      "docs/security/security_checklist.json",
+      "docs/security/threat_model.json",
+      "docs/security/secrets_management.json",
+      "docs/security/incident_response.json",
+      "docs/security/release_procedure.json",
+      "docs/security/signing_verification.json",
+      "docs/security/crypto_posture.json",
+      "docs/security/elixir_eval.json",
+      "docs/security/orchestration_runbook.json",
+      "docs/security/waivers.json"
+    ],
+    "markdown_docs": "human-readable mirrors; JSON corpus is normative for automated review and implementation agents",
+    "principles": [
+      "Fail closed high-risk, degrade gracefully low-risk",
+      "No ambient authority for subagents; explicit capabilities",
+      "Voice identity is probabilistic unless step-up verified",
+      "Prefer small operable controls over heavyweight machinery",
+      "Document every security-usability waiver with expiry+owner",
+      "PQC from day 1; post-quantum crypto active not deferred",
+      "Byte-level discipline at all trust boundaries",
+      "Blake3 primary hash; SHA-256 only for external compat",
+      "Cryptographic policy is versioned and fail-closed on required primitive unavailability",
+      "No compliance over-claims: algorithm adoption and module validation are tracked separately"
+    ],
+    "doc_map": [
+      {
+        "id": "SEC-DOC-01",
+        "path": "SECURITY_POLICY.md",
+        "json_path": "security_policy.json",
+        "purpose": "Modes, invariants, authority model, control baselines",
+        "authoritative": true
+      },
+      {
+        "id": "SEC-DOC-02",
+        "path": "THREAT_MODEL.md",
+        "json_path": "threat_model.json",
+        "purpose": "Threat classes, adversary assumptions, required controls",
+        "authoritative": true
+      },
+      {
+        "id": "SEC-DOC-03",
+        "path": "NETWORK_DEFENSE.md",
+        "json_path": "network_defense.json",
+        "purpose": "Network-level threats and control bindings",
+        "authoritative": false,
+        "status": "SUPPLEMENTAL"
+      },
+      {
+        "id": "SEC-DOC-04",
+        "path": "SECRETS_MANAGEMENT.md",
+        "json_path": "secrets_management.json",
+        "purpose": "Credential custody, distribution, redaction, leak response",
+        "authoritative": true
+      },
+      {
+        "id": "SEC-DOC-05",
+        "path": "INCIDENT_RESPONSE.md",
+        "json_path": "incident_response.json",
+        "purpose": "Severity model, playbooks, closure criteria",
+        "authoritative": true
+      },
+      {
+        "id": "SEC-DOC-06",
+        "path": "RELEASE_PROCEDURE.md",
+        "json_path": "release_procedure.json",
+        "purpose": "High-assurance release workflow and gates",
+        "authoritative": true
+      },
+      {
+        "id": "SEC-DOC-07",
+        "path": "SIGNING_AND_VERIFICATION.md",
+        "json_path": "signing_verification.json",
+        "purpose": "Keyless release signing and verification",
+        "authoritative": true
+      },
+      {
+        "id": "SEC-DOC-08",
+        "path": "SECURITY_CHECKLIST.md",
+        "json_path": "security_checklist.json",
+        "purpose": "Pre-merge and release security verification",
+        "authoritative": true
+      },
+      {
+        "id": "SEC-DOC-09",
+        "path": "CRYPTOGRAPHY_POSTURE.md",
+        "json_path": "crypto_posture.json",
+        "purpose": "Blake3 + PQC posture, standards status, and algorithm policy",
+        "authoritative": true
+      },
+      {
+        "id": "SEC-DOC-10",
+        "path": "ELIXIR_SECURITY_EVALUATION.md",
+        "json_path": "elixir_eval.json",
+        "purpose": "Elixir/OTP security properties and BEAM trust model",
+        "authoritative": true
+      },
+      {
+        "id": "SEC-DOC-11",
+        "path": "orchestration-runbook.md",
+        "json_path": "orchestration_runbook.json",
+        "purpose": "Orchestration incident, diagnostics, recovery runbook",
+        "authoritative": true
+      },
+      {
+        "id": "SEC-DOC-12",
+        "path": "waivers/",
+        "json_path": "waivers.json",
+        "purpose": "Active and expired security waivers",
+        "authoritative": true
+      }
+    ],
+    "keyless_signing": {
+      "traditional_steps": [
+        "Generate signing keys",
+        "Store private key securely",
+        "Rotate keys periodically",
+        "Accept long-lived key compromise risk"
+      ],
+      "keyless_steps": [
+        "GitHub Actions obtains OIDC identity token",
+        "Sigstore Fulcio issues short-lived certificate",
+        "Artifact signed with ephemeral key",
+        "Signing event logged in Rekor transparency log"
+      ]
+    },
+    "owner": "root_human",
+    "review": "monthly"
+  }
+}

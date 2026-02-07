@@ -6,23 +6,9 @@
 import fs from 'fs';
 import path from 'path';
 import { query, HookCallback, PreCompactHookInput } from '@anthropic-ai/claude-agent-sdk';
+import type { ContainerInput, ContainerOutput } from '@guardian/shared';
+import { OUTPUT_START_MARKER, OUTPUT_END_MARKER } from '@guardian/shared';
 import { createIpcMcp } from './ipc-mcp.js';
-
-interface ContainerInput {
-  prompt: string;
-  sessionId?: string;
-  groupFolder: string;
-  chatJid: string;
-  isMain: boolean;
-  isScheduledTask?: boolean;
-}
-
-interface ContainerOutput {
-  status: 'success' | 'error';
-  result: string | null;
-  newSessionId?: string;
-  error?: string;
-}
 
 interface SessionEntry {
   sessionId: string;
@@ -44,9 +30,6 @@ async function readStdin(): Promise<string> {
     process.stdin.on('error', reject);
   });
 }
-
-const OUTPUT_START_MARKER = '---GUARDIAN_CORE_OUTPUT_START---';
-const OUTPUT_END_MARKER = '---GUARDIAN_CORE_OUTPUT_END---';
 
 function writeOutput(output: ContainerOutput): void {
   console.log(OUTPUT_START_MARKER);

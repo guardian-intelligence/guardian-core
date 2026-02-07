@@ -1,0 +1,139 @@
+{
+  "release_procedure": {
+    "status": "ACTIVE",
+    "mode": "MODE_HIGH_ASSURANCE",
+    "precondition": "Any mandatory step failure: stop, remediate, restart full procedure",
+    "steps": [
+      {
+        "step": 1,
+        "desc": "Confirm release type, commit range, baseline branch",
+        "on_fail": "STOP_AND_REMEDIATE"
+      },
+      {
+        "step": 2,
+        "desc": "Enforce MODE_HIGH_ASSURANCE; no local dev mode",
+        "on_fail": "STOP_AND_REMEDIATE"
+      },
+      {
+        "step": 3,
+        "desc": "All required CI checks green on release commit",
+        "on_fail": "STOP_AND_REMEDIATE"
+      },
+      {
+        "step": 4,
+        "desc": "Run all release-blocking gates and verify pass",
+        "gates": [
+          "SP-GATE-CREDO",
+          "SP-GATE-DEPS-AUDIT",
+          "SP-GATE-HEX-AUDIT",
+          "SP-GATE-DIALYZER",
+          "SP-GATE-SECRETS",
+          "SP-GATE-POLICY-COVERAGE",
+          "SP-GATE-WAIVER-NONWAIVABLE",
+          "SP-GATE-EVIDENCE-EXISTS",
+          "SP-GATE-CRYPTO-VERSION-SYNC",
+          "SP-GATE-TEST-COVERAGE"
+        ],
+        "verification": "All gates must emit exit code 0; results logged with timestamps",
+        "on_fail": "STOP_AND_REMEDIATE"
+      },
+      {
+        "step": 5,
+        "desc": "Inspect mix.lock; no forbidden deps or feature expansions",
+        "on_fail": "STOP_AND_REMEDIATE"
+      },
+      {
+        "step": 6,
+        "desc": "Review git history for secrets; artifacts from CI only",
+        "on_fail": "STOP_AND_REMEDIATE"
+      },
+      {
+        "step": 7,
+        "desc": "Update version and release notes; no secrets in notes",
+        "on_fail": "STOP_AND_REMEDIATE"
+      },
+      {
+        "step": 8,
+        "desc": "Create annotated tag at release commit; push tag",
+        "on_fail": "STOP_AND_REMEDIATE"
+      },
+      {
+        "step": 9,
+        "desc": "Confirm GH Actions release workflow runs; monitor completion",
+        "on_fail": "STOP_AND_REMEDIATE"
+      },
+      {
+        "step": 10,
+        "desc": "Verify .sig and .pem for each artifact; published",
+        "on_fail": "STOP_AND_REMEDIATE"
+      },
+      {
+        "step": 11,
+        "desc": "Verify SLSA L3 provenance via slsa-github-generator",
+        "on_fail": "STOP_AND_REMEDIATE"
+      },
+      {
+        "step": 12,
+        "desc": "Verify SBOM (CycloneDX + SPDX) published with artifacts",
+        "on_fail": "STOP_AND_REMEDIATE"
+      },
+      {
+        "step": 13,
+        "desc": "Cosign verify every artifact with strict certificate identity, OIDC issuer, Rekor inclusion, and claim checks enabled; any failure is an integrity incident",
+        "on_fail": "STOP_AND_REMEDIATE"
+      },
+      {
+        "step": 14,
+        "desc": "All targets present with sig, cert, provenance, SBOMs",
+        "on_fail": "STOP_AND_REMEDIATE"
+      },
+      {
+        "step": 15,
+        "desc": "Publish GH release; notes and assets match verified artifacts",
+        "on_fail": "STOP_AND_REMEDIATE"
+      },
+      {
+        "step": 16,
+        "desc": "Record tag/digests/evidence; no post-publish asset edits",
+        "on_fail": "STOP_AND_REMEDIATE"
+      },
+      {
+        "step": 17,
+        "desc": "Security issue: stop releases, open advisory, classify severity",
+        "on_fail": "STOP_AND_REMEDIATE"
+      }
+    ],
+    "incident_hook": {
+      "actions": [
+        "Stop releases",
+        "Open security advisory",
+        "Apply containment by severity",
+        "Coordinate responsible disclosure"
+      ],
+      "severity_targets": [
+        {
+          "sev": "Critical",
+          "target": "IMMEDIATE",
+          "max_duration": "0"
+        },
+        {
+          "sev": "High",
+          "target": "WITHIN",
+          "max_duration": "24h"
+        },
+        {
+          "sev": "Medium",
+          "target": "WITHIN",
+          "max_duration": "7d"
+        },
+        {
+          "sev": "Low",
+          "target": "WITHIN",
+          "max_duration": "30d"
+        }
+      ],
+      "ack_window": "48h"
+    },
+    "crypto_posture": "Blake3 + PQC active day 1"
+  }
+}

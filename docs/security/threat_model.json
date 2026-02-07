@@ -1,0 +1,235 @@
+{
+  "threat_model": {
+    "status": "ACTIVE",
+    "date": "2026-02-07",
+    "scope": "Single Guardian node: Elixir/OTP with agent containers, voice/webhook ingress, Dolt storage, external APIs",
+    "adversaries": [
+      {
+        "id": "ADV-01",
+        "desc": "Untrusted callers: social engineering, impersonation, coerced disclosure"
+      },
+      {
+        "id": "ADV-02",
+        "desc": "Prompt injection via messages, calls, fetched content, tool outputs"
+      },
+      {
+        "id": "ADV-03",
+        "desc": "Supply chain compromise: Hex.pm, Rustler NIFs, CI identity"
+      },
+      {
+        "id": "ADV-04",
+        "desc": "Credential leaks via logs, misconfigured mounts, intercepted tokens"
+      }
+    ],
+    "boundary": "Trust only cryptographically provable; voice probabilistic; capability tokens only authority; unverifiable denied",
+    "surfaces": [
+      {
+        "id": "TM-SURFACE-01",
+        "name": "Voice and Messaging Ingress",
+        "desc": "Caller ID spoofing, WhatsApp injection, social engineering"
+      },
+      {
+        "id": "TM-SURFACE-02",
+        "name": "Identity and Authentication",
+        "desc": "Capability token issuance, delegation chains, voice trust"
+      },
+      {
+        "id": "TM-SURFACE-03",
+        "name": "Tool and Context Mediation",
+        "desc": "Agent container tool invocations, IPC envelopes, capability enforcement"
+      },
+      {
+        "id": "TM-SURFACE-04",
+        "name": "Secrets and Credential Custody",
+        "desc": "Secret storage, distribution, logging surfaces, credential lifecycle",
+        "gap_note": "ID restored for sequence completeness; previously unlisted"
+      },
+      {
+        "id": "TM-SURFACE-05",
+        "name": "Release Supply Chain",
+        "desc": "Signing identity, provenance, dep graph integrity, lockfile drift"
+      }
+    ],
+    "classes": [
+      {
+        "id": "TM-CLASS-01",
+        "name": "Identity, Replay, and Spoofing Failures",
+        "threats": [
+          "Identity spoofing via caller ID or WhatsApp account compromise",
+          "Voice identity spoofing exploiting probabilistic trust",
+          "Replay of authority-bearing claims and capability tokens",
+          "Stale identity acceptance after credential rotation"
+        ],
+        "controls": [
+          "Self-certifying identities with proof-carrying capability tokens",
+          "Voice trust tiered confidence; step-up verification for Tier 2+",
+          "Freshness enforcement with bounded token TTL/skew and replay-resistant jti tracking; fail closed on stale identity at Tier 2+",
+          "Session keys bound via explicit delegation handshake",
+          "Caller allowlists, behavioral checks, optional passphrase",
+          "Nonce/jti uniqueness enforced per subject with deny-and-alert on replay"
+        ]
+      },
+      {
+        "id": "TM-CLASS-02",
+        "name": "Delegation and Confused-Deputy Escalation",
+        "threats": [
+          "Capability laundering and scope widening via OTP hierarchies",
+          "Stop predicate weakening by child processes",
+          "Over-broad delegated authority across agent containers"
+        ],
+        "controls": [
+          "Capability-gated delegation only for OTP child processes",
+          "Strict-subset via authority meet: scope, budget, tier, time",
+          "Mandatory receipt and envelope binding for delegated ops",
+          "Deny-by-default on missing/expired/revoked capability tokens"
+        ]
+      },
+      {
+        "id": "TM-CLASS-03",
+        "name": "Fact Forgery and Verification-Cost Exhaustion",
+        "threats": [
+          "Forged receipts and unverifiable claims as authoritative",
+          "Verification DoS by proof amplification or oversized payloads",
+          "Cryptographic downgrade of required Tier2+ suites",
+          "KEM misuse creating oracle leakage or weak shared-secret handling"
+        ],
+        "controls": [
+          "Facts authenticated via Blake3 digests and ML-DSA-65 signatures",
+          "Bounded logarithmic verification costs for proof checks",
+          "Verifier cache with bounded decoding before trust decisions",
+          "Pre-decode byte caps and post-decode collection bounds",
+          "Tier2+ algorithm suites are policy-pinned and downgrade-resistant",
+          "KEM usage follows SP 800-227 guidance: key-establishment only, non-oracular errors, context-bound KDF"
+        ]
+      },
+      {
+        "id": "TM-CLASS-04",
+        "name": "Secrets Exfiltration and Credential Abuse",
+        "threats": [
+          "Credential exposure via logs, error surfaces, or build artifacts",
+          "Secret persistence in BEAM heap after intended zeroization",
+          "Shadow secret stores from developer convenience patterns"
+        ],
+        "controls": [
+          "NIF-managed key storage with Rust Zeroize on drop",
+          "Mandatory SecretRedactor on all outbound text channels",
+          "Gitleaks CI scanning on all commits and release artifacts",
+          "Platform-backed runtime storage; no plaintext repo secrets"
+        ],
+        "gap_note": "ID restored for sequence completeness; previously unlisted"
+      },
+      {
+        "id": "TM-CLASS-05",
+        "name": "Prompt Injection and Data Exfiltration",
+        "threats": [
+          "Untrusted content steering high-impact actuators via injection",
+          "Confidential leakage via logs, tool outputs, cross-container msgs"
+        ],
+        "controls": [
+          "Tool mediation only; no raw ambient execution from model output",
+          "Dual-lattice taint and confidentiality at boundary emissions",
+          "Context firewall and allowlist-bound reads; higher-tier hard-fail",
+          "Strict egress controls; selector-based digest-first retrieval",
+          "Output redaction for sensitive data classification"
+        ]
+      },
+      {
+        "id": "TM-CLASS-06",
+        "name": "Availability and Economic Attacks",
+        "threats": [
+          "Parser/resource exhaustion via oversized or malformed inputs",
+          "Recursive spawn storms from unbounded agent container creation",
+          "Expensive tasks starving primary assistant throughput"
+        ],
+        "controls": [
+          "Pre-decode byte caps and post-decode collection bounds",
+          "Per-session and per-operation budgets; deny + receipt on exceed",
+          "Idempotency keys and precondition guards for side effects",
+          "Backpressure and fanout caps via OTP DynamicSupervisor",
+          "Spawn depth limits, timeout controls, circuit breakers"
+        ]
+      },
+      {
+        "id": "TM-CLASS-07",
+        "name": "NIF Boundary Safety",
+        "threats": [
+          "Rust NIF crash taking down BEAM VM via segfault/panic",
+          "NIF resource exhaustion blocking BEAM schedulers",
+          "Memory corruption in NIF code breaking process isolation"
+        ],
+        "controls": [
+          "Rustler-only NIFs; safe Rust bindings with auto resource mgmt",
+          "All NIF work on dirty CPU schedulers; no normal scheduler blocking",
+          "Fuzz testing NIF input boundaries with PropEr and binary fuzzing",
+          "NIF crash triggers node-level restart; post-restart integrity reconciliation required before re-enabling actuation",
+          "NIF crash dump inspection and automated alerting on repeat failures"
+        ]
+      }
+    ],
+    "properties": [
+      {
+        "idx": 1,
+        "desc": "No Tier 2+ actuation without verified capability, stop state, fresh identity"
+      },
+      {
+        "idx": 2,
+        "desc": "No unsigned or unauthenticated facts admitted as truth"
+      },
+      {
+        "idx": 3,
+        "desc": "No delegation widening across OTP supervision hierarchies"
+      },
+      {
+        "idx": 4,
+        "desc": "No bypass of agent container policy, tool broker, or IPC envelope"
+      },
+      {
+        "idx": 5,
+        "desc": "No secret exposure through default logging or error surfaces"
+      },
+      {
+        "idx": 6,
+        "desc": "No unbounded agent container spawning"
+      },
+      {
+        "idx": 7,
+        "desc": "No NIF execution on normal BEAM schedulers"
+      }
+    ],
+    "priorities": [
+      {
+        "idx": 1,
+        "desc": "Immediate containment for active compromise"
+      },
+      {
+        "idx": 2,
+        "desc": "Preserve forensic evidence as signed/hashed artifacts with receipt pointers"
+      },
+      {
+        "idx": 3,
+        "desc": "Fail-closed degradation under trust ambiguity"
+      },
+      {
+        "idx": 4,
+        "desc": "Promote remediations only with regression and adversarial coverage"
+      }
+    ],
+    "crypto": {
+      "hash": "Blake3",
+      "pqc": [
+        "ML-KEM-768",
+        "ML-DSA-65"
+      ],
+      "standards": [
+        "FIPS-203",
+        "FIPS-204",
+        "FIPS-205",
+        "SP-800-227"
+      ],
+      "watch": [
+        "FIPS-206",
+        "HQC"
+      ]
+    }
+  }
+}

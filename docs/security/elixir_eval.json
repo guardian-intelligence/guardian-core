@@ -1,0 +1,131 @@
+{
+  "elixir_eval": {
+    "verdict": "Elixir for orchestration/policy; Rust NIFs for crypto primitives; NIF boundary is critical surface",
+    "strengths": [
+      {
+        "id": "S1",
+        "name": "Process Isolation",
+        "rating": "Strong",
+        "summary": "Per-process heap, no shared mutable state; compromised GenServer cannot corrupt others"
+      },
+      {
+        "id": "S2",
+        "name": "Binary Pattern Matching",
+        "rating": "Outstanding",
+        "summary": "Zero-copy, compile-time checked; no buffer overflows; bitstring-level parsing"
+      },
+      {
+        "id": "S3",
+        "name": "Let-It-Crash + Supervisors",
+        "rating": "Strong",
+        "summary": "Clean restart on error; no half-corrupted state; bounded failure propagation"
+      },
+      {
+        "id": "S4",
+        "name": "Immutable Data",
+        "rating": "Good",
+        "summary": "All data immutable; eliminates TOCTOU bugs for in-process data"
+      },
+      {
+        "id": "S5",
+        "name": "Hot Code Upgrade",
+        "rating": "Good",
+        "summary": "Security patches without dropping active wave state"
+      },
+      {
+        "id": "S6",
+        "name": "OTP :crypto Module",
+        "rating": "Adequate",
+        "summary": "Wraps OpenSSL; hash_equals, AES-GCM, HMAC, strong_rand_bytes"
+      }
+    ],
+    "weaknesses": [
+      {
+        "id": "W1",
+        "name": "NIF Safety Boundary",
+        "risk": "Critical",
+        "status": "Mitigated",
+        "summary": "NIF segfault crashes entire VM, breaking process isolation",
+        "mitigations": [
+          "Rustler safe bindings, no raw C NIFs",
+          "dirty CPU schedulers prevent scheduler starvation",
+          "fuzz + property-based tests on NIF inputs",
+          "systemd/launchd restart; Dolt state survives crash"
+        ],
+        "residual": "Rust unsafe block bug could crash VM; low probability, blast radius = full restart"
+      },
+      {
+        "id": "W2",
+        "name": "No Deterministic Secret Zeroization",
+        "risk": "Moderate",
+        "status": "Mitigated",
+        "summary": "BEAM GC doesn't guarantee memory freeing; keys may linger in heap",
+        "mitigations": [
+          "NIF-managed key storage with Rust Zeroize on drop",
+          "Elixir holds opaque refs not raw bytes",
+          "no swap in prod; ptrace_scope=2",
+          "binary overwrite with random bytes before release"
+        ],
+        "residual": "Sub-64B heap binaries may be GC-copied; session keys briefly in multiple locations"
+      },
+      {
+        "id": "W3",
+        "name": "Runtime Type Safety",
+        "risk": "Moderate",
+        "status": "Mitigated",
+        "summary": "Dynamic typing; Dialyzer unsound; type confusion could bypass security",
+        "mitigations": [
+          "Dialyzer in CI, warnings-as-errors",
+          "struct @enforce_keys for tokens/receipts/snapshots",
+          "pattern matching at trust boundaries",
+          "property-based testing with StreamData"
+        ],
+        "residual": "Crafted Elixir terms via distribution protocol could bypass struct guards; distribution disabled"
+      },
+      {
+        "id": "W4",
+        "name": "Erlang Distribution Protocol",
+        "risk": "Low",
+        "status": "Mitigated",
+        "summary": "Shared cookie grants full node authority including code execution",
+        "mitigations": [
+          "distribution disabled in prod (--no-epmd, no -name/-sname)",
+          "debugging via local observer_cli/recon",
+          "remote debug via LiveDashboard behind capability auth"
+        ],
+        "residual": "Non-issue if disabled; critical if enabled without protection"
+      },
+      {
+        "id": "W5",
+        "name": "Timing Side Channels",
+        "risk": "Low",
+        "status": "Mitigated",
+        "summary": "BEAM scheduling adds non-deterministic timing; == is not constant-time",
+        "mitigations": [
+          "crypto.hash_equals/2 for all security comparisons",
+          "NIF-level Rust subtle::ConstantTimeEq",
+          "no Elixir == for secrets/tokens/hashes/signatures"
+        ],
+        "residual": "Negligible; real crypto work in :crypto or NIF with constant-time guarantees"
+      }
+    ],
+    "matrix": [
+      { "req": "process_isolation", "native": true, "nif": false, "assessment": "Strong" },
+      { "req": "byte_level_parsing", "native": true, "nif": false, "assessment": "Outstanding" },
+      { "req": "fault_recovery", "native": true, "nif": false, "assessment": "Strong" },
+      { "req": "blake3_hashing", "native": false, "nif": true, "assessment": "Good (NIF risk managed)" },
+      { "req": "pqc_ml_kem_ml_dsa", "native": false, "nif": true, "assessment": "Good (NIF risk managed)" },
+      { "req": "constant_time_comparison", "native": "partial", "nif": true, "assessment": "Good" },
+      { "req": "secret_zeroization", "native": false, "nif": true, "assessment": "Adequate (NIF-managed)" },
+      { "req": "static_type_safety", "native": "partial", "nif": false, "assessment": "Adequate with discipline" },
+      { "req": "hot_code_upgrade", "native": true, "nif": false, "assessment": "Strong" },
+      { "req": "memory_safety", "native": true, "nif": true, "assessment": "Strong (no C NIFs)" }
+    ],
+    "alternatives": [
+      { "lang": "Rust", "reject_reason": "no OTP supervision/hot reload; tokio less mature for actor model; no binary pattern match" },
+      { "lang": "Go", "reject_reason": "weaker types than Rust; no NIF equivalent; goroutines less suitable for durable actors" },
+      { "lang": "Node.js/TypeScript", "reject_reason": "no process isolation; no byte-level handling; no PQC libs; single-threaded" }
+    ],
+    "recommendation": "Elixir for orchestration/policy/dispatch + Rust NIFs for crypto; invest in NIF fuzz testing, property tests, dirty scheduler config, crash recovery testing"
+  }
+}

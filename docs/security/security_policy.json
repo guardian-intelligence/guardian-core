@@ -1,0 +1,449 @@
+{
+  "security_policy": {
+    "status": "ACTIVE",
+    "date": "2026-02-07",
+    "crypto_policy_version": 1,
+    "posture": [
+      {
+        "id": "SP-POSTURE-001",
+        "desc": "Ambiguity at enforcement boundaries denies authority-bearing actions",
+        "lvl": "MUST",
+        "surf": [
+          "RUNTIME",
+          "RELEASE"
+        ],
+        "on_fail": "DENY"
+      },
+      {
+        "id": "SP-POSTURE-002",
+        "desc": "Security controls are release-blocking, not advisory",
+        "lvl": "MUST",
+        "surf": [
+          "CI",
+          "RELEASE"
+        ],
+        "on_fail": "BLOCK_RELEASE"
+      },
+      {
+        "id": "SP-POSTURE-003",
+        "desc": "Claims non-authoritative without authenticated receipts and evidence",
+        "lvl": "MUST",
+        "surf": [
+          "RUNTIME",
+          "GOVERNANCE"
+        ],
+        "on_fail": "DENY"
+      }
+    ],
+    "modes": [
+      {
+        "id": "MODE_HIGH_ASSURANCE",
+        "desc": "Default for release and shipping changes",
+        "cond": "Mandatory controls enforced; no discretionary bypass"
+      },
+      {
+        "id": "MODE_DEVELOPER",
+        "desc": "Local developer ergonomics only",
+        "cond": "May reduce local friction; cannot weaken CI or release gates"
+      }
+    ],
+    "invariants": [
+      {
+        "id": "SP-INV-001",
+        "desc": "No ambient authority; capability-gated OTP paths only",
+        "lvl": "MUST",
+        "surf": [
+          "RUNTIME"
+        ],
+        "on_fail": "DENY"
+      },
+      {
+        "id": "SP-INV-002",
+        "desc": "Unproven effects treated as non-existent; verifiable auth required",
+        "lvl": "MUST",
+        "surf": [
+          "RUNTIME",
+          "GOVERNANCE"
+        ],
+        "on_fail": "DENY"
+      },
+      {
+        "id": "SP-INV-003",
+        "desc": "Hashes plus selectors over raw payloads; Blake3 digest verification",
+        "lvl": "MUST",
+        "surf": [
+          "RUNTIME"
+        ],
+        "on_fail": "DENY"
+      },
+      {
+        "id": "SP-INV-004",
+        "desc": "Canonicalization and bounded decoding before trust decisions",
+        "lvl": "MUST",
+        "surf": [
+          "RUNTIME",
+          "CI"
+        ],
+        "on_fail": "DENY"
+      },
+      {
+        "id": "SP-INV-005",
+        "desc": "Delegation strict-subset across scope, budgets, stop predicates, tier",
+        "lvl": "MUST",
+        "surf": [
+          "RUNTIME",
+          "GOVERNANCE"
+        ],
+        "on_fail": "DENY"
+      },
+      {
+        "id": "SP-INV-006",
+        "desc": "Freshness enforcement with bounded TTL/skew and replay-resistant jti store; stale or replayed authority denied at Tier 2+",
+        "lvl": "MUST",
+        "surf": [
+          "RUNTIME",
+          "GOVERNANCE"
+        ],
+        "on_fail": "DENY"
+      }
+    ],
+    "identity": [
+      {
+        "id": "SP-ID-001",
+        "desc": "Authority-bearing identities self-certifying with crypto proof",
+        "lvl": "MUST",
+        "tier": 0,
+        "on_fail": "DENY"
+      },
+      {
+        "id": "SP-ID-002",
+        "desc": "Tier 2+ actuation fails closed on stale/unverifiable identity",
+        "lvl": "MUST",
+        "tier": 2,
+        "on_fail": "DENY"
+      }
+    ],
+    "tiers": [
+      {
+        "tier": 0,
+        "label": "Experimental",
+        "desc": "No side effects; informational queries, local-only ops"
+      },
+      {
+        "tier": 1,
+        "label": "Internal",
+        "desc": "Routine external messaging, low-sensitivity retrieval"
+      },
+      {
+        "tier": 2,
+        "label": "Production",
+        "desc": "Account changes, financial actions, sensitive data access"
+      },
+      {
+        "tier": 3,
+        "label": "Security-Critical",
+        "desc": "Irreversible/safety-impacting; sandbox + hard-fail firewall"
+      }
+    ],
+    "runtime_controls": [
+      {
+        "id": "SP-TIER-001",
+        "desc": "Tier mappings explicit and lossless at policy boundaries",
+        "lvl": "MUST",
+        "tier": 0,
+        "on_fail": "DENY"
+      },
+      {
+        "id": "SP-RUNTIME-001",
+        "desc": "Tier 3+ requires sandbox isolation and hard-fail context firewall",
+        "lvl": "MUST",
+        "tier": 3,
+        "on_fail": "TERMINATE"
+      },
+      {
+        "id": "SP-RUNTIME-002",
+        "desc": "Tier 2+ requires verified identity and stop-state freshness",
+        "lvl": "MUST",
+        "tier": 2,
+        "on_fail": "DENY"
+      },
+      {
+        "id": "SP-RUNTIME-003",
+        "desc": "Dual-lattice integrity and confidentiality gates on boundary emissions",
+        "lvl": "MUST",
+        "tier": 0,
+        "on_fail": "DENY"
+      },
+      {
+        "id": "SP-RUNTIME-004",
+        "desc": "Prompt-injection resilience with taint and classification propagation",
+        "lvl": "MUST",
+        "tier": 0,
+        "on_fail": "DENY"
+      }
+    ],
+    "crypto_controls": [
+      {
+        "id": "SP-CRYPTO-001",
+        "desc": "Tier2+ paths require policy-pinned algorithm set from crypto posture policy version",
+        "lvl": "MUST",
+        "tier": 2,
+        "on_fail": "DENY"
+      },
+      {
+        "id": "SP-CRYPTO-002",
+        "desc": "Startup cryptography probes must validate required primitives before enabling Tier2+ actions",
+        "lvl": "MUST",
+        "tier": 2,
+        "on_fail": "DENY"
+      },
+      {
+        "id": "SP-CRYPTO-003",
+        "desc": "KEM usage must comply with SP 800-227 guidance (key establishment only, no oracle leakage, context-bound KDF)",
+        "lvl": "MUST",
+        "tier": 2,
+        "on_fail": "DENY"
+      },
+      {
+        "id": "SP-CRYPTO-004",
+        "desc": "Cryptographic downgrade attempts on required suites fail closed and emit security audit event",
+        "lvl": "MUST",
+        "tier": 2,
+        "on_fail": "DENY"
+      },
+      {
+        "id": "SP-CRYPTO-005",
+        "desc": "No documentation or release claim may assert FIPS 140 validation without explicit module certificate evidence",
+        "lvl": "MUST",
+        "tier": 0,
+        "on_fail": "BLOCK_RELEASE"
+      }
+    ],
+    "release": [
+      {
+        "id": "SP-REL-001",
+        "desc": "Sigstore keyless signing via GitHub Actions OIDC; .sig and .pem",
+        "lvl": "MUST",
+        "surf": [
+          "RELEASE",
+          "CI"
+        ],
+        "on_fail": "BLOCK_RELEASE"
+      },
+      {
+        "id": "SP-REL-002",
+        "desc": "SLSA provenance generation and verification required",
+        "lvl": "MUST",
+        "surf": [
+          "RELEASE",
+          "CI"
+        ],
+        "on_fail": "BLOCK_RELEASE"
+      },
+      {
+        "id": "SP-REL-003",
+        "desc": "SBOM in SPDX and CycloneDX formats required",
+        "lvl": "MUST",
+        "surf": [
+          "RELEASE",
+          "CI"
+        ],
+        "on_fail": "BLOCK_RELEASE"
+      },
+      {
+        "id": "SP-REL-004",
+        "desc": "Identity-constrained verification with issuer/cert constraints",
+        "lvl": "MUST",
+        "surf": [
+          "RELEASE"
+        ],
+        "on_fail": "BLOCK_RELEASE"
+      }
+    ],
+    "gates": [
+      {
+        "id": "SP-GATE-CREDO",
+        "cmd": "mix credo --strict",
+        "on_fail": "BLOCK_RELEASE"
+      },
+      {
+        "id": "SP-GATE-DEPS-AUDIT",
+        "cmd": "mix deps.audit",
+        "on_fail": "BLOCK_RELEASE"
+      },
+      {
+        "id": "SP-GATE-HEX-AUDIT",
+        "cmd": "mix hex.audit",
+        "on_fail": "BLOCK_RELEASE"
+      },
+      {
+        "id": "SP-GATE-DIALYZER",
+        "cmd": "dialyzer",
+        "on_fail": "BLOCK_RELEASE"
+      },
+      {
+        "id": "SP-GATE-SECRETS",
+        "cmd": "gitleaks detect --no-git --redact --exit-code 1",
+        "on_fail": "BLOCK_RELEASE"
+      },
+      {
+        "id": "SP-GATE-POLICY-COVERAGE",
+        "cmd": "jq -e --slurpfile policy docs/security/security_policy.json '[$policy[0].security_policy | (.posture,.invariants,.identity,.runtime_controls,.crypto_controls,.release,.dep_policy,.secrets,.vuln_process) | .[].id] as $valid_gates | all(.security_checklist.sections[].checks[]; has(\"gate_id\") and has(\"test_id\") and has(\"evidence_artifact\") and (.gate_id as $g | $valid_gates | index($g) != null))' docs/security/security_checklist.json >/dev/null",
+        "on_fail": "BLOCK_RELEASE"
+      },
+      {
+        "id": "SP-GATE-WAIVER-NONWAIVABLE",
+        "cmd": "jq -e '(.waiver_policy.allowed_status_values // [\"ACTIVE\",\"REVOKED\",\"EXPIRED\"]) as $valid | (.waiver_policy.non_waivable_control_ids | length > 0) and all(.waivers[]; (.status as $s | $valid | index($s) != null)) and all(.waivers[]; if .status == \"ACTIVE\" then all((.waived_control_ids // [])[]; . as $w | (.waiver_policy.non_waivable_control_ids | index($w) | not)) else true end)' docs/security/waivers.json >/dev/null",
+        "on_fail": "BLOCK_RELEASE"
+      },
+      {
+        "id": "SP-GATE-EVIDENCE-EXISTS",
+        "cmd": "jq -r '.security_checklist.sections[].checks[].evidence_artifact' docs/security/security_checklist.json | while read f; do test -f \"$f\" || { echo \"MISSING: $f\"; exit 1; }; done",
+        "on_fail": "BLOCK_RELEASE"
+      },
+      {
+        "id": "SP-GATE-CRYPTO-VERSION-SYNC",
+        "cmd": "jq -e --slurpfile crypto docs/security/crypto_posture.json '.security_policy.crypto_policy_version == $crypto[0].crypto_posture.policy_version' docs/security/security_policy.json >/dev/null",
+        "on_fail": "BLOCK_RELEASE"
+      },
+      {
+        "id": "SP-GATE-TEST-COVERAGE",
+        "cmd": "mix test --cover && jq -e '.coverage >= 80' cover/coverage.json >/dev/null",
+        "on_fail": "BLOCK_RELEASE"
+      }
+    ],
+    "dep_policy": [
+      {
+        "id": "SP-DEP-001",
+        "desc": "No known Hex.pm advisories without mitigation or waiver",
+        "lvl": "MUST",
+        "surf": [
+          "CI",
+          "RELEASE"
+        ],
+        "on_fail": "BLOCK_RELEASE"
+      },
+      {
+        "id": "SP-DEP-002",
+        "desc": "Dep graph changes comply with license and banned-package policy",
+        "lvl": "MUST",
+        "surf": [
+          "CI",
+          "REPOSITORY"
+        ],
+        "on_fail": "BLOCK_RELEASE"
+      },
+      {
+        "id": "SP-DEP-003",
+        "desc": "Unexpected mix.lock drift is security-relevant event",
+        "lvl": "MUST",
+        "surf": [
+          "CI",
+          "REPOSITORY"
+        ],
+        "on_fail": "ESCALATE"
+      }
+    ],
+    "secrets": [
+      {
+        "id": "SP-SECRET-001",
+        "desc": "No plaintext secrets in repository",
+        "lvl": "MUST",
+        "surf": [
+          "REPOSITORY",
+          "CI"
+        ],
+        "on_fail": "BLOCK_RELEASE"
+      },
+      {
+        "id": "SP-SECRET-002",
+        "desc": "No secrets in logs, error surfaces, or release artifacts",
+        "lvl": "MUST",
+        "surf": [
+          "RUNTIME",
+          "RELEASE",
+          "CI"
+        ],
+        "on_fail": "BLOCK_RELEASE"
+      },
+      {
+        "id": "SP-SECRET-003",
+        "desc": "Runtime secrets from platform stores; CI from secret managers only",
+        "lvl": "MUST",
+        "surf": [
+          "RUNTIME",
+          "CI"
+        ],
+        "on_fail": "DENY"
+      }
+    ],
+    "in_memory": {
+      "desc": "NIF-managed key storage with Rust Zeroize; opaque handles only"
+    },
+    "vuln_process": [
+      {
+        "id": "SP-VULN-001",
+        "desc": "Security reports acknowledged within 48 hours",
+        "lvl": "MUST",
+        "on_fail": "ESCALATE"
+      },
+      {
+        "id": "SP-VULN-002",
+        "desc": "Severity handling per INCIDENT_RESPONSE containment targets",
+        "lvl": "MUST",
+        "on_fail": "ESCALATE"
+      },
+      {
+        "id": "SP-VULN-003",
+        "desc": "Coordinated disclosure via GitHub Security Advisories",
+        "lvl": "MUST",
+        "on_fail": "ESCALATE"
+      }
+    ],
+    "crypto": {
+      "hash": "Blake3",
+      "pqc": [
+        "ML-KEM-768",
+        "ML-DSA-65"
+      ],
+      "standards": [
+        "FIPS-203",
+        "FIPS-204",
+        "FIPS-205",
+        "SP-800-227"
+      ],
+      "watch": [
+        "FIPS-206",
+        "HQC"
+      ]
+    },
+    "freshness_policy": {
+      "token_ttl_s": 300,
+      "max_clock_skew_s": 60,
+      "jti_retention_s": 360,
+      "jti_retention_rule": "MUST be >= token_ttl_s + max_clock_skew_s",
+      "max_token_bytes": 8192,
+      "scope_hash_algorithm": "BLAKE3",
+      "required_claims": [
+        "iat",
+        "exp",
+        "jti",
+        "aud",
+        "scope_hash"
+      ],
+      "nonce_store": "dolt.unique_jti_per_subject",
+      "on_replay": "DENY_AND_ALERT"
+    },
+    "waiver_constraints": {
+      "non_waivable_controls": [
+        "SP-REL-001",
+        "SP-REL-002",
+        "SP-REL-003",
+        "SP-REL-004",
+        "SP-SECRET-001",
+        "SP-SECRET-002"
+      ],
+      "active_waiver_violation_action": "BLOCK_RELEASE"
+    }
+  }
+}

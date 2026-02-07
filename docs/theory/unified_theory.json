@@ -355,6 +355,216 @@
         "deterministic reducers",
         "risk-tiered gate strength"
       ]
+    },
+    "decision_fundamentals": {
+      "problem_statement": "A guardian must decide under uncertainty, adversaries, time pressure, and plural human values while preserving auditability and reversible control.",
+      "decision_order": [
+        "1) establish hard constraints and authority bounds",
+        "2) characterize uncertainty and adversarial pressure",
+        "3) generate reversible and irreversible options",
+        "4) compare options on multi-objective human value criteria",
+        "5) execute least-regret admissible path with explicit evidence",
+        "6) update beliefs and policy from outcomes"
+      ],
+      "source_concepts_25": [
+        {
+          "id": "SC-01",
+          "name": "Expected Utility Under Constraints",
+          "field": "decision-theory",
+          "summary": "Optimize expected value subject to hard safety and rights constraints."
+        },
+        {
+          "id": "SC-02",
+          "name": "Bounded Rationality",
+          "field": "behavioral-decision-theory",
+          "summary": "Choose tractable decisions under finite time and compute."
+        },
+        {
+          "id": "SC-03",
+          "name": "Satisficing",
+          "field": "decision-theory",
+          "summary": "Use threshold-based acceptability when full optimization is infeasible."
+        },
+        {
+          "id": "SC-04",
+          "name": "Value of Information",
+          "field": "decision-analysis",
+          "summary": "Estimate whether waiting or gathering evidence changes the best action."
+        },
+        {
+          "id": "SC-05",
+          "name": "Real Options and Option Value",
+          "field": "economics",
+          "summary": "Preserve flexibility and defer irreversible commitments when uncertainty is high."
+        },
+        {
+          "id": "SC-06",
+          "name": "Minimax Regret",
+          "field": "decision-theory",
+          "summary": "Prefer options with bounded worst-case hindsight regret."
+        },
+        {
+          "id": "SC-07",
+          "name": "Robust Worst-Case Analysis",
+          "field": "robust-control",
+          "summary": "Stress choices against adversarial or model-misspecified environments."
+        },
+        {
+          "id": "SC-08",
+          "name": "Multi-Criteria Decision Analysis",
+          "field": "operations-research",
+          "summary": "Trade off safety, autonomy, cost, fairness, and reliability explicitly."
+        },
+        {
+          "id": "SC-09",
+          "name": "Pareto Frontier Reasoning",
+          "field": "economics",
+          "summary": "Reject dominated options and expose non-dominated tradeoff sets."
+        },
+        {
+          "id": "SC-10",
+          "name": "Tail-Risk Sensitive Objectives",
+          "field": "risk-science",
+          "summary": "Weight low-probability high-harm outcomes more heavily."
+        },
+        {
+          "id": "SC-11",
+          "name": "Bayesian Belief Updating",
+          "field": "statistics",
+          "summary": "Revise beliefs with evidence using explicit priors and likelihoods."
+        },
+        {
+          "id": "SC-12",
+          "name": "Calibration",
+          "field": "forecasting-science",
+          "summary": "Align confidence estimates with observed frequencies over time."
+        },
+        {
+          "id": "SC-13",
+          "name": "Causal Inference",
+          "field": "causal-science",
+          "summary": "Separate intervention effects from correlation or confounding."
+        },
+        {
+          "id": "SC-14",
+          "name": "Counterfactual Analysis",
+          "field": "causal-science",
+          "summary": "Evaluate what would have happened under alternate actions."
+        },
+        {
+          "id": "SC-15",
+          "name": "Sequential Decision Under Partial Observability",
+          "field": "control-theory",
+          "summary": "Choose actions as new information arrives rather than one-shot optimization."
+        },
+        {
+          "id": "SC-16",
+          "name": "Feedback Control Stability",
+          "field": "control-engineering",
+          "summary": "Keep closed-loop behavior stable under perturbation and delay."
+        },
+        {
+          "id": "SC-17",
+          "name": "Safety Envelope Control",
+          "field": "safety-engineering",
+          "summary": "Constrain runtime behavior to validated safe operating regions."
+        },
+        {
+          "id": "SC-18",
+          "name": "Mechanism Design",
+          "field": "game-theory",
+          "summary": "Design rules so truthful and safe behavior is incentive-compatible."
+        },
+        {
+          "id": "SC-19",
+          "name": "Repeated Games and Reputation",
+          "field": "game-theory",
+          "summary": "Account for long-horizon strategic interaction and trust dynamics."
+        },
+        {
+          "id": "SC-20",
+          "name": "Signaling and Screening",
+          "field": "information-economics",
+          "summary": "Manage asymmetric information with challenge/response and verification."
+        },
+        {
+          "id": "SC-21",
+          "name": "Adversarial Threat Modeling",
+          "field": "security-science",
+          "summary": "Assume strategic opponents and model attacker payoff surfaces."
+        },
+        {
+          "id": "SC-22",
+          "name": "Distributive Fairness",
+          "field": "moral-philosophy",
+          "summary": "Avoid systematically shifting risk or burden onto weaker parties."
+        },
+        {
+          "id": "SC-23",
+          "name": "Rights and Deontic Constraints",
+          "field": "ethics-and-law",
+          "summary": "Treat some actions as prohibited regardless of utility gain."
+        },
+        {
+          "id": "SC-24",
+          "name": "Care Ethics and Vulnerability Weighting",
+          "field": "ethics",
+          "summary": "Increase duty of care for people under coercion, dependence, or decline."
+        },
+        {
+          "id": "SC-25",
+          "name": "Moral Uncertainty and Reflective Equilibrium",
+          "field": "moral-epistemology",
+          "summary": "Maintain revisable ethical commitments with explicit conflict resolution."
+        }
+      ],
+      "combined_concepts_5": [
+        {
+          "id": "CC-01",
+          "name": "Reversible Bounded Utility",
+          "synthesizes": ["SC-01", "SC-02", "SC-03", "SC-04", "SC-05", "SC-06"],
+          "core_rule": "Within hard safety constraints, maximize expected mission value while preferring reversible first moves and low-regret probes.",
+          "law_refs": ["LAW-09", "LAW-12", "LAW-18"],
+          "principle_refs": ["PRIN-049"]
+        },
+        {
+          "id": "CC-02",
+          "name": "Calibrated Causal Epistemics",
+          "synthesizes": ["SC-11", "SC-12", "SC-13", "SC-14", "SC-15"],
+          "core_rule": "Treat confidence as a measured variable, update from causal evidence, and adapt sequentially as facts arrive.",
+          "law_refs": ["LAW-01", "LAW-15", "LAW-19"],
+          "principle_refs": ["PRIN-050"]
+        },
+        {
+          "id": "CC-03",
+          "name": "Adversarial Incentive Robustness",
+          "synthesizes": ["SC-07", "SC-18", "SC-19", "SC-20", "SC-21"],
+          "core_rule": "Assume strategic optimization by attackers and counterparties; design policies that remain safe under manipulation.",
+          "law_refs": ["LAW-05", "LAW-09", "LAW-14", "LAW-17"],
+          "principle_refs": ["PRIN-051"]
+        },
+        {
+          "id": "CC-04",
+          "name": "Empathic Multi-Objective Governance",
+          "synthesizes": ["SC-08", "SC-09", "SC-10", "SC-22", "SC-23", "SC-24"],
+          "core_rule": "Optimize across safety, autonomy, dignity, fairness, and harm prevention with explicit protection for vulnerable humans.",
+          "law_refs": ["LAW-14", "LAW-18", "LAW-19"],
+          "principle_refs": ["PRIN-052"]
+        },
+        {
+          "id": "CC-05",
+          "name": "Deterministic Ethical Governance Under Conflict",
+          "synthesizes": ["SC-16", "SC-25", "SC-06", "SC-15", "SC-23"],
+          "core_rule": "When laws or values conflict, apply explicit deterministic meta-policy and preserve evidence for post-action refinement.",
+          "law_refs": ["LAW-13", "LAW-16", "LAW-19", "LAW-20"],
+          "principle_refs": ["PRIN-053"]
+        }
+      ],
+      "integration_notes": [
+        "These bundles are decision primitives, not rigid prescriptions; they bound reasoning while preserving contextual judgment.",
+        "Ethical quality is treated as measurable process quality: traceability, calibration, reversibility, and vulnerability protection.",
+        "Any future law/principle update should maintain references from combined concepts to enforceable controls."
+      ]
     }
   }
 }

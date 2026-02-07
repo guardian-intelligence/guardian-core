@@ -1,0 +1,256 @@
+{
+  "orchestration_runbook": {
+    "status": "ACTIVE",
+    "components": [
+      {"name": "Broadway Event Pipeline", "desc": "Ingests/distributes events from adapters to wave processing", "metrics_prefix": "guardian_broadway_*"},
+      {"name": "Wave GenServer", "desc": "Supervised process managing wave lifecycle", "metrics_prefix": "guardian_wave_*"},
+      {"name": "Outbox Dispatcher", "desc": "GenStage dispatcher for outbound messages/side effects", "metrics_prefix": "guardian_outbox_*"},
+      {"name": "Adapter Workers", "desc": "Task.Supervisor workers for WhatsApp, voice integrations", "metrics_prefix": "guardian_adapter_*"},
+      {"name": "WhatsApp Baileys Port", "desc": "Node.js port running Baileys for WhatsApp protocol", "metrics_prefix": "guardian_whatsapp_*"},
+      {"name": "Dolt Database", "desc": "Versioned SQL database with commit history", "metrics_prefix": "guardian_dolt_*"}
+    ],
+    "invariants": [
+      "No unsigned facts admitted",
+      "Freshness enforcement on leases mandatory",
+      "Fail-closed under trust ambiguity",
+      "Crypto ops follow CRYPTOGRAPHY_POSTURE"
+    ],
+    "normal_params": [
+      {"metric": "Event claim latency p99", "target": "<100ms", "warning": ">100ms 5min", "critical": ">500ms 5min"},
+      {"metric": "Wave completion p95 Class 1", "target": "<30s", "warning": ">30s", "critical": ">60s"},
+      {"metric": "Wave completion p95 Class 2", "target": "<5min", "warning": ">5min", "critical": ">10min"},
+      {"metric": "Outbox dispatch latency p99", "target": "<500ms", "warning": ">500ms 5min", "critical": ">2s 5min"},
+      {"metric": "Active wave count", "target": "<100", "warning": ">100", "critical": ">200"},
+      {"metric": "DLQ depth", "target": "0", "warning": ">0", "critical": ">10"}
+    ],
+    "alerts": [
+      {
+        "id": "RUNBOOK-ALERT-01",
+        "name": "EventPipelineStalled",
+        "sev": "Critical",
+        "symptoms": [
+          "No events processed >30s",
+          "Broadway processor count drops to zero",
+          "Upstream adapters report backpressure/timeout"
+        ],
+        "investigation": [
+          "Broadway.producer_names(Guardian.EventPipeline); Broadway.all_running()",
+          "dolt status; dolt sql -q \"SELECT 1\"",
+          "Supervisor.which_children(Guardian.Supervisor); Process.whereis(Guardian.EventPipeline) |> Process.info(:status)",
+          "journalctl -u guardian-kernel --since \"10 minutes ago\" | grep -i \"broadway\\|pipeline\\|crash\""
+        ],
+        "resolution": [
+          "Verify supervisor auto-restarted Broadway",
+          "If Dolt unresponsive, see RUNBOOK-ALERT-07",
+          "If persistent, RUNBOOK-RECOVERY-01"
+        ],
+        "escalation": "Immediate"
+      },
+      {
+        "id": "RUNBOOK-ALERT-02",
+        "name": "WaveBacklogGrowing",
+        "sev": "Warning",
+        "symptoms": [
+          "Active wave count steadily increasing",
+          "Wave completion latency increasing",
+          "Container runner resource-constrained"
+        ],
+        "investigation": [
+          "Guardian.WaveManager.status(); Guardian.WaveManager.active_count()",
+          "docker ps --format \"table {{.Names}}\\t{{.Status}}\\t{{.RunningFor}}\"",
+          "top -bn1 | head -20; df -h; free -m",
+          "Guardian.WaveManager.waves_older_than(:timer.minutes(10))"
+        ],
+        "resolution": [
+          "Kill stuck containers exceeding timeout",
+          "Increase container resource limits if headroom exists",
+          "Check external service health (RUNBOOK-ALERT-04)"
+        ],
+        "escalation": "Within 1 hour if >200 waves or >10min latency"
+      },
+      {
+        "id": "RUNBOOK-ALERT-03",
+        "name": "HighDLQCount",
+        "sev": "Warning",
+        "symptoms": [
+          "DLQ depth >0",
+          "Specific event types consistently failing",
+          "Possible data corruption or schema mismatch"
+        ],
+        "investigation": [
+          "Guardian.DLQ.list(limit: 20); Guardian.DLQ.inspect_latest()",
+          "Guardian.DLQ.failure_summary()",
+          "Application.get_env(:guardian, :broadway_max_attempts)",
+          "journalctl -u guardian-kernel --since \"1 hour ago\" | grep -i \"dlq\\|dead.letter\\|max_attempts\""
+        ],
+        "resolution": [
+          "Inspect failed events for root cause",
+          "Fix underlying issue (schema, adapter, service)",
+          "Guardian.DLQ.replay_all() after fix"
+        ],
+        "escalation": "Within 1 day; immediate if sustained growth"
+      },
+      {
+        "id": "RUNBOOK-ALERT-04",
+        "name": "AdapterFailureSpike",
+        "sev": "Warning",
+        "symptoms": [
+          "Adapter error count increasing rapidly",
+          "Messages failing to send/receive",
+          "External API returning errors/timeouts"
+        ],
+        "investigation": [
+          "Guardian.AdapterManager.health_check(:whatsapp); Guardian.AdapterManager.health_check(:voice)",
+          "Guardian.WhatsApp.Port.status(); curl -s https://status.twilio.com/api/v2/status.json | jq '.status'",
+          "Guardian.Secrets.validate_all()",
+          "Guardian.RateLimiter.status(:whatsapp)"
+        ],
+        "resolution": [
+          "If external service down, wait + enable circuit breaker",
+          "If API keys expired, rotate via SECRETS_MANAGEMENT",
+          "If rate-limited, reduce send rate and investigate burst"
+        ],
+        "escalation": "Within 1 hour if affecting delivery"
+      },
+      {
+        "id": "RUNBOOK-ALERT-05",
+        "name": "NIFCrash",
+        "sev": "Critical",
+        "symptoms": [
+          "BEAM process restarted unexpectedly",
+          "erl_crash.dump generated",
+          "Crypto operations failing after restart"
+        ],
+        "investigation": [
+          "ls -la /var/log/guardian/erl_crash.dump; head -50 /var/log/guardian/erl_crash.dump",
+          ":blake3_nif.info(); :pqc_nif.info()",
+          "Guardian.Crypto.self_test()",
+          "mix deps | grep -E \"blake3|pqc|rustler\""
+        ],
+        "resolution": [
+          "Rebuild NIF via RUNBOOK-RECOVERY-04",
+          "Isolate fuzz-triggered crash inputs, report upstream",
+          "Verify all crypto self-tests pass post-recovery"
+        ],
+        "escalation": "Immediate; may indicate integrity compromise"
+      },
+      {
+        "id": "RUNBOOK-ALERT-06",
+        "name": "WhatsAppPortCrash",
+        "sev": "Warning",
+        "symptoms": [
+          "WhatsApp messages not sending/receiving",
+          "Port process not found in OS process list",
+          "Supervisor restart log entries"
+        ],
+        "investigation": [
+          "Guardian.WhatsApp.Port.status(); Process.whereis(Guardian.WhatsApp.Port) |> Process.info()",
+          "pgrep -f \"baileys\" || echo \"Baileys port not running\"",
+          "ls -la /var/lib/guardian/whatsapp-auth/",
+          "Supervisor.count_children(Guardian.WhatsApp.Supervisor)"
+        ],
+        "resolution": [
+          "Verify supervisor auto-restarted port",
+          "If auth corrupted, RUNBOOK-RECOVERY-03",
+          "Check Node.js/Baileys version compatibility"
+        ],
+        "escalation": "Within 1 hour if auto-restart fails"
+      },
+      {
+        "id": "RUNBOOK-ALERT-07",
+        "name": "DoltConnectionLost",
+        "sev": "Critical",
+        "symptoms": [
+          "Database queries timing out",
+          "Ecto pool checkout failures in logs",
+          "Wave processing stalled on persistence failure"
+        ],
+        "investigation": [
+          "pgrep -f \"dolt sql-server\" || echo \"Dolt not running\"; systemctl status dolt",
+          "df -h /var/lib/guardian/dolt/",
+          "Ecto.Adapters.SQL.query(Guardian.Repo, \"SELECT 1\"); DBConnection.get_connection_metrics(Guardian.Repo)",
+          "dolt sql -q \"SHOW PROCESSLIST\""
+        ],
+        "resolution": [
+          "systemctl restart dolt",
+          "If disk full: dolt gc",
+          "If pool exhausted, check leaks + restart service",
+          "If data corrupted, RUNBOOK-RECOVERY-02"
+        ],
+        "escalation": "Immediate; all persistence blocked"
+      }
+    ],
+    "diagnostics": {
+      "quick_health": [
+        "mix guardian.health",
+        "mix guardian.wave_status",
+        "mix guardian.outbox_status"
+      ],
+      "dolt": [
+        "dolt status",
+        "dolt log --oneline -10",
+        "dolt diff HEAD~1"
+      ],
+      "system": [
+        "systemctl status guardian-kernel",
+        "journalctl -u guardian-kernel --since \"1 hour ago\""
+      ],
+      "beam": [
+        ":observer_cli.start()",
+        ":recon.proc_count(:memory, 10)",
+        "Process.list() |> length()"
+      ]
+    },
+    "recovery": [
+      {
+        "id": "RUNBOOK-RECOVERY-01",
+        "name": "Service Restart",
+        "steps": [
+          "systemctl stop guardian-kernel",
+          "dolt status; dolt log --oneline -5",
+          "systemctl start guardian-kernel",
+          "systemctl status guardian-kernel; journalctl -u guardian-kernel --since \"1 minute ago\"",
+          "Guardian.WaveManager.status(); Guardian.WaveManager.active_count()"
+        ]
+      },
+      {
+        "id": "RUNBOOK-RECOVERY-02",
+        "name": "Dolt Rollback",
+        "steps": [
+          "systemctl stop guardian-kernel",
+          "dolt log --oneline -20",
+          "dolt checkout <commit-hash>",
+          "dolt status; dolt sql -q \"SELECT COUNT(*) FROM events\"",
+          "systemctl start guardian-kernel"
+        ]
+      },
+      {
+        "id": "RUNBOOK-RECOVERY-03",
+        "name": "WhatsApp Re-Authentication",
+        "steps": [
+          "Guardian.WhatsApp.Supervisor.stop()",
+          "rm -rf /var/lib/guardian/whatsapp-auth/session-*",
+          "Guardian.WhatsApp.Auth.start_qr_flow()",
+          "Scan QR code in terminal/web UI",
+          "Guardian.WhatsApp.send_test_message()"
+        ]
+      },
+      {
+        "id": "RUNBOOK-RECOVERY-04",
+        "name": "NIF Rebuild",
+        "steps": [
+          "systemctl stop guardian-kernel",
+          "cd /opt/guardian; mix deps.compile blake3_nif --force; mix deps.compile pqc_nif --force",
+          "iex -S mix; Guardian.Crypto.self_test()",
+          "systemctl start guardian-kernel"
+        ]
+      }
+    ],
+    "escalation": [
+      {"sev": "Critical", "response_time": "Immediate", "action": "Drop current work, investigate and resolve"},
+      {"sev": "High", "response_time": "Within 1 hour", "action": "Investigate at next available moment"},
+      {"sev": "Medium", "response_time": "Within 1 day", "action": "Schedule in daily workflow"},
+      {"sev": "Low", "response_time": "Next maintenance window", "action": "Add to backlog for batch resolution"}
+    ]
+  }
+}

@@ -1,0 +1,892 @@
+{
+  "schema": "gpre.theory.expansion_report.v1",
+  "schema_version": "1.0.0",
+  "kind": "gpre.theory_expansion_report",
+  "meta": {
+    "generated_at_utc": "2026-02-07T05:30:00Z",
+    "model_id": "gpt-5-codex",
+    "source_paths": [
+      "docs/theory/unified_theory.json",
+      "docs/theory/laws.json",
+      "docs/theory/principles.json",
+      "docs/theory/defects.json",
+      "docs/theory/agent_native_architecture.json",
+      "docs/theory/guardian_preparedness/scenarios.json",
+      "docs/prompts/instruction.alien_engineering_protocol.v1.json",
+      ".claude/skills/modes-of-reasoning/assets/selector.json"
+    ]
+  },
+  "payload": {
+    "concept_harvest_40": [
+      {
+        "id": "HC-001",
+        "field": "security-engineering",
+        "concept": "Out-of-Band Integrity Attestation",
+        "summary": "Treat runtime self-reports as non-authoritative for high-impact trust decisions; require independent attestors.",
+        "current_overlap": ["LAW-10", "LAW-16", "MECH-NAMESPACE-IDENTITY"],
+        "gap_addressed": "Closes self-trust blind spot in compromised-host scenarios such as GSS-021."
+      },
+      {
+        "id": "HC-002",
+        "field": "applied-cryptography",
+        "concept": "Threshold Authorization",
+        "summary": "Require m-of-n independent approvals for irreversible or high-blast-radius policy mutations.",
+        "current_overlap": ["LAW-05", "PRIN-042", "MECH-CAPABILITY-TOKENS"],
+        "gap_addressed": "Reduces single-point compromise and coerced single-principal actions (GSS-023)."
+      },
+      {
+        "id": "HC-003",
+        "field": "distributed-systems",
+        "concept": "Byzantine Quorum Verification",
+        "summary": "Accept critical state only when corroborated by mutually independent witnesses with fault tolerance.",
+        "current_overlap": ["LAW-14", "LAW-16", "MECH-AUDIT-LINEAGE"],
+        "gap_addressed": "Improves trust decisions under adversarial uncertainty and spoofing."
+      },
+      {
+        "id": "HC-004",
+        "field": "software-supply-chain-security",
+        "concept": "Hermetic Build Provenance",
+        "summary": "Track artifact lineage from source to deploy with signed attestations and reproducible build constraints.",
+        "current_overlap": ["LAW-17", "LAW-20", "PRIN-031"],
+        "gap_addressed": "Mitigates malicious dependency introduction and silent semantic drift (GSS-021)."
+      },
+      {
+        "id": "HC-005",
+        "field": "control-theory",
+        "concept": "Control Barrier Functions",
+        "summary": "Encode hard safety constraints as runtime barrier predicates that cannot be crossed by optimization pressure.",
+        "current_overlap": ["LAW-09", "LAW-12", "PRIN-036"],
+        "gap_addressed": "Prevents optimization from violating safety envelopes under urgency."
+      },
+      {
+        "id": "HC-006",
+        "field": "reliability-engineering",
+        "concept": "Circuit Breakers with Hysteresis",
+        "summary": "Trip high-risk paths under repeated instability, then require explicit cool-down evidence before re-enable.",
+        "current_overlap": ["LAW-11", "LAW-12", "PRIN-018"],
+        "gap_addressed": "Reduces retry storms and oscillatory failures in crisis periods."
+      },
+      {
+        "id": "HC-007",
+        "field": "resilience-engineering",
+        "concept": "Graceful Degradation Tiers",
+        "summary": "Define deterministic degraded modes that preserve safeguards while reducing capability surface.",
+        "current_overlap": ["PRIN-029", "PRIN-046", "LAW-09"],
+        "gap_addressed": "Closes unsafe-fallback gap when policy or infra dependencies fail (GSS-012)."
+      },
+      {
+        "id": "HC-008",
+        "field": "safety-engineering",
+        "concept": "Reversible-First Emergency Playbooks",
+        "summary": "Mandate sequence patterns that prefer reversible probes before irreversible commitments during emergencies.",
+        "current_overlap": ["LAW-18", "PRIN-049", "PRIN-047"],
+        "gap_addressed": "Improves decisions under sparse evidence and time pressure (GSS-001, GSS-006)."
+      },
+      {
+        "id": "HC-009",
+        "field": "game-theory",
+        "concept": "Mechanism Design for Truthful Signaling",
+        "summary": "Structure policies so honest reporting and compliant behavior dominate strategic misreporting.",
+        "current_overlap": ["PRIN-051", "LAW-14", "LAW-17"],
+        "gap_addressed": "Hardens against strategic exploitation of policy loopholes."
+      },
+      {
+        "id": "HC-010",
+        "field": "information-economics",
+        "concept": "Costly Signal Gating",
+        "summary": "Use challenge designs where adversaries pay higher costs than legitimate actors to produce convincing claims.",
+        "current_overlap": ["LAW-14", "PRIN-051", "MECH-NAMESPACE-IDENTITY"],
+        "gap_addressed": "Improves anti-spoofing and anti-coercion confidence calibration (GSS-002, GSS-003)."
+      },
+      {
+        "id": "HC-011",
+        "field": "security-economics",
+        "concept": "Adversarial Cost Surface Modeling",
+        "summary": "Model attacker ROI and shift system economics to make exploitation unattractive.",
+        "current_overlap": ["LAW-09", "PRIN-025", "PRIN-051"],
+        "gap_addressed": "Addresses Goodhart-by-adversary where attackers optimize against visible policy rules."
+      },
+      {
+        "id": "HC-012",
+        "field": "security-science",
+        "concept": "Continuous Red-Team Game Loops",
+        "summary": "Treat attacker-defender interaction as repeated game and refresh defenses from observed strategy adaptation.",
+        "current_overlap": ["LAW-19", "PRIN-048", "PRIN-051"],
+        "gap_addressed": "Improves adaptation quality under evolving attacker tactics."
+      },
+      {
+        "id": "HC-013",
+        "field": "clinical-psychology",
+        "concept": "Trauma-Informed Triage",
+        "summary": "Bias communication and sequencing toward stabilization, consent, and reduced cognitive overload in crises.",
+        "current_overlap": ["PRIN-052", "PRIN-030", "PH-101"],
+        "gap_addressed": "Reduces harm from technically correct but psychologically damaging interactions."
+      },
+      {
+        "id": "HC-014",
+        "field": "disability-rights-law",
+        "concept": "Supported Decision-Making",
+        "summary": "Replace binary capable/incapable assumptions with assistive ladders that preserve autonomy while adding safeguards.",
+        "current_overlap": ["LAW-14", "PRIN-052", "PH-104"],
+        "gap_addressed": "Closes autonomy-vs-protection gap for cognitive decline and dependent-care scenarios (GSS-014, GSS-016)."
+      },
+      {
+        "id": "HC-015",
+        "field": "bioethics",
+        "concept": "Capacity-Sensitive Consent Renewal",
+        "summary": "Trigger renewed consent and confirmation when contextual signs indicate reduced decisional capacity.",
+        "current_overlap": ["LAW-14", "PRIN-042", "PRIN-053"],
+        "gap_addressed": "Prevents stale or manipulated consent from authorizing harmful actions (GSS-023)."
+      },
+      {
+        "id": "HC-016",
+        "field": "care-ethics",
+        "concept": "Dignity-Preserving Minimal Intrusion",
+        "summary": "Constrain interventions to the least intrusive action that still satisfies safety obligations.",
+        "current_overlap": ["PRIN-052", "LAW-18", "PH-110"],
+        "gap_addressed": "Addresses paternalism risk while preserving safety in vulnerable-user contexts."
+      },
+      {
+        "id": "HC-017",
+        "field": "constitutional-theory",
+        "concept": "Amendable Constitutional Core",
+        "summary": "Define non-negotiable constraints with explicit amendment supermajority and evidence requirements.",
+        "current_overlap": ["LAW-13", "LAW-20", "PRIN-029"],
+        "gap_addressed": "Prevents ad hoc erosion of foundational safeguards under pressure."
+      },
+      {
+        "id": "HC-018",
+        "field": "behavioral-economics",
+        "concept": "Cooling-Off for Irreversible Commitments",
+        "summary": "Insert time-delayed confirmation windows for high-impact policy changes to reduce impulse and manipulation effects.",
+        "current_overlap": ["PRIN-049", "PRIN-053", "LAW-18"],
+        "gap_addressed": "Mitigates coercion and panic-induced misconfiguration by authenticated principals (GSS-023)."
+      },
+      {
+        "id": "HC-019",
+        "field": "governance-design",
+        "concept": "Dual-Control with Conflict Separation",
+        "summary": "Require independently situated reviewers for high-impact changes and block approvals with role conflict.",
+        "current_overlap": ["LAW-05", "LAW-13", "PRIN-010"],
+        "gap_addressed": "Reduces insider abuse and single-actor failure modes in policy governance."
+      },
+      {
+        "id": "HC-020",
+        "field": "public-policy",
+        "concept": "Sunset and Reauthorization",
+        "summary": "Expire emergency powers and exceptional policies automatically unless re-justified with fresh evidence.",
+        "current_overlap": ["LAW-19", "LAW-20", "PRIN-024"],
+        "gap_addressed": "Prevents emergency exceptions from becoming silent permanent authority expansion."
+      },
+      {
+        "id": "HC-021",
+        "field": "applied-cryptography",
+        "concept": "Forward-Secure Hash Chains",
+        "summary": "Maintain evidence chains where compromise of current key cannot rewrite prior authenticated history.",
+        "current_overlap": ["LAW-16", "PRIN-026", "MECH-AUDIT-LINEAGE"],
+        "gap_addressed": "Hardens audit records against retroactive tampering (GSS-024)."
+      },
+      {
+        "id": "HC-022",
+        "field": "digital-forensics",
+        "concept": "Merkleized Evidence Bundles",
+        "summary": "Store evidence as Merkle-indexed bundles enabling selective disclosure with integrity-preserving proofs.",
+        "current_overlap": ["LAW-02", "LAW-16", "PRIN-003"],
+        "gap_addressed": "Improves verifiability with minimal disclosure in legal and privacy-sensitive contexts."
+      },
+      {
+        "id": "HC-023",
+        "field": "distributed-systems",
+        "concept": "Independent Witness Logs",
+        "summary": "Replicate critical audit checkpoints into independently administered append-only stores.",
+        "current_overlap": ["LAW-16", "INV-06", "PRIN-026"],
+        "gap_addressed": "Provides survivability when primary evidence store is corrupted or captured (GSS-024)."
+      },
+      {
+        "id": "HC-024",
+        "field": "information-theory",
+        "concept": "Corruption-Tolerant Evidence Reconstruction",
+        "summary": "Use redundant coding and parity checkpoints to recover partial history after integrity chain breaks.",
+        "current_overlap": ["LAW-03", "LAW-20", "PRIN-006"],
+        "gap_addressed": "Maintains continuity of learning and compliance after storage faults or targeted corruption."
+      },
+      {
+        "id": "HC-025",
+        "field": "statistics",
+        "concept": "Sequential Change-Point Detection",
+        "summary": "Detect gradual behavioral drift using online tests over decision distributions and explanation semantics.",
+        "current_overlap": ["PRIN-039", "PRIN-041", "LAW-19"],
+        "gap_addressed": "Closes slow-poisoning blind spot where no single update exceeds thresholds (GSS-022)."
+      },
+      {
+        "id": "HC-026",
+        "field": "causal-inference",
+        "concept": "Intervention-Labeled Learning",
+        "summary": "Distinguish policy effects from background shifts by tagging and evaluating deliberate interventions.",
+        "current_overlap": ["PRIN-050", "LAW-19", "MECH-PROFILE-PROPOSALS"],
+        "gap_addressed": "Prevents spurious attribution in adaptation loops."
+      },
+      {
+        "id": "HC-027",
+        "field": "decision-analysis",
+        "concept": "Counterfactual Regret Decomposition",
+        "summary": "Decompose regrets by decision stage and information availability to isolate controllable failure sources.",
+        "current_overlap": ["PRIN-049", "PRIN-048", "LAW-01"],
+        "gap_addressed": "Improves recurrence reduction quality by separating policy defects from data scarcity."
+      },
+      {
+        "id": "HC-028",
+        "field": "reinforcement-learning-safety",
+        "concept": "Safe Exploration Budgets",
+        "summary": "Constrain adaptation trials with explicit horizon, rollback triggers, and blast-radius caps.",
+        "current_overlap": ["LAW-13", "PRIN-023", "PRIN-024"],
+        "gap_addressed": "Prevents unsafe adaptation during active crises and high-risk windows."
+      },
+      {
+        "id": "HC-029",
+        "field": "formal-logic",
+        "concept": "Deontic Conflict Algebra",
+        "summary": "Represent normative conflicts as typed obligations, prohibitions, and permissions with deterministic reduction rules.",
+        "current_overlap": ["PRIN-053", "LAW-13", "LAW-20"],
+        "gap_addressed": "Addresses unresolved law collisions in edge cases (GSS-025)."
+      },
+      {
+        "id": "HC-030",
+        "field": "legal-theory",
+        "concept": "Lexicographic Precedence with Proof Obligations",
+        "summary": "Apply explicit precedence ordering and require proof artifacts for each overridden norm.",
+        "current_overlap": ["LAW-16", "LAW-18", "PRIN-030"],
+        "gap_addressed": "Prevents arbitrary conflict resolution and hidden policy drift."
+      },
+      {
+        "id": "HC-031",
+        "field": "jurisprudence",
+        "concept": "Case Analog Constraints",
+        "summary": "Constrain decisions by similarity to precedent cases while requiring explicit justification for deviations.",
+        "current_overlap": ["LAW-08", "PRIN-032", "PRIN-053"],
+        "gap_addressed": "Improves consistency and replay-compatibility across rare conflict scenarios."
+      },
+      {
+        "id": "HC-032",
+        "field": "administrative-law",
+        "concept": "Appeal and Override Escrow",
+        "summary": "Allow rapid temporary overrides with mandatory post-hoc review and reversible escrowed effects.",
+        "current_overlap": ["LAW-18", "PRIN-047", "PRIN-042"],
+        "gap_addressed": "Balances urgent action with legitimacy and accountability."
+      },
+      {
+        "id": "HC-033",
+        "field": "organizational-psychology",
+        "concept": "Preoccupation with Failure",
+        "summary": "Institutionalize near-miss capture and weak-signal escalation before incidents become high-impact failures.",
+        "current_overlap": ["PRIN-048", "LAW-19", "PRIN-041"],
+        "gap_addressed": "Reduces latent defect accumulation and surprise failures."
+      },
+      {
+        "id": "HC-034",
+        "field": "emergency-management",
+        "concept": "Incident Command Role Clarity",
+        "summary": "Assign explicit responder roles and escalation authority under crisis to reduce coordination failures.",
+        "current_overlap": ["LAW-01", "LAW-11", "PRIN-030"],
+        "gap_addressed": "Improves high-pressure execution consistency for urgent scenarios."
+      },
+      {
+        "id": "HC-035",
+        "field": "reliability-engineering",
+        "concept": "Blameless Postmortem with Binding Actions",
+        "summary": "Pair non-punitive analysis with enforceable remediation commitments and verification deadlines.",
+        "current_overlap": ["PRIN-048", "LAW-19", "PRIN-032"],
+        "gap_addressed": "Ensures learning loops produce measurable hardening, not narrative-only retrospectives."
+      },
+      {
+        "id": "HC-036",
+        "field": "human-factors",
+        "concept": "Cognitive Load-Aware Explanations",
+        "summary": "Tailor explanation granularity to urgency and user state while preserving minimum accountability fields.",
+        "current_overlap": ["PRIN-030", "PRIN-052", "PH-101"],
+        "gap_addressed": "Prevents explanation overload that can degrade decision quality in emergencies."
+      },
+      {
+        "id": "HC-037",
+        "field": "operations-research",
+        "concept": "Value-of-Information Stop Rules",
+        "summary": "Stop evidence gathering once expected decision improvement falls below urgency-adjusted threshold.",
+        "current_overlap": ["PRIN-037", "PRIN-049", "LAW-12"],
+        "gap_addressed": "Reduces costly over-deliberation when action urgency dominates."
+      },
+      {
+        "id": "HC-038",
+        "field": "queueing-theory",
+        "concept": "Risk-Weighted Queue Discipline",
+        "summary": "Prioritize queue service by risk and reversibility rather than arrival order alone.",
+        "current_overlap": ["LAW-09", "PRIN-027", "PRIN-018"],
+        "gap_addressed": "Prevents low-risk noise from starving urgent high-risk tasks."
+      },
+      {
+        "id": "HC-039",
+        "field": "real-time-systems",
+        "concept": "Minimax Deadline Scheduling",
+        "summary": "Choose scheduling policies that cap worst-case lateness for safety-critical decision windows.",
+        "current_overlap": ["LAW-12", "PRIN-017", "PRIN-027"],
+        "gap_addressed": "Improves predictability under bursty emergency demand."
+      },
+      {
+        "id": "HC-040",
+        "field": "measurement-science",
+        "concept": "Pareto Guardbands with Countermetric Pairing",
+        "summary": "Set optimization guardbands and pair each KPI with anti-metric and oversight channel.",
+        "current_overlap": ["PRIN-025", "LAW-19", "AEP_07"],
+        "gap_addressed": "Hardens adaptation against Goodhart drift and one-dimensional metric gaming."
+      }
+    ],
+    "synthesis_families_10": [
+      {
+        "id": "SF-01",
+        "name": "Independent Integrity and Attestation",
+        "member_concepts": ["HC-001", "HC-002", "HC-003", "HC-004"],
+        "unifying_claim": "High-impact trust decisions should depend on independent integrity witnesses, not single-runtime self-assertions.",
+        "tradeoffs": [
+          "Higher verification latency for critical actions.",
+          "Additional operational complexity in key and witness management."
+        ],
+        "relevant_existing_refs": ["LAW-05", "LAW-10", "LAW-16", "PRIN-043", "PRIN-044", "MECH-CAPABILITY-TOKENS"]
+      },
+      {
+        "id": "SF-02",
+        "name": "Safety Envelope Dynamics",
+        "member_concepts": ["HC-005", "HC-006", "HC-007", "HC-008"],
+        "unifying_claim": "Runtime behavior needs explicit dynamic safety envelopes that degrade capability before safeguards.",
+        "tradeoffs": [
+          "Can reduce throughput and user-perceived responsiveness.",
+          "Requires accurate boundary tuning to avoid false lockouts."
+        ],
+        "relevant_existing_refs": ["LAW-09", "LAW-11", "LAW-12", "LAW-18", "PRIN-046", "MECH-WAVE-FSM"]
+      },
+      {
+        "id": "SF-03",
+        "name": "Adversarial Incentive Robustness",
+        "member_concepts": ["HC-009", "HC-010", "HC-011", "HC-012"],
+        "unifying_claim": "Security posture improves when policy design assumes strategic optimization by adversaries and counterparties.",
+        "tradeoffs": [
+          "Stronger checks can increase user friction.",
+          "Threat-model maintenance cost rises with ecosystem complexity."
+        ],
+        "relevant_existing_refs": ["LAW-14", "LAW-17", "PRIN-051", "PRIN-025", "MECH-NAMESPACE-IDENTITY"]
+      },
+      {
+        "id": "SF-04",
+        "name": "Vulnerability-Centered Human Safeguards",
+        "member_concepts": ["HC-013", "HC-014", "HC-015", "HC-016"],
+        "unifying_claim": "Human protection quality increases when autonomy, dignity, and vulnerability are modeled as first-class decision variables.",
+        "tradeoffs": [
+          "Requires richer contextual assessment and explanation payloads.",
+          "Risk of overprotective paternalism if guardrails are not balanced."
+        ],
+        "relevant_existing_refs": ["LAW-14", "LAW-18", "PRIN-052", "PRIN-030", "PH-101", "PH-104"]
+      },
+      {
+        "id": "SF-05",
+        "name": "Constitutional Governance Controls",
+        "member_concepts": ["HC-017", "HC-018", "HC-019", "HC-020"],
+        "unifying_claim": "Policy mutation safety requires constitutional friction, separation of duties, and automatic expiry of exceptional authority.",
+        "tradeoffs": [
+          "Slower emergency adaptation if exception paths are underspecified.",
+          "Added governance overhead for low-risk changes."
+        ],
+        "relevant_existing_refs": ["LAW-13", "LAW-19", "LAW-20", "PRIN-024", "PRIN-053", "MECH-PROFILE-PROPOSALS"]
+      },
+      {
+        "id": "SF-06",
+        "name": "Evidence Continuity and Forensic Survivability",
+        "member_concepts": ["HC-021", "HC-022", "HC-023", "HC-024"],
+        "unifying_claim": "Audit trust requires tamper-evident, recoverable, and independently witnessable evidence chains.",
+        "tradeoffs": [
+          "Storage and replication overhead.",
+          "Higher complexity for retention, privacy, and disclosure workflows."
+        ],
+        "relevant_existing_refs": ["LAW-03", "LAW-16", "PRIN-026", "INV-06", "MECH-AUDIT-LINEAGE"]
+      },
+      {
+        "id": "SF-07",
+        "name": "Drift-Aware Learning Under Uncertainty",
+        "member_concepts": ["HC-025", "HC-026", "HC-027", "HC-028"],
+        "unifying_claim": "Safe adaptation requires explicit drift detection, causal attribution, and bounded exploration policies.",
+        "tradeoffs": [
+          "More instrumentation and experimentation overhead.",
+          "Potentially slower policy iteration speed."
+        ],
+        "relevant_existing_refs": ["LAW-13", "LAW-19", "PRIN-050", "PRIN-023", "PRIN-048", "MECH-PROFILE-PROPOSALS"]
+      },
+      {
+        "id": "SF-08",
+        "name": "Deterministic Norm Conflict Resolution",
+        "member_concepts": ["HC-029", "HC-030", "HC-031", "HC-032"],
+        "unifying_claim": "Normative conflicts should resolve through deterministic, auditable rules that preserve reversibility and appeals.",
+        "tradeoffs": [
+          "Formal rule design can underfit rare edge cases.",
+          "Appeal pathways can increase operational cycle time."
+        ],
+        "relevant_existing_refs": ["LAW-18", "LAW-20", "PRIN-053", "PRIN-047", "MECH-WAVE-FSM", "MECH-AUDIT-LINEAGE"]
+      },
+      {
+        "id": "SF-09",
+        "name": "Socio-Technical Reliability Discipline",
+        "member_concepts": ["HC-033", "HC-034", "HC-035", "HC-036"],
+        "unifying_claim": "Reliability depends on organizational signal capture, clear crisis roles, and cognitively usable explanations.",
+        "tradeoffs": [
+          "Requires ongoing process training and governance rituals.",
+          "Potential increase in upfront operational documentation effort."
+        ],
+        "relevant_existing_refs": ["LAW-01", "LAW-11", "PRIN-030", "PRIN-048", "PRIN-052"]
+      },
+      {
+        "id": "SF-10",
+        "name": "Bounded Multi-Objective Optimization",
+        "member_concepts": ["HC-037", "HC-038", "HC-039", "HC-040"],
+        "unifying_claim": "Decision quality improves when compute, latency, and utility objectives are optimized with explicit anti-Goodhart guardbands.",
+        "tradeoffs": [
+          "Needs higher quality telemetry and calibration pipelines.",
+          "May reduce maximum short-term throughput for safer tail behavior."
+        ],
+        "relevant_existing_refs": ["LAW-09", "LAW-12", "LAW-19", "PRIN-025", "PRIN-037", "PRIN-049"]
+      }
+    ],
+    "combined_concepts_5": [
+      {
+        "id": "CC-01",
+        "name": "External Integrity Envelope",
+        "synthesizes_families": ["SF-01", "SF-06", "SF-09"],
+        "core_rule": "No T2/T3 privileged mutation is admissible unless integrity state is corroborated by independent witnesses and evidence lineage remains continuous.",
+        "why_now": "GSS-021 and GSS-024 expose a kernel self-trust blind spot where compromise or chain corruption invalidates internal assertions.",
+        "blind_spots_closed": [
+          "Self-referential trust loops during host compromise.",
+          "Single-store audit dependency.",
+          "Weak integrity guarantees for post-incident forensics."
+        ],
+        "law_refs": ["LAW-05", "LAW-10", "LAW-16", "LAW-19", "LAW-20"],
+        "principle_refs": ["PRIN-035", "PRIN-043", "PRIN-044", "PRIN-048"],
+        "mechanism_refs": [
+          "MECH-CAPABILITY-TOKENS",
+          "MECH-AUDIT-LINEAGE",
+          "MECH-INTEGRITY-ATTESTATION",
+          "MECH-EVIDENCE-CONTINUITY"
+        ],
+        "invariant_refs": ["INV-06", "INV-07"],
+        "failure_modes_if_omitted": [
+          "Stealth persistence after dependency compromise.",
+          "Unverifiable forensic narratives after chain break.",
+          "Privilege decisions made on forged or stale integrity signals."
+        ],
+        "countermetrics": [
+          "Pair integrity-pass-rate with false-lockdown-rate and mean-recovery-time.",
+          "Track attestation freshness distribution, not just binary pass/fail.",
+          "Audit witness diversity index to prevent monoculture attestation failures."
+        ]
+      },
+      {
+        "id": "CC-02",
+        "name": "Constitutional Friction for Root Authority",
+        "synthesizes_families": ["SF-03", "SF-05", "SF-08"],
+        "core_rule": "Authenticated root instructions may request but not instantly enact high-impact policy mutation; enactment requires cooling-off, sandbox evidence, and dual-control or documented emergency exception.",
+        "why_now": "GSS-023 shows that authenticated principals can be manipulated into dangerous but syntactically valid policy changes.",
+        "blind_spots_closed": [
+          "Assumption that root_human intent is always unmanipulated.",
+          "Lack of constitutional friction for irreversible policy mutation.",
+          "Missing deterministic exception governance under urgency."
+        ],
+        "law_refs": ["LAW-13", "LAW-14", "LAW-18", "LAW-19", "LAW-20"],
+        "principle_refs": ["PRIN-042", "PRIN-053", "PRIN-024", "PRIN-029"],
+        "mechanism_refs": [
+          "MECH-PROFILE-PROPOSALS",
+          "MECH-AUDIT-LINEAGE",
+          "MECH-POLICY-CHANGE-SANDBOX",
+          "MECH-CONFLICT-RESOLUTION-LATTICE"
+        ],
+        "invariant_refs": ["INV-04", "INV-08"],
+        "failure_modes_if_omitted": [
+          "Coerced policy escalations executed without delay.",
+          "Permanent emergency exceptions with silent authority expansion.",
+          "Inconsistent conflict handling across equivalent root requests."
+        ],
+        "countermetrics": [
+          "Pair policy-change throughput with post-change rollback-rate.",
+          "Track emergency-exception frequency with independent review reversal-rate.",
+          "Measure cooling-off bypass count segmented by risk tier."
+        ]
+      },
+      {
+        "id": "CC-03",
+        "name": "Semantic Drift Budget and Re-Consent",
+        "synthesizes_families": ["SF-01", "SF-04", "SF-07"],
+        "core_rule": "Behavioral and policy evolution must stay within declared semantic drift budgets; threshold crossings require explicit re-consent or delegate quorum before further adaptation.",
+        "why_now": "GSS-022 and GSS-014 reveal slow, individually-benign updates can accumulate into dangerous behavioral divergence.",
+        "blind_spots_closed": [
+          "No cumulative drift cap across many small updates.",
+          "Insufficient re-consent triggers for capacity decline contexts.",
+          "Weak distinction between legitimate adaptation and adversarial poisoning."
+        ],
+        "law_refs": ["LAW-10", "LAW-13", "LAW-14", "LAW-19"],
+        "principle_refs": ["PRIN-021", "PRIN-022", "PRIN-041", "PRIN-050"],
+        "mechanism_refs": [
+          "MECH-NAMESPACE-IDENTITY",
+          "MECH-PROFILE-PROPOSALS",
+          "MECH-ORIENTATION-COMPILER",
+          "MECH-SEMANTIC-DRIFT-GUARD"
+        ],
+        "invariant_refs": ["INV-04", "INV-09"],
+        "failure_modes_if_omitted": [
+          "Persona poisoning remains undetected until catastrophic divergence.",
+          "Owner intent is inferred from stale or compromised preference traces.",
+          "Adaptation loops optimize proxy metrics while degrading human alignment."
+        ],
+        "countermetrics": [
+          "Pair adaptation gain with semantic-divergence velocity.",
+          "Track drift-threshold crossings with false-positive review burden.",
+          "Monitor re-consent completion latency and override frequency."
+        ]
+      },
+      {
+        "id": "CC-04",
+        "name": "Vulnerability-Weighted Reversible Intervention",
+        "synthesizes_families": ["SF-02", "SF-04", "SF-10"],
+        "core_rule": "As vulnerability and uncertainty increase, policy must shift toward reversible, low-regret interventions with stricter explanation and oversight requirements.",
+        "why_now": "GSS-001, GSS-006, GSS-015, and GSS-016 require safe action under uncertainty without sacrificing dignity or autonomy.",
+        "blind_spots_closed": [
+          "Uniform risk thresholds across unequal human vulnerability states.",
+          "Insufficient explanation obligations during high-stress decisions.",
+          "Over-reliance on irreversible interventions under ambiguous evidence."
+        ],
+        "law_refs": ["LAW-09", "LAW-14", "LAW-18", "LAW-19"],
+        "principle_refs": ["PRIN-049", "PRIN-052", "PRIN-047", "PRIN-030"],
+        "mechanism_refs": [
+          "MECH-ORIENTATION-COMPILER",
+          "MECH-OUTBOX",
+          "MECH-AUDIT-LINEAGE",
+          "MECH-PROFILE-PROPOSALS"
+        ],
+        "invariant_refs": ["INV-03", "INV-10"],
+        "failure_modes_if_omitted": [
+          "Technically legal but humanly harmful interventions.",
+          "Paternalistic overblocking without transparent rationale.",
+          "Irreversible mistakes in low-evidence emergencies."
+        ],
+        "countermetrics": [
+          "Pair safety-incident reduction with autonomy-override rate.",
+          "Track reversible-first compliance alongside delayed-harm incidents.",
+          "Measure explanation adequacy score against action latency."
+        ]
+      },
+      {
+        "id": "CC-05",
+        "name": "Deterministic Conflict Proof Engine",
+        "synthesizes_families": ["SF-05", "SF-06", "SF-08"],
+        "core_rule": "When laws, principles, or directives conflict, resolve through deterministic precedence lattice and emit machine-checkable proof objects that include rejected alternatives.",
+        "why_now": "GSS-025 makes explicit that unresolved normative conflicts are a primary correctness and trust risk.",
+        "blind_spots_closed": [
+          "Ad hoc conflict decisions that cannot be replayed.",
+          "Missing evidence for why one norm overrode another.",
+          "No standardized audit artifact for post-incident governance review."
+        ],
+        "law_refs": ["LAW-13", "LAW-16", "LAW-18", "LAW-20"],
+        "principle_refs": ["PRIN-053", "PRIN-031", "PRIN-032", "PRIN-030"],
+        "mechanism_refs": [
+          "MECH-WAVE-FSM",
+          "MECH-AUDIT-LINEAGE",
+          "MECH-ORIENTATION-COMPILER",
+          "MECH-CONFLICT-RESOLUTION-LATTICE"
+        ],
+        "invariant_refs": ["INV-01", "INV-05", "INV-11"],
+        "failure_modes_if_omitted": [
+          "Equivalent conflicts produce inconsistent outcomes.",
+          "Post-hoc reviewers cannot verify rationale legitimacy.",
+          "Conflict handling silently drifts with prompt/context variance."
+        ],
+        "countermetrics": [
+          "Pair conflict-resolution speed with appeal-upheld rate.",
+          "Track proof completeness score with operator comprehension score.",
+          "Measure deterministic-replay pass rate for conflict cases."
+        ]
+      }
+    ],
+    "proposed_file_changes": {
+      "principles_json": {
+        "add": [
+          {
+            "id": "PRIN-054",
+            "name": "External Integrity Witnessing",
+            "title": "Treat self-measurement as non-authoritative under high risk",
+            "statement": "T2/T3 privileged actions require fresh out-of-band integrity attestation and independent witness corroboration before execution.",
+            "law_refs": ["LAW-05", "LAW-10", "LAW-16", "LAW-19"],
+            "mechanism_refs": ["MECH-INTEGRITY-ATTESTATION", "MECH-AUDIT-LINEAGE"],
+            "defect_refs": ["NAMESPACE_IDENTITY_SPOOF", "MISSING_AUDIT_LINEAGE"]
+          },
+          {
+            "id": "PRIN-055",
+            "name": "Constitutional Friction for Dangerous Policy Mutation",
+            "title": "Require deliberative friction for high-impact root changes",
+            "statement": "Root-authorized high-impact policy changes must pass cooling-off, sandbox simulation, and dual-control unless emergency exception evidence is explicitly recorded.",
+            "law_refs": ["LAW-13", "LAW-14", "LAW-19", "LAW-20"],
+            "mechanism_refs": ["MECH-POLICY-CHANGE-SANDBOX", "MECH-PROFILE-PROPOSALS"],
+            "defect_refs": ["SCOPE_ESCALATION", "RECURRING_FAILURE_UNADDRESSED"]
+          },
+          {
+            "id": "PRIN-056",
+            "name": "Semantic Drift Budgeting",
+            "title": "Limit cumulative behavior drift and trigger re-consent",
+            "statement": "Policy and persona evolution must remain within declared semantic drift budgets; threshold crossings require owner re-consent or delegated quorum approval.",
+            "law_refs": ["LAW-10", "LAW-13", "LAW-14", "LAW-19"],
+            "mechanism_refs": ["MECH-SEMANTIC-DRIFT-GUARD", "MECH-NAMESPACE-IDENTITY", "MECH-PROFILE-PROPOSALS"],
+            "defect_refs": ["SCHEMA_DRIFT", "RECURRING_FAILURE_UNADDRESSED"]
+          },
+          {
+            "id": "PRIN-057",
+            "name": "Vulnerability-Proportional Reversibility",
+            "title": "Increase care obligations as vulnerability rises",
+            "statement": "As assessed human vulnerability increases, policy must tighten irreversible action thresholds, prefer reversible alternatives, and emit stronger explanation artifacts.",
+            "law_refs": ["LAW-09", "LAW-14", "LAW-18", "LAW-19"],
+            "mechanism_refs": ["MECH-ORIENTATION-COMPILER", "MECH-OUTBOX", "MECH-AUDIT-LINEAGE"],
+            "defect_refs": ["UNCLASSIFIED_FAILURE", "DUPLICATE_EFFECT"]
+          },
+          {
+            "id": "PRIN-058",
+            "name": "Deterministic Conflict Proofs",
+            "title": "Resolve law and value conflicts with proof artifacts",
+            "statement": "When normative conflicts are detected, execute deterministic precedence rules and emit a proof object linking chosen resolution, rejected alternatives, and supporting evidence.",
+            "law_refs": ["LAW-13", "LAW-16", "LAW-18", "LAW-20"],
+            "mechanism_refs": ["MECH-CONFLICT-RESOLUTION-LATTICE", "MECH-WAVE-FSM", "MECH-AUDIT-LINEAGE"],
+            "defect_refs": ["INVALID_FSM_TRANSITION", "UNCLASSIFIED_FAILURE"]
+          }
+        ]
+      },
+      "unified_theory_json": {
+        "add_sections": [
+          {
+            "path": "payload.theory_expansion_hardening_2026_02",
+            "content": {
+              "focus_blind_spots": ["GSS-021", "GSS-022", "GSS-023", "GSS-024", "GSS-025"],
+              "combined_concepts": ["CC-01", "CC-02", "CC-03", "CC-04", "CC-05"],
+              "required_new_mechanisms": [
+                "MECH-INTEGRITY-ATTESTATION",
+                "MECH-EVIDENCE-CONTINUITY",
+                "MECH-POLICY-CHANGE-SANDBOX",
+                "MECH-SEMANTIC-DRIFT-GUARD",
+                "MECH-CONFLICT-RESOLUTION-LATTICE"
+              ],
+              "required_new_invariants": ["INV-07", "INV-08", "INV-09", "INV-10", "INV-11"],
+              "status": "proposed"
+            }
+          },
+          {
+            "path": "payload.human_vulnerability_policy",
+            "content": {
+              "tiers": {
+                "V0": "baseline",
+                "V1": "elevated_stress_or_urgency",
+                "V2": "coercion_or_capacity_concern",
+                "V3": "acute_dependence_or_crisis"
+              },
+              "policy_effects": {
+                "reversibility_requirement": "monotonic_increase_with_v_tier",
+                "explanation_minimums": "monotonic_increase_with_v_tier",
+                "approval_threshold": "monotonic_increase_with_risk_and_v_tier"
+              }
+            }
+          },
+          {
+            "path": "payload.conflict_resolution_lattice",
+            "content": {
+              "precedence_order": [
+                "non_negotiable_safety_and_rights_constraints",
+                "reversibility_and_harm_minimization",
+                "authenticated_owner_intent",
+                "efficiency_and_cost"
+              ],
+              "requirements": [
+                "deterministic_rule_id",
+                "rejected_alternatives",
+                "counterfactual_harm_estimate",
+                "proof_object_hash"
+              ]
+            }
+          }
+        ],
+        "update_sections": [
+          {
+            "path": "payload.mechanisms",
+            "changes": {
+              "merge": {
+                "MECH-INTEGRITY-ATTESTATION": {
+                  "purpose": "Independent host and supply-chain integrity verification before T2/T3 actions",
+                  "law_refs": ["LAW-05", "LAW-10", "LAW-16", "LAW-19"]
+                },
+                "MECH-EVIDENCE-CONTINUITY": {
+                  "purpose": "Tamper-evident and recoverable evidence chains with independent witness replication",
+                  "law_refs": ["LAW-03", "LAW-16", "LAW-20"]
+                },
+                "MECH-POLICY-CHANGE-SANDBOX": {
+                  "purpose": "Simulate and score high-impact policy changes under cooldown and dual-control constraints",
+                  "law_refs": ["LAW-13", "LAW-14", "LAW-19", "LAW-20"]
+                },
+                "MECH-SEMANTIC-DRIFT-GUARD": {
+                  "purpose": "Enforce cumulative drift budgets and mandatory re-consent triggers",
+                  "law_refs": ["LAW-10", "LAW-13", "LAW-14", "LAW-19"]
+                },
+                "MECH-CONFLICT-RESOLUTION-LATTICE": {
+                  "purpose": "Deterministic law/principle conflict resolution with proof-object emission",
+                  "law_refs": ["LAW-13", "LAW-16", "LAW-18", "LAW-20"]
+                }
+              }
+            }
+          },
+          {
+            "path": "payload.invariants",
+            "changes": {
+              "merge": {
+                "INV-07": "No T2/T3 privileged mutation executes without fresh independent integrity attestation.",
+                "INV-08": "High-impact policy changes by root_human must include cooldown or emergency override evidence before activation.",
+                "INV-09": "Cumulative semantic drift from approved baseline never exceeds drift_budget without re-consent artifact.",
+                "INV-10": "For V2/V3 vulnerability tiers, irreversible actions require recorded reversible-alternative analysis.",
+                "INV-11": "Every normative conflict resolution emits deterministic proof object with rejected alternatives."
+              }
+            }
+          },
+          {
+            "path": "payload.metrics_and_signals",
+            "changes": {
+              "add": {
+                "integrity": [
+                  "integrity_attestation_freshness_ms",
+                  "witness_diversity_index",
+                  "evidence_chain_break_total"
+                ],
+                "governance": [
+                  "high_impact_policy_cooldown_bypass_total",
+                  "policy_change_rollback_rate",
+                  "conflict_proof_completeness_rate"
+                ],
+                "human_safety": [
+                  "vulnerability_tier_mismatch_rate",
+                  "autonomy_override_rate",
+                  "reversible_first_compliance_rate"
+                ]
+              }
+            }
+          },
+          {
+            "path": "payload.risk_model",
+            "changes": {
+              "add": {
+                "modifiers": [
+                  "integrity_attestation_status",
+                  "semantic_drift_velocity",
+                  "human_vulnerability_tier",
+                  "norm_conflict_detected"
+                ],
+                "escalation_rule": "Any T2/T3 action with failed attestation, unresolved conflict, or V3 vulnerability without reversible path escalates to fail-closed unless emergency exception proof exists."
+              }
+            }
+          }
+        ]
+      }
+    },
+    "conflicts_and_resolution_meta_policy": [
+      {
+        "conflict_id": "CR-01",
+        "tension": "LAW-03 durability-before-acknowledgment versus LAW-18 reversibility when durable commit itself is irreversible.",
+        "resolution_rule": "Prefer reversible commitment staging: acknowledge only after durable record of compensator plan and operator-visible rollback alternatives when direct rollback is impossible.",
+        "audit_requirements": [
+          "conflict_rule_id",
+          "compensator_plan_id",
+          "operator_visibility_proof",
+          "post_action_review_ticket"
+        ]
+      },
+      {
+        "conflict_id": "CR-02",
+        "tension": "Authenticated owner intent versus coercion/manipulation risk under LAW-14 graded trust.",
+        "resolution_rule": "Treat root intent as high-weight but challengeable signal; require step-up checks and cooling-off for high-impact changes when coercion indicators exceed threshold.",
+        "audit_requirements": [
+          "assurance_score_snapshot",
+          "coercion_indicator_vector",
+          "cooldown_timer_record",
+          "dual_control_receipts"
+        ]
+      },
+      {
+        "conflict_id": "CR-03",
+        "tension": "Privacy minimization and least disclosure versus urgent safety intervention.",
+        "resolution_rule": "Apply necessity-and-proportionality test: disclose minimum data required for immediate harm reduction, then trigger post-incident minimization review.",
+        "audit_requirements": [
+          "necessity_rationale",
+          "proportionality_score",
+          "disclosed_field_manifest",
+          "retention_expiry_schedule"
+        ]
+      },
+      {
+        "conflict_id": "CR-04",
+        "tension": "Adaptation speed for liveness versus guarded adaptation and invariant preservation.",
+        "resolution_rule": "Allow rapid adaptation only inside sandboxed horizon with explicit rollback gates; promotion requires measured improvement and invariant pass.",
+        "audit_requirements": [
+          "sandbox_profile_id",
+          "horizon_n_waves",
+          "invariant_check_results",
+          "promotion_or_rollback_decision"
+        ]
+      },
+      {
+        "conflict_id": "CR-05",
+        "tension": "Deterministic consistency versus empathy-sensitive contextual discretion.",
+        "resolution_rule": "Keep decision procedure deterministic while allowing bounded empathy parameters as explicit inputs; prohibit untracked free-form override.",
+        "audit_requirements": [
+          "deterministic_rule_hash",
+          "empathy_parameter_values",
+          "vulnerability_tier_basis",
+          "counterfactual_alternatives"
+        ]
+      }
+    ],
+    "human_empathy_integration": {
+      "vulnerability_classes": [
+        "acute_medical_incapacity",
+        "coercion_or_duress",
+        "cognitive_decline_or_confusion",
+        "dependent_care_obligation",
+        "financial_exploitation_risk",
+        "grief_panic_or_time_pressure",
+        "language_or_accessibility_barriers"
+      ],
+      "required_decision_checks": [
+        "vulnerability_tier_assessed",
+        "reversible_option_considered",
+        "least_intrusive_action_selected",
+        "consent_or_delegate_path_validated",
+        "explanation_adequacy_verified",
+        "follow_up_support_path_present"
+      ],
+      "minimum_explanation_fields": [
+        "action_taken_or_denied",
+        "why_now",
+        "risk_tier",
+        "vulnerability_tier",
+        "alternatives_considered",
+        "reversibility_or_compensation_path",
+        "evidence_bundle_refs",
+        "appeal_or_override_path",
+        "next_review_time"
+      ]
+    },
+    "implementation_order": [
+      "Add MECH-INTEGRITY-ATTESTATION and MECH-EVIDENCE-CONTINUITY with fail-closed wiring on T2/T3 actuation paths.",
+      "Add INV-07 and INV-11 checks to runtime gate evaluation and replay tests.",
+      "Introduce MECH-POLICY-CHANGE-SANDBOX plus cooldown and dual-control enforcement for high-impact root changes.",
+      "Add PRIN-054 and PRIN-055 to principles bundle and bind to defect taxonomy checks.",
+      "Implement MECH-SEMANTIC-DRIFT-GUARD with drift budget thresholds and re-consent triggers.",
+      "Add PRIN-056 and risk_model modifiers for semantic drift velocity and integrity status.",
+      "Integrate vulnerability tiering and PRIN-057 into orientation compilation and decision explanation contracts.",
+      "Implement conflict_resolution_lattice and MECH-CONFLICT-RESOLUTION-LATTICE proof artifacts.",
+      "Add PRIN-058 and corresponding deterministic conflict replay tests.",
+      "Roll out new metrics and anti-Goodhart countermetric dashboards with staged enforcement gates."
+    ]
+  }
+}

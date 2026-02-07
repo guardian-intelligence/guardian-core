@@ -1,0 +1,105 @@
+{
+  "waivers": [
+    {
+      "id": "WVR-0001",
+      "type": "OPERATIONAL_DECISION",
+      "title": "Reduced voice step-up frequency for trusted delegates",
+      "status": "ACTIVE",
+      "issued": "2026-02-07",
+      "expires": "2026-03-09",
+      "scope": "Voice interaction policy for delegate_standard principals",
+      "owner": "root_human",
+      "cond": [
+        "Tier 2+ always require explicit step-up verification",
+        "All delegated actions remain capability-scoped and auditable",
+        "Reviewed monthly, renewed explicitly if needed"
+      ],
+      "waived_control_ids": [],
+      "compensating_controls": [
+        "Tier 2+ explicit step-up verification",
+        "Capability-scoped delegated actions",
+        "Monthly review required"
+      ],
+      "approval_evidence": "operator_decision_log:2026-02-07:WVR-0001",
+      "ci_exception_id": "WVR-0001"
+    },
+    {
+      "id": "WVR-0002",
+      "type": "CONTROL_WAIVER",
+      "title": "Temporary checksum-only release verification",
+      "status": "REVOKED",
+      "issued": "2026-02-07",
+      "expires": "2026-02-07",
+      "scope": "Release procedure for non-critical personal deployments",
+      "owner": "root_human",
+      "cond": [
+        "All deployments require signed artifacts with strict identity-constrained verification",
+        "Rekor inclusion and provenance verification are mandatory",
+        "Checksum-only verification is prohibited"
+      ],
+      "revoked_reason": "Conflicts with mandatory release integrity controls SP-REL-001..SP-REL-004",
+      "waived_control_ids": [
+        "SP-REL-001",
+        "SP-REL-002",
+        "SP-REL-003",
+        "SP-REL-004"
+      ],
+      "compensating_controls": [
+        "Full Sigstore keyless verification",
+        "SLSA provenance verification",
+        "SBOM verification",
+        "Identity-constrained certificate verification"
+      ],
+      "approval_evidence": "revocation_record:2026-02-07:WVR-0002",
+      "ci_exception_id": "WVR-0002-REVOKED"
+    },
+    {
+      "id": "WVR-0003",
+      "type": "OPERATIONAL_DECISION",
+      "title": "Graceful degraded mode during identity uncertainty",
+      "status": "ACTIVE",
+      "issued": "2026-02-07",
+      "expires": "2026-03-09",
+      "scope": "Runtime behavior under uncertain caller identity",
+      "owner": "root_human",
+      "cond": [
+        "Tier 1+ side effects require normal policy gates",
+        "Tier 2+ operations blocked without strong verification",
+        "Security events logged when degraded mode activates"
+      ],
+      "waived_control_ids": [],
+      "compensating_controls": [
+        "Tier 2+ strong verification mandatory",
+        "Security events logged on degraded mode activation"
+      ],
+      "approval_evidence": "operator_decision_log:2026-02-07:WVR-0003",
+      "ci_exception_id": "WVR-0003"
+    }
+  ],
+  "waiver_policy": {
+    "non_waivable_control_ids": [
+      "SP-REL-001",
+      "SP-REL-002",
+      "SP-REL-003",
+      "SP-REL-004",
+      "SP-SECRET-001",
+      "SP-SECRET-002"
+    ],
+    "required_fields": [
+      "id",
+      "status",
+      "issued",
+      "expires",
+      "owner",
+      "waived_control_ids",
+      "compensating_controls",
+      "approval_evidence",
+      "ci_exception_id"
+    ],
+    "max_duration_days": 30,
+    "on_violation": "BLOCK_RELEASE",
+    "on_schema_violation": "BLOCK_RELEASE",
+    "allowed_status_values": ["ACTIVE", "REVOKED", "EXPIRED"],
+    "on_unknown_status": "BLOCK_RELEASE"
+  }
+}

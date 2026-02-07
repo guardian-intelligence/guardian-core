@@ -12,7 +12,17 @@ TAG="${1:-latest}"
 echo "Building Guardian Core agent container image..."
 echo "Image: ${IMAGE_NAME}:${TAG}"
 
-# Build with Docker
+# Build shared package types
+echo "Building @guardian/shared..."
+(cd "$SCRIPT_DIR/shared" && npx tsc)
+
+# Pre-copy shared package for Docker context
+rm -rf "$SCRIPT_DIR/.shared-cache"
+mkdir -p "$SCRIPT_DIR/.shared-cache"
+cp -r "$SCRIPT_DIR/shared/dist" "$SCRIPT_DIR/.shared-cache/dist"
+cp "$SCRIPT_DIR/shared/package.json" "$SCRIPT_DIR/.shared-cache/package.json"
+
+# Build Docker image
 docker build -t "${IMAGE_NAME}:${TAG}" .
 
 echo ""

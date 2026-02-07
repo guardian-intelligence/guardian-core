@@ -1,0 +1,49 @@
+{
+  "network_defense": {
+    "threats": [
+      { "id": "THR-PRO-01", "cat": "Protocol", "name": "Downgrade Attack", "vector": "Handshake Manipulation", "desc": "Force older TLS/weaker ciphers during WhatsApp or webhook negotiation" },
+      { "id": "THR-PRO-02", "cat": "Protocol", "name": "Capability Spoofing", "vector": "False Advertising", "desc": "Container agent claims capabilities it does not possess" },
+      { "id": "THR-PRO-03", "cat": "Protocol", "name": "PQC Downgrade", "vector": "Algorithm Negotiation Manipulation", "desc": "Force fallback from required hybrid/PQC suites to weaker classical-only paths in Tier2+ flows" },
+      { "id": "THR-PRO-04", "cat": "Protocol", "name": "KEM Misuse", "vector": "Protocol Design Error", "desc": "Improper KEM handling creates decryption-oracle leakage or misuse of shared secret without context-bound KDF" },
+      { "id": "THR-ID-01", "cat": "Identity", "name": "Identity Theft", "vector": "Key Compromise", "desc": "Private key exfiltration from disk/memory enabling impersonation" },
+      { "id": "THR-ID-02", "cat": "Identity", "name": "Replay Attack", "vector": "Message Replay", "desc": "Valid signed payloads re-broadcast to duplicate effects or bypass nonces" },
+      { "id": "THR-AUTH-01", "cat": "Authorization", "name": "Confused Deputy", "vector": "Privilege Escalation", "desc": "Low-trust agent induces kernel to perform sensitive actions" },
+      { "id": "THR-AUTH-02", "cat": "Authorization", "name": "Lease Drift", "vector": "Time Manipulation", "desc": "Clock skew exploited to extend wave lease or bypass expiry" },
+      { "id": "THR-INT-01", "cat": "Integrity", "name": "History Forgery", "vector": "Log Tampering", "desc": "Local log modification to hide actions; mitigated by Dolt audit trail" },
+      { "id": "THR-AVAIL-01", "cat": "Availability", "name": "Computation DoS", "vector": "Resource Exhaustion", "desc": "Expensive parsing/validation/inference tasks starving the node" },
+      { "id": "THR-AVAIL-02", "cat": "Availability", "name": "Spawn Storm", "vector": "Recursive Expansion", "desc": "Unbounded container/task creation; mitigated by DynamicSupervisor limits" },
+      { "id": "THR-CONF-01", "cat": "Confidentiality", "name": "Metadata Leakage", "vector": "Traffic Analysis", "desc": "Operational facts revealed by traffic patterns even if encrypted" },
+      { "id": "THR-CONF-02", "cat": "Confidentiality", "name": "Model-Mediated Leakage", "vector": "Prompt Injection / Logging", "desc": "Secrets serialized into durable artifacts via tool outputs or prompts" },
+      { "id": "THR-ADP-01", "cat": "Adaptive", "name": "Metric Gaming", "vector": "Goodhart's Law", "desc": "Optimizing gate metrics while undermining the security goal" }
+    ],
+    "controls": {
+      "identity_replay": [
+        "Capability tokens cryptographically bound to issuing principal",
+        "Identity freshness enforcement for elevated authority paths",
+        "Replay-protected ingress with nonce/timestamp and bounded acceptance windows",
+        "Tier2+ algorithm negotiation pinned to policy-approved suites"
+      ],
+      "delegation_auth": [
+        "Capability tokens as sole cross-boundary authority entrance",
+        "Strict-subset delegation validation (no privilege widening)",
+        "Outbox receipts for auditable command issuance"
+      ],
+      "integrity": [
+        "Authoritative facts authenticated by Blake3 digest verification",
+        "Dolt commit history as tamper-evident log for state mutations",
+        "Webhook signature verification on all inbound requests",
+        "KEM usage follows SP 800-227-aligned policy constraints"
+      ],
+      "confidentiality": [
+        "Context firewall and capability-gated tool mediation between containers",
+        "Mandatory redaction on all outbound text channels"
+      ],
+      "availability": [
+        "Bounded decode and collection sizes on all ingress paths",
+        "Per-channel and per-group budgets with fail-closed behavior",
+        "OTP DynamicSupervisor bounds to prevent spawn storms"
+      ]
+    },
+    "crypto": { "hash": "Blake3", "pqc": "active_day1", "kem_guidance": "SP-800-227" }
+  }
+}

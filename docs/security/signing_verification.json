@@ -1,0 +1,105 @@
+{
+  "signing_verification": {
+    "status": "ACTIVE",
+    "objectives": [
+      "Strong authenticity/provenance without long-lived keys",
+      "Artifacts independently verifiable by consumers",
+      "Signatures bound to CI workload identity, not manual keys"
+    ],
+    "trust_chain": [
+      {
+        "stage": "SIG-STAGE-01",
+        "name": "OIDC Identity Acquisition",
+        "desc": "GH Actions obtains OIDC token for workflow identity"
+      },
+      {
+        "stage": "SIG-STAGE-02",
+        "name": "Fulcio Certificate Issuance",
+        "desc": "OIDC token exchanged for short-lived signing certificate"
+      },
+      {
+        "stage": "SIG-STAGE-03",
+        "name": "Cosign Ephemeral Signing",
+        "desc": "Cosign signs digests with ephemeral keys bound to cert"
+      },
+      {
+        "stage": "SIG-STAGE-04",
+        "name": "Transparency Logging",
+        "desc": "Signing events recorded in Rekor for auditability"
+      }
+    ],
+    "permissions": [
+      {
+        "perm": "id-token: write",
+        "purpose": "OIDC token minting for keyless cert issuance"
+      },
+      {
+        "perm": "contents: write",
+        "purpose": "Publish release assets, sigs, and certs"
+      },
+      {
+        "perm": "attestations: write",
+        "purpose": "Generate and publish provenance attestations"
+      }
+    ],
+    "profiles": [
+      {
+        "id": "SIG-PROFILE-BLOB",
+        "cmd": "cosign sign-blob",
+        "outputs": [
+          ".sig",
+          ".pem"
+        ]
+      },
+      {
+        "id": "SIG-PROFILE-IMAGE",
+        "cmd": "cosign sign",
+        "outputs": [
+          "registry_signature"
+        ]
+      }
+    ],
+    "verification": {
+      "blob": "cosign verify-blob",
+      "image": "cosign verify",
+      "oidc_issuer": "https://token.actions.githubusercontent.com",
+      "cert_identity_constraint": "https://github.com/Anveio/guardian-core/.github/workflows/release.yml@refs/tags/v*",
+      "required_claims": {
+        "repository": "Anveio/guardian-core",
+        "workflow_ref": "Anveio/guardian-core/.github/workflows/release.yml@refs/tags/v*",
+        "ref_type": "tag",
+        "runner_environment": "github-hosted"
+      },
+      "recommended_claims": {
+        "workflow_sha": "pin to known-good workflow commit when available"
+      },
+      "tag_pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+(-[a-z0-9.]+)?$",
+      "require_rekor_inclusion": true
+    },
+    "provenance": "SLSA required; proves artifact origin from expected repo+pipeline",
+    "standards_notes": [
+      "Release signing remains Sigstore ecosystem-aligned (classical) for interoperability",
+      "Runtime internal authority/integrity may use PQC and Blake3 independently of release-signing algorithm",
+      "No FIPS 140 module validation claim is allowed without explicit module certificate evidence"
+    ],
+    "failure_modes": [
+      {
+        "cond": "Expired signing certificate",
+        "response": "Validate Rekor inclusion; short-lived certs expected"
+      },
+      {
+        "cond": "Identity mismatch",
+        "response": "Treat as non-compliant; correct identity constraints"
+      },
+      {
+        "cond": "Missing transparency entry",
+        "response": "Fail closed; investigate CI signing path"
+      }
+    ],
+    "crypto_posture": {
+      "long_lived_keys": "REJECTED_BY_DESIGN",
+      "release_signing": "Sigstore keyless ECDSA secp256r1 via Fulcio",
+      "internal_integrity": "Blake3 + ML-DSA-65"
+    }
+  }
+}

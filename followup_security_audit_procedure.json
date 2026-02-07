@@ -1,0 +1,201 @@
+{
+  "v": "2026-02-07.a1",
+  "task": "security_delta_audit",
+  "role": "principal_security_auditor",
+  "model": "motivated_adversary",
+  "scope": {
+    "auth_json": [
+      "docs/security/index.json",
+      "docs/security/security_policy.json",
+      "docs/security/security_checklist.json",
+      "docs/security/threat_model.json",
+      "docs/security/secrets_management.json",
+      "docs/security/incident_response.json",
+      "docs/security/release_procedure.json",
+      "docs/security/signing_verification.json",
+      "docs/security/crypto_posture.json",
+      "docs/security/elixir_eval.json",
+      "docs/security/orchestration_runbook.json",
+      "docs/security/waivers.json"
+    ],
+    "supplemental_json": [
+      "docs/security/network_defense.json"
+    ],
+    "normative_rule": "If conflict: authoritative JSON controls/gates win; report conflict as finding"
+  },
+  "context": {
+    "arch": [
+      "Elixir/OTP control plane",
+      "Dolt durable state",
+      "capability-gated outbox/receipts",
+      "deterministic policy kernel",
+      "Data Access Broker for sensitive reads"
+    ],
+    "agent_model": "agent proposes; backend authorizes/executes",
+    "ts_scope": "container/agent-runner boundary only",
+    "prod_target": "NixOS",
+    "release_stack": [
+      "GitHub Actions",
+      "Sigstore keyless",
+      "SLSA provenance",
+      "SBOM"
+    ],
+    "payments": "deferred"
+  },
+  "ambitions": [
+    "Policy as executable contract (not prose)",
+    "Fail-closed authority paths (esp Tier2+)",
+    "Meaningful constraints on implementers/reviewers",
+    "PQC + modern hash day1 without compliance over-claims",
+    "Identity-bound supply-chain integrity",
+    "Evidence-grade incident response"
+  ],
+  "constraints": {
+    "unique": [
+      "single-operator high-trust",
+      "small footprint; operable controls",
+      "Elixir<->Rust NIF boundary is critical risk surface",
+      "voice identity probabilistic until step-up",
+      "prefer deterministic machine-checkable controls"
+    ],
+    "non_constraints": [
+      "no near-term SOC2/ISO/FedRAMP packaging",
+      "no broad enterprise IAM optimization now",
+      "no multi-tenant guarantee target in this phase",
+      "no legacy crypto support beyond explicit compat set",
+      "no feature velocity tradeoff against enforceable security"
+    ]
+  },
+  "threats": [
+    "supply_chain",
+    "prompt_injection",
+    "replay",
+    "confused_deputy",
+    "crypto_downgrade",
+    "secrets_exfiltration",
+    "nif_fault_dos"
+  ],
+  "delta_focus": [
+    "waiver non-bypassability",
+    "freshness/replay parameterization",
+    "release gate strictness + full-set verification",
+    "checklist policy-coverage enforceability",
+    "signing identity/issuer/claim constraints",
+    "KEM->KDF pinning and mode clarity",
+    "agent/reviewer anti-handwave constraints"
+  ],
+  "procedure": [
+    {
+      "id": "P1",
+      "name": "load_and_map",
+      "do": [
+        "load all authoritative JSON",
+        "index controls/gates/tests/telemetry by ID",
+        "build cross-doc reference map"
+      ]
+    },
+    {
+      "id": "P2",
+      "name": "consistency_scan",
+      "do": [
+        "find contradictions (policy vs runbook vs eval vs waivers)",
+        "find ambiguous or unenforceable language",
+        "find stale or conflicting standard references"
+      ]
+    },
+    {
+      "id": "P3",
+      "name": "bypass_analysis",
+      "do": [
+        "attempt waiver bypass paths",
+        "attempt CI-gate bypass paths",
+        "attempt replay window abuse",
+        "attempt signing identity confusion",
+        "attempt downgrade and fail-open paths"
+      ]
+    },
+    {
+      "id": "P4",
+      "name": "enforceability_test",
+      "do": [
+        "mark each control: CI-enforceable, review-enforceable, runtime-enforceable",
+        "flag controls claimable-without-evidence",
+        "flag tests-without-gates and gates-without-tests"
+      ]
+    },
+    {
+      "id": "P5",
+      "name": "standards_validation",
+      "do": [
+        "validate statements against latest FIPS-203/204/205",
+        "validate KEM/KDF posture vs SP 800-227 and SP 800-56C context",
+        "check FIPS 140 claim boundaries (algorithm vs module validation)",
+        "identify overstatement risk"
+      ]
+    },
+    {
+      "id": "P6",
+      "name": "remediation_design",
+      "do": [
+        "propose exact JSON patch snippets",
+        "attach required tests/gates/telemetry per finding",
+        "prefer machine-enforceable fixes over prose"
+      ]
+    }
+  ],
+  "quality_bars": {
+    "attack_practicality": "Can motivated adversary route around control?",
+    "enforceability": "Deterministic gate/test/evidence exists",
+    "reviewability": "Reviewer can prove compliance objectively",
+    "runtime_safety": "Failure mode actually fails closed where required",
+    "operability": "Team can run repeatedly without unsafe shortcuts"
+  },
+  "output": {
+    "strict_order": [
+      "findings_by_severity",
+      "coverage_matrix",
+      "controls_without_tests",
+      "tests_without_gates",
+      "waiver_abuse_resistance",
+      "fail_closed_confidence",
+      "top15_release_blockers",
+      "residual_risks"
+    ],
+    "severity_order": ["Critical", "High", "Medium", "Low"],
+    "finding_fields": [
+      "id",
+      "status_new_or_regression",
+      "affected_files",
+      "exact_json_paths",
+      "why_attack_path",
+      "standards_impact_with_citations",
+      "json_patch_snippet",
+      "required_tests",
+      "required_ci_gates",
+      "required_telemetry"
+    ],
+    "coverage_matrix_shape": "Threat -> Control -> Gate -> Test -> Telemetry",
+    "confidence_shape": {
+      "field": "fail_closed_confidence",
+      "range": "0-100",
+      "required": "rationale"
+    }
+  },
+  "hard_requirements": [
+    "No generic advice",
+    "Adversarial and implementation-grade",
+    "Cite authoritative sources for standards claims",
+    "Call out any control that can be marked done without objective evidence",
+    "Prefer machine-enforceable remediations"
+  ],
+  "sources_min": [
+    "NIST FIPS 203",
+    "NIST FIPS 204",
+    "NIST FIPS 205",
+    "NIST SP 800-227",
+    "NIST SP 800-56C",
+    "NIST CMVP (FIPS 140 module validation)",
+    "Sigstore verification docs",
+    "SLSA provenance spec"
+  ]
+}

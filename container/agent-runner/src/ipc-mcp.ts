@@ -4,6 +4,13 @@
  */
 
 import { createSdkMcpServer, tool } from '@anthropic-ai/claude-agent-sdk';
+import type {
+  IpcMessage,
+  IpcPhoneCall,
+  IpcRegisterGroup,
+  IpcScheduleTask,
+  IpcTaskAction,
+} from '@guardian/shared';
 import { z } from 'zod';
 import fs from 'fs';
 import path from 'path';
@@ -47,7 +54,7 @@ export function createIpcMcp(ctx: IpcMcpContext) {
           text: z.string().describe('The message text to send')
         },
         async (args) => {
-          const data = {
+          const data: IpcMessage = {
             type: 'message',
             chatJid,
             text: args.text,
@@ -123,7 +130,7 @@ SCHEDULE VALUE FORMAT (all times are LOCAL timezone):
           // Non-main groups can only schedule for themselves
           const targetGroup = isMain && args.target_group ? args.target_group : groupFolder;
 
-          const data = {
+          const data: IpcScheduleTask = {
             type: 'schedule_task',
             prompt: args.prompt,
             schedule_type: args.schedule_type,
@@ -207,11 +214,10 @@ SCHEDULE VALUE FORMAT (all times are LOCAL timezone):
           task_id: z.string().describe('The task ID to pause')
         },
         async (args) => {
-          const data = {
+          const data: IpcTaskAction = {
             type: 'pause_task',
             taskId: args.task_id,
             groupFolder,
-            isMain,
             timestamp: new Date().toISOString()
           };
 
@@ -233,11 +239,10 @@ SCHEDULE VALUE FORMAT (all times are LOCAL timezone):
           task_id: z.string().describe('The task ID to resume')
         },
         async (args) => {
-          const data = {
+          const data: IpcTaskAction = {
             type: 'resume_task',
             taskId: args.task_id,
             groupFolder,
-            isMain,
             timestamp: new Date().toISOString()
           };
 
@@ -259,11 +264,10 @@ SCHEDULE VALUE FORMAT (all times are LOCAL timezone):
           task_id: z.string().describe('The task ID to cancel')
         },
         async (args) => {
-          const data = {
+          const data: IpcTaskAction = {
             type: 'cancel_task',
             taskId: args.task_id,
             groupFolder,
-            isMain,
             timestamp: new Date().toISOString()
           };
 
@@ -301,7 +305,7 @@ or omit it to call the owner (default). Unknown contacts are denied by default.`
             };
           }
 
-          const data = {
+          const data: IpcPhoneCall = {
             type: 'phone_call',
             reason: args.reason,
             urgency: args.urgency,
@@ -340,12 +344,13 @@ Use available_groups.json to find the JID for a group. The folder name should be
             };
           }
 
-          const data = {
+          const data: IpcRegisterGroup = {
             type: 'register_group',
             jid: args.jid,
             name: args.name,
             folder: args.folder,
             trigger: args.trigger,
+            groupFolder,
             timestamp: new Date().toISOString()
           };
 
