@@ -1,0 +1,16 @@
+waiver:
+  id: WVR-0003
+  title: "Graceful degraded mode during identity uncertainty"
+  description: |
+    To maintain usability, the assistant may continue Tier 0 informational behavior
+    when identity confidence is uncertain, rather than hard-failing all interactions.
+    This does not permit sensitive disclosure or high-impact actuation.
+  status: ACTIVE
+  issued: "2026-02-07"
+  expires: "2026-05-07"
+  scope: "Runtime behavior under uncertain caller identity"
+  owner: "root_human"
+  conditions:
+    - "Tier 1+ side effects require normal policy gates"
+    - "Tier 2+ operations remain blocked without strong verification"
+    - "Security events logged whenever degraded mode is activated"

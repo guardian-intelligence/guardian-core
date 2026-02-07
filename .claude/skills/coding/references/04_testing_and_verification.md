@@ -114,37 +114,67 @@ assertions:
 
 ## Mocking Strategy
 
-Mock at the module boundary (Node.js APIs, external services), not at the Effect service layer.
+### Preferred: Layer Injection (Hexagonal)
+
+For services using Effect ports (`Clock`, `FileSystem`, `AppConfig`), provide test layers instead of mocking modules:
 
 ```typescript
-// Mock the fs module
+import { Clock, Layer } from 'effect';
+import { makeTestClock } from './helpers/TestClock.js';
+import { makeTestFileSystem } from './helpers/TestFileSystem.js';
+
+const FIXED_TIME = 1700000000000;
+
+// Test layers replace real implementations
+function makeTestLayer(): Layer.Layer<FooService> {
+  const deps = Layer.mergeAll(
+    makeTestAppConfig(),
+    makeTestClock(FIXED_TIME),
+  );
+  return Layer.provide(FooServiceLive, deps);
+}
+
+// Use in tests
+const result = Effect.runSync(
+  program.pipe(Effect.provide(makeTestLayer())),
+);
+```
+
+```yaml
+assertions:
+  ETS-04-020:
+    predicate: "Services using Clock/AppConfig ports are tested via Layer injection"
+    on_fail:
+      severity: MAJOR
+      remediation: "Provide makeTestClock(fixedMs) and test AppConfig layers instead of mocking Date"
+
+  ETS-04-020a:
+    predicate: "Test Clock uses a fixed timestamp for deterministic assertions"
+    on_fail:
+      severity: MAJOR
+      remediation: "makeTestClock(1700000000000) — never use Date.now() in tests"
+```
+
+### Fallback: vi.mock (Sync-only modules)
+
+For sync-only modules that cannot use the FileSystem port (e.g., `db.ts` with `better-sqlite3`), `vi.mock('fs')` is still acceptable for sync calls like `mkdirSync`:
+
+```typescript
 vi.mock('fs', async () => {
   const actual = await vi.importActual<typeof fs>('fs');
   return {
     ...actual,
     default: {
       ...actual,
-      existsSync: vi.fn(),
-      readFileSync: vi.fn(),
-      realpathSync: vi.fn(),
+      mkdirSync: vi.fn(),
     },
-    existsSync: vi.fn(),
-    readFileSync: vi.fn(),
-    realpathSync: vi.fn(),
+    mkdirSync: vi.fn(),
   };
 });
-
-const mockFs = vi.mocked(fs);
 ```
 
 ```yaml
 assertions:
-  ETS-04-020:
-    predicate: "Mocks target Node.js APIs (fs, child_process, fetch), not Effect services"
-    on_fail:
-      severity: MAJOR
-      remediation: "Mock the boundary, not the service. Services are tested via their real Layer."
-
   ETS-04-021:
     predicate: "ESM mock pattern: mock both default and named exports"
     on_fail:
@@ -154,11 +184,19 @@ assertions:
         return { ...actual, default: { ...actual, fn: vi.fn() }, fn: vi.fn() };
 
   ETS-04-022:
-    predicate: "Helper function creates common mock setups"
+    predicate: "vi.mock('fs') only used for sync-only modules that cannot use FileSystem port"
+    on_fail:
+      severity: MAJOR
+      remediation: |
+        BunFileSystem.layer methods are async — breaks Effect.runSync in legacy wrappers.
+        Sync-only services (better-sqlite3) keep fs for sync I/O; all others use FileSystem port.
+
+  ETS-04-023:
+    predicate: "Helper function creates common mock/layer setups"
     on_fail:
       severity: MINOR
       remediation: |
-        function setupMocks(options: MockOptions) { ... }
+        function makeTestLayer(): Layer.Layer<FooService> { ... }
         Reduces boilerplate and makes test intent clear.
 ```
 

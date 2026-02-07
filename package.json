@@ -9,19 +9,35 @@
     "start": "bun dist/index.js",
     "dev": "bun --hot src/index.ts",
     "auth": "bun src/whatsapp-auth.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "bun run typecheck:root && bun run typecheck:server",
+    "typecheck:root": "tsc --noEmit",
+    "typecheck:server": "(cd server && bun run typecheck)",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:ci": "CI=1 vitest run --reporter=default",
     "deploy": "bun scripts/deploy.ts",
     "deploy:brain": "bun scripts/deploy.ts",
     "deploy:brain:app": "bun scripts/deploy.ts --app",
     "deploy:brain:container": "bun scripts/deploy.ts --container",
     "deploy:brain:all": "bun scripts/deploy.ts --all",
     "deploy:server": "bun scripts/deploy-server.ts",
-    "lint": "biome check src/",
-    "lint:fix": "biome check --fix src/",
-    "format": "biome format --write src/",
-    "format:check": "biome format src/"
+    "lint": "bun run lint:root && bun run lint:server",
+    "lint:root": "biome check src/ scripts/check-bun-version.ts",
+    "lint:server": "(cd server && bun run check)",
+    "lint:fix": "bun run lint:root:fix && bun run lint:server:fix",
+    "lint:root:fix": "biome check --write src/ scripts/check-bun-version.ts",
+    "lint:server:fix": "(cd server && bun run check:fix)",
+    "format": "bun run format:root",
+    "format:check": "bun run format:root:check",
+    "format:root": "biome format --write src/ scripts/check-bun-version.ts",
+    "format:root:check": "biome format src/ scripts/check-bun-version.ts",
+    "verify:bun": "bun scripts/check-bun-version.ts",
+    "check:fast": "bun run verify:bun && bun run lint && bun run typecheck",
+    "check": "bun run check:fast && bun run test",
+    "secrets:backup": "bun scripts/secrets.ts backup",
+    "secrets:restore": "bun scripts/secrets.ts restore",
+    "secrets:deploy": "bun scripts/secrets.ts deploy",
+    "secrets:verify": "bun scripts/secrets.ts verify"
   },
   "dependencies": {
     "@effect/cli": "^0.73.2",
@@ -49,8 +65,8 @@
     "vitest": "^3.0.0"
   },
   "engines": {
-    "bun": ">=1.3.5",
+    "bun": ">=1.3.8",
     "node": ">=20"
   },
-  "packageManager": "bun@1.3.5"
+  "packageManager": "bun@1.3.8"
 }

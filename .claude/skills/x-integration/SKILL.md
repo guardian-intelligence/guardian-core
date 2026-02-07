@@ -26,7 +26,7 @@ Before using this skill, ensure:
 1. **Guardian Core is installed and running** - WhatsApp connected, service active
 2. **Dependencies installed**:
    ```bash
-   npm ls playwright dotenv-cli || bun install playwright dotenv-cli
+   bun pm ls playwright dotenv-cli || bun install playwright dotenv-cli
    ```
 3. **CHROME_PATH configured** in `.env` (if Chrome is not at default location):
    ```bash
@@ -110,7 +110,7 @@ Paths relative to project root:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  Container (Linux VM)                                       │
+│  Container (Docker)                                         │
 │  └── agent.ts → MCP tool definitions (x_post, etc.)    │
 │      └── Writes IPC request to /workspace/ipc/tasks/       │
 └──────────────────────┬──────────────────────────────────────┘
@@ -402,7 +402,7 @@ If MCP tools not found in container:
 ./container/build.sh 2>&1 | grep -i skill
 
 # Check container has the file
-container run guardian-core-agent ls -la /app/src/skills/
+docker run --rm --entrypoint /bin/bash guardian-core-agent:latest -c 'ls -la /app/src/skills/'
 ```
 
 ## Security

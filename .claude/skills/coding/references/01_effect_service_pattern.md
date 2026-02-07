@@ -91,8 +91,14 @@ assertions:
 
 ```typescript
 const makeFooService = Effect.gen(function* () {
-  // Acquire dependencies
+  // Acquire dependencies (ports)
   const config = yield* AppConfig;
+  const clock = yield* Clock.Clock;
+  const fileSystem = yield* FileSystem;  // Only for services that need testable file I/O
+
+  // Clock helpers (sync, safe inside Effect.try)
+  const getNowIso = (): string => new Date(clock.unsafeCurrentTimeMillis()).toISOString();
+  const getNowMs = (): number => clock.unsafeCurrentTimeMillis();
 
   // Initialize state
   const cache = yield* Ref.make<CacheType | null>(null);

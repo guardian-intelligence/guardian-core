@@ -1,0 +1,16 @@
+waiver:
+  id: WVR-0001
+  title: "Reduced voice step-up frequency for trusted delegates"
+  description: |
+    To preserve conversational flow, trusted delegates may perform Tier 1 actions
+    without repeated step-up verification on every call, if trust history is strong.
+    This increases social-engineering risk and must never apply to Tier 2+ actions.
+  status: ACTIVE
+  issued: "2026-02-07"
+  expires: "2026-05-07"
+  scope: "Voice interaction policy for delegate_standard principals"
+  owner: "root_human"
+  conditions:
+    - "Tier 2 and Tier 3 always require explicit step-up verification"
+    - "All delegated actions remain capability-scoped and auditable"
+    - "Waiver reviewed monthly and renewed explicitly if needed"

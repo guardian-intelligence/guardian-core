@@ -12,6 +12,7 @@ logs/
 # Secrets
 *.keys.json
 .env
+server/.env
 
 # Template backups (BCP rolling backups inside containers)
 _backups/

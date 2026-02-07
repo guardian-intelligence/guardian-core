@@ -1,0 +1,300 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dcp://guardian_core.theory/guardian_preparedness/answer.schema@1",
+  "title": "Guardian Preparedness Answer Bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "schema_version", "kind", "meta", "payload"],
+  "properties": {
+    "schema": {
+      "const": "gpre.guardian_preparedness_answer_bundle.v1"
+    },
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "kind": {
+      "const": "gpre.guardian_preparedness_answer_bundle"
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "generated_at_utc",
+        "model_id",
+        "heuristic_source_path",
+        "scenarios_source_path"
+      ],
+      "properties": {
+        "generated_at_utc": { "type": "string" },
+        "model_id": { "type": "string", "minLength": 1 },
+        "model_family": { "type": "string" },
+        "heuristic_source_path": { "type": "string", "minLength": 1 },
+        "scenarios_source_path": { "type": "string", "minLength": 1 }
+      }
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "selected_heuristic",
+        "answered_scenario_count",
+        "scenario_answers"
+      ],
+      "properties": {
+        "selected_heuristic": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["selector_index", "condition", "then_modes", "avoid_modes"],
+          "properties": {
+            "selector_index": { "type": "integer", "minimum": 0 },
+            "condition": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["if"],
+              "properties": {
+                "if": { "type": "object", "minProperties": 1 }
+              }
+            },
+            "then_modes": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "integer", "minimum": 1, "maximum": 81 }
+            },
+            "avoid_modes": {
+              "type": "array",
+              "items": { "type": "integer", "minimum": 1, "maximum": 81 }
+            }
+          }
+        },
+        "answered_scenario_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "scenario_answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/scenarioAnswer"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "conditionNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "node_id",
+        "node_type",
+        "condition",
+        "yes_node_id",
+        "no_node_id"
+      ],
+      "properties": {
+        "node_id": { "type": "string", "minLength": 1 },
+        "node_type": { "const": "condition" },
+        "condition": { "type": "string", "minLength": 1 },
+        "yes_node_id": { "type": "string", "minLength": 1 },
+        "no_node_id": { "type": "string", "minLength": 1 }
+      }
+    },
+    "actionNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node_id", "node_type", "action", "next_node_id"],
+      "properties": {
+        "node_id": { "type": "string", "minLength": 1 },
+        "node_type": { "const": "action" },
+        "action": { "type": "string", "minLength": 1 },
+        "next_node_id": { "type": "string", "minLength": 1 }
+      }
+    },
+    "terminalNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "node_id",
+        "node_type",
+        "terminal_result",
+        "terminal_reason"
+      ],
+      "properties": {
+        "node_id": { "type": "string", "minLength": 1 },
+        "node_type": { "const": "terminal" },
+        "terminal_result": {
+          "type": "string",
+          "enum": ["allow", "deny", "defer", "escalate"]
+        },
+        "terminal_reason": { "type": "string", "minLength": 1 }
+      }
+    },
+    "decisionTree": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry_node_id", "nodes"],
+      "properties": {
+        "entry_node_id": { "type": "string", "minLength": 1 },
+        "nodes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "oneOf": [
+              { "$ref": "#/$defs/conditionNode" },
+              { "$ref": "#/$defs/actionNode" },
+              { "$ref": "#/$defs/terminalNode" }
+            ]
+          }
+        }
+      }
+    },
+    "mustDoEval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requirement", "status", "node_ids"],
+      "properties": {
+        "requirement": { "type": "string", "minLength": 1 },
+        "status": {
+          "type": "string",
+          "enum": ["satisfied", "partial", "unsatisfied"]
+        },
+        "node_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "mustNotEval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requirement", "status", "node_ids"],
+      "properties": {
+        "requirement": { "type": "string", "minLength": 1 },
+        "status": {
+          "type": "string",
+          "enum": ["guarded", "at_risk", "violated"]
+        },
+        "node_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "evidenceEval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_item", "status", "node_ids"],
+      "properties": {
+        "evidence_item": { "type": "string", "minLength": 1 },
+        "status": {
+          "type": "string",
+          "enum": ["planned", "partial", "missing"]
+        },
+        "node_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "scenarioAnswer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scenario_id",
+        "risk_tier_target",
+        "reasoning_scope",
+        "decision_tree",
+        "requirement_trace",
+        "non_negotiable_alignment",
+        "reversible_first",
+        "final_disposition_policy",
+        "confidence"
+      ],
+      "properties": {
+        "scenario_id": {
+          "type": "string",
+          "pattern": "^GSS-[0-9]{3}$"
+        },
+        "risk_tier_target": {
+          "type": "string",
+          "enum": ["T1", "T2", "T3"]
+        },
+        "reasoning_scope": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["primary_mode", "supporting_modes", "mode_rationale"],
+          "properties": {
+            "primary_mode": { "type": "integer", "minimum": 1, "maximum": 81 },
+            "supporting_modes": {
+              "type": "array",
+              "items": { "type": "integer", "minimum": 1, "maximum": 81 }
+            },
+            "mode_rationale": { "type": "string", "minLength": 1 }
+          }
+        },
+        "decision_tree": {
+          "$ref": "#/$defs/decisionTree"
+        },
+        "requirement_trace": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "must_do_evaluation",
+            "must_not_evaluation",
+            "required_evidence_plan"
+          ],
+          "properties": {
+            "must_do_evaluation": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/mustDoEval" }
+            },
+            "must_not_evaluation": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/mustNotEval" }
+            },
+            "required_evidence_plan": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/evidenceEval" }
+            }
+          }
+        },
+        "non_negotiable_alignment": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "reversible_first": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["applies", "rationale"],
+          "properties": {
+            "applies": { "type": "boolean" },
+            "rationale": { "type": "string", "minLength": 1 }
+          }
+        },
+        "final_disposition_policy": {
+          "type": "string",
+          "enum": ["allow", "deny", "defer", "escalate"]
+        },
+        "confidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["level", "rationale"],
+          "properties": {
+            "level": {
+              "type": "string",
+              "enum": ["low", "medium", "high"]
+            },
+            "rationale": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    }
+  }
+}

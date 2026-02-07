@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  root:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - name: Install
+        run: nix develop --command bun install --frozen-lockfile
+      - name: Typecheck
+        run: nix develop --command bun run typecheck
+      - name: Test
+        run: nix develop --command bun run test
+      - name: Build
+        run: nix develop --command bun run build
+      - name: Lint
+        run: nix develop --command bun run lint
+
+  server:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - name: Install server deps
+        run: nix develop --command bun --cwd server install --frozen-lockfile
+      - name: Typecheck server
+        run: nix develop --command bun --cwd server run typecheck
+
+  agent-runner:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - name: Install agent-runner deps
+        run: nix develop --command bun --cwd container/agent-runner install --frozen-lockfile
+      - name: Build agent-runner
+        run: nix develop --command bun --cwd container/agent-runner run build

@@ -1,0 +1,16 @@
+waiver:
+  id: WVR-0002
+  title: "Temporary checksum-only release verification"
+  description: |
+    For usability in personal operations, release verification may rely on
+    SHA-256 checksums instead of full keyless signing/provenance for a limited period.
+    This lowers supply-chain assurance and must be replaced with stronger signing.
+  status: ACTIVE
+  issued: "2026-02-07"
+  expires: "2026-06-07"
+  scope: "Release procedure for non-critical personal deployments"
+  owner: "root_human"
+  conditions:
+    - "Checksums must be published and validated before deploy"
+    - "Critical deployments should still prefer signed artifacts"
+    - "Migration to keyless signing tracked as explicit backlog"

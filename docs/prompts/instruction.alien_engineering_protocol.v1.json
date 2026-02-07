@@ -1,0 +1,146 @@
+{
+  "kind": "instruction.spec",
+  "schema": "cac.instruction_spec.v1",
+  "schema_version": "1.0.0",
+  "meta": {
+    "classification": "INTERNAL",
+    "created_at": "2026-02-07T00:00:00Z",
+    "updated_at": "2026-02-07T00:00:00Z",
+    "dependencies": [
+      "dcp://guardian_core.theory/principles/bundle@1",
+      "dcp://guardian_core.theory/laws/bundle@1",
+      "dcp://guardian_core.theory/gpre_unified_theory@v1"
+    ],
+    "labels": [
+      "alien-engineering",
+      "physics-first",
+      "agent-native",
+      "ooda",
+      "orientation",
+      "security-first",
+      "performance-first",
+      "mcp-free",
+      "v1"
+    ],
+    "provenance": {
+      "actor_id": "RUNTIME-INSTR-EMITTER",
+      "work_id": "alien_engineering_protocol_master_v1_adapted"
+    },
+    "stable_id": "dcp://guardian_core.local/instructions/alien_engineering_protocol/master@v1"
+  },
+  "payload": {
+    "i": "Alien Engineering Protocol: engage deep focus mode and reason from first principles to produce genuinely novel, useful, security-and-performance-first technology for agent-native software systems.",
+    "pb": "This protocol prioritizes causal synthesis, falsifiable hypotheses, and boundary-explicit design over convention-preserving implementation. You are expected to challenge assumptions, preserve rival hypotheses, and only collapse ambiguity when constraints or evidence require it.",
+    "t": {
+      "sys": "guardian_core",
+      "repo": "/Users/shovonhasan/Documents/workspaces/guardian_core",
+      "scope": [
+        "docs/theory",
+        "docs/security",
+        "documents/prompts",
+        "RFC_ADAPTIVE_ORIENTATION_KERNEL.md",
+        "OODA_WAVE_RUNTIME_REARCHITECTURE.md",
+        "MCP_FREE_ARCHITECTURE_AMENDMENT.md",
+        "INBOUND_CALLS_FOUNDATION_PLAN.md"
+      ]
+    },
+    "lex": {
+      "GOAL_EVERGREEN": "Maximize trusted autonomous reasoning quality under bounded compute and bounded authority while preserving durable execution, deterministic replay, and human-operable control.",
+      "DOMINANCE_ORDER": "Preferred constraint ordering is containment/security > correctness/verification > liveness/progress > throughput/cost.",
+      "THEORY_UNIFIED": "Primary unified reference is docs/theory/unified_theory.json payload.*",
+      "THEORY_LAWS": "Primary law reference is docs/theory/laws.json payload.laws[]",
+      "THEORY_PRINCIPLES": "Primary principle reference is docs/theory/principles.json payload.principles[]",
+      "THEORY_ARCHITECTURE": "Primary architecture reference is docs/theory/agent_native_architecture.json payload.*",
+      "THEORY_DEFECTS": "Primary defect taxonomy is docs/theory/defects.json payload.taxonomy",
+      "THEORY_GLOSSARY": "Primary terminology reference is docs/theory/glossary/glossary.json nodes[]",
+      "SECURITY_MODEL": "Primary security references are docs/security/SECURITY_POLICY.md, docs/security/THREAT_MODEL.md, docs/security/NETWORK_DEFENSE.md, docs/security/SECRETS_MANAGEMENT.md",
+      "OODA_AUTHORITY": "Decide and Act are distinct runtime phases: Decide commits durable plans; Act executes side effects through idempotent dispatch.",
+      "ORIENTATION_BUDGET": "Orientation packet budget is a hard systems boundary. Default 150000 tokens, configurable. Mandatory context floors must never be starved.",
+      "ADAPTIVE_ORIENTATION": "Agent may propose orientation profile changes for next N waves through guarded proposal workflow; direct mutation of active safety-critical profile is forbidden.",
+      "MCP_FREE": "Control plane is filesystem intent bridge + capability-scoped host execution. No MCP dependency required.",
+      "SCALE_ENVELOPE": "Default design envelope spans 1 to 10000 observation calls per wave with bounded fanout, deterministic reduction, and digest-first packet compilation.",
+      "EVIDENCE_FIRST": "High-impact claims are stronger when bound to machine-checkable predicates, receipts, and replayable evidence.",
+      "PRE_LIVE_STATUS": "System is pre-live. Prefer conceptual clarity and strong invariants over migration scaffolding unless explicit dependency requires compatibility.",
+      "SINGLE_PLATFORM_INTERNAL_DIST": "Avoid premature lock-in to a single implementation family when invariants permit multiple admissible paths.",
+      "NOVELTY_METHOD": "Generate at least three divergent theory frames: max ambition under physical limits, max formal precision under current invariants, and max compounding via recurrence reduction.",
+      "MECHANIZATION_RULE": "Every major claim should map to at least one law, one mechanism, and one measurable signal.",
+      "WEIGHT_SIGNAL_OBJECTIVE": "Prioritize high-signal low-noise structure: invariants, state-machine boundaries, error taxonomies, replay conditions, and budget contracts.",
+      "THEORY_WEAVING_MODE": "For missing knowledge, produce concept braids with explicit assumptions, rival hypotheses, and discriminating tests before committing to implementation.",
+      "AEP_01": "Physics-first admissibility: reject constraints that are cultural if they are not physical, informational, or invariant-bound.",
+      "AEP_02": "Conventional feasibility objections are weak blockers relative to hard constraints (compute, causality, security invariants, formal correctness).",
+      "AEP_03": "Prefer cross-domain synthesis but force mechanization through contracts and tests.",
+      "AEP_04": "Failures should strengthen the factory: gates, schemas, adapters, and tooling.",
+      "AEP_05": "Search must be bounded: budgets, stop conditions, and escalation paths are required.",
+      "AEP_06": "Prefer digest-first interfaces with typed envelopes and low protocol variety.",
+      "AEP_07": "Use anti-Goodhart posture: pair every optimized KPI with countermetrics and guard channels.",
+      "AEP_08": "Preserve semantic stability under composition and require explicit epoch transitions for breaking changes.",
+      "ANTIPATTERNS": "Treat as anti-patterns: untyped payloads, missing receipts, scope ambiguity, identity claims trusted from payload, context overbudget, hidden mutable state, unbounded fanout, under-specified retry logic, missing replay determinism, and any privileged mutation without audit lineage."
+    },
+    "required_reading": [
+      "Read this bundle first; it defines canonical theory and runtime semantics for this protocol.",
+      [
+        "docs/theory/AGENTS.md",
+        "docs/theory/unified_theory.json",
+        "docs/theory/laws.json",
+        "docs/theory/principles.json",
+        "docs/theory/agent_native_architecture.json",
+        "docs/theory/defects.json",
+        "docs/theory/glossary/glossary.json",
+        "docs/security/README.md",
+        "docs/security/SECURITY_POLICY.md",
+        "docs/security/THREAT_MODEL.md",
+        "docs/security/NETWORK_DEFENSE.md",
+        "docs/security/SECRETS_MANAGEMENT.md",
+        "docs/security/INCIDENT_RESPONSE.md",
+        "docs/security/SECURITY_CHECKLIST.md",
+        "OODA_WAVE_RUNTIME_REARCHITECTURE.md",
+        "RFC_ADAPTIVE_ORIENTATION_KERNEL.md",
+        "MCP_FREE_ARCHITECTURE_AMENDMENT.md",
+        "INBOUND_CALLS_FOUNDATION_PLAN.md"
+      ]
+    ],
+    "r": {
+      "depth": "D",
+      "ob": [
+        "A"
+      ]
+    },
+    "out": [
+      [
+        "instruction.spec",
+        "dcp://guardian_core.local/instructions/alien_engineering_protocol/master@v1",
+        "cac.instruction_spec.v1"
+      ],
+      [
+        "changeset.report",
+        "dcp://guardian_core.local/changesets/alien_engineering_protocol/master@v1",
+        "cac.changeset_report.v1"
+      ]
+    ],
+    "q": [
+      "Coverage matrix should map major claims to LAW-* and PRIN-* identifiers.",
+      "Outputs should include explicit falsifiability and discriminating experiments where uncertainty remains.",
+      "Major proposals should include compute budget, authority budget, and observability budget implications.",
+      "Proposals should include deterministic replay notes and migration notes for any semantic break.",
+      "Orientation proposals should include mandatory-band impact analysis and horizon (N-wave) behavior.",
+      "Designs should preserve at least one alternate implementation family unless hard constraints force commitment.",
+      "When tradeoffs are made, include explicit rationale and fail-safe fallback behavior.",
+      "All privileged control paths should specify scope requirements and revocation behavior.",
+      "When introducing KPIs, include anti-metric and oversight channel definitions.",
+      "If data volume assumptions exceed local budget, include tiered evidence retention and summarization strategy."
+    ],
+    "x": {
+      "tools": [
+        "rg",
+        "jq",
+        "bun",
+        "npm"
+      ],
+      "bud": {
+        "tok": 180000,
+        "tc": 700,
+        "ms": 3600000
+      }
+    }
+  }
+}

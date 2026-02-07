@@ -53,7 +53,7 @@ Add `-- --dry-run` to preview without executing.
 | Typecheck fails | Fix type errors before deploying |
 | Tests fail | Fix failing tests — deploy aborts on test failure |
 | Service won't start | Check `logs/guardian-core.log` and `logs/guardian-core.error.log` |
-| Container build fails | Run `container builder prune -af` then retry |
+| Container build fails | Run `docker builder prune -af` then retry |
 | launchd not loading | `launchctl load ~/Library/LaunchAgents/com.guardian-core.plist` |
 
 ## Deploying Server (server)

@@ -1,0 +1,360 @@
+{
+  "schema": "gpre.theory.unified.v1",
+  "schema_version": "1.0.0",
+  "kind": "gpre.unified_theory",
+  "meta": {
+    "stable_id": "dcp://guardian_core.theory/gpre_unified_theory@v1",
+    "classification": "INTERNAL",
+    "created_at": "2026-02-07T00:00:00Z",
+    "updated_at": "2026-02-07T00:00:00Z",
+    "labels": [
+      "agent-native",
+      "ooda",
+      "durable-execution",
+      "structured-data",
+      "ocap",
+      "orientation",
+      "outbox",
+      "observability",
+      "replay"
+    ],
+    "provenance": {
+      "actor_id": "RUNTIME-ARCHITECTURE",
+      "work_id": "DOC-GPRE-UNIFIED-THEORY-0001",
+      "notes": [
+        "Defines agents as general-purpose reasoning engines over structured data executing compute.",
+        "Designed for machine-readability, operationalization, and direct mapping to gates and tests.",
+        "Normative nodes are enforceable; explanatory nodes provide rationale only."
+      ]
+    }
+  },
+  "payload": {
+    "doc": {
+      "id": "GPRE-UNIFIED-THEORY-0001",
+      "title": "Grand Unified Theory of Agent-Native Software",
+      "subtitle": "General-Purpose Reasoning Engines Over Structured Data Executing Compute",
+      "status": "draft",
+      "effective_date": "2026-02-07",
+      "audience": [
+        "runtime",
+        "policy",
+        "security",
+        "orchestration",
+        "tooling",
+        "operations"
+      ]
+    },
+    "symbols": {
+      "W": "orientation token budget",
+      "E": "event set",
+      "F": "normalized fact set",
+      "P": "active orientation profile",
+      "A": "action plan",
+      "R": "receipt set",
+      "S": "system state projection",
+      "L": "authoritative ledger subset"
+    },
+    "node_classes": {
+      "enforceable": [
+        "NORMATIVE"
+      ],
+      "non_enforceable": [
+        "EXPLANATORY",
+        "BACKGROUND"
+      ],
+      "enforcement_rule": "Only NORMATIVE nodes may be consumed by policy/gates/linters"
+    },
+    "thesis": {
+      "one_line": "An agent runtime is a closed-loop control system that converts external facts into bounded orientation, commits decisions as durable plans, executes side effects through idempotent adapters, and continuously improves by turning counterexamples into stronger constraints.",
+      "claims": {
+        "THESIS-01": {
+          "node_class": "NORMATIVE",
+          "statement": "Reasoning quality is a function of structured orientation quality under bounded budget, not raw model capability.",
+          "law_refs": [
+            "LAW-02",
+            "LAW-04",
+            "LAW-15"
+          ]
+        },
+        "THESIS-02": {
+          "node_class": "NORMATIVE",
+          "statement": "Authority arises from verified capabilities and policy predicates, never from model output text.",
+          "law_refs": [
+            "LAW-05",
+            "LAW-09",
+            "LAW-10"
+          ]
+        },
+        "THESIS-03": {
+          "node_class": "NORMATIVE",
+          "statement": "Correctness under failure requires at-least-once ingest + idempotent effect execution + deterministic replay.",
+          "law_refs": [
+            "LAW-03",
+            "LAW-07",
+            "LAW-08"
+          ]
+        },
+        "THESIS-04": {
+          "node_class": "NORMATIVE",
+          "statement": "Decide and Act are distinct phases: decisions are durable commitments; acts are externalized effects.",
+          "law_refs": [
+            "LAW-06",
+            "LAW-07"
+          ]
+        },
+        "THESIS-05": {
+          "node_class": "NORMATIVE",
+          "statement": "Adaptive attention is allowed only within meta-policy guardrails that preserve safety-critical context floors.",
+          "law_refs": [
+            "LAW-13",
+            "LAW-14",
+            "LAW-19"
+          ]
+        }
+      }
+    },
+    "fundamental_constraints": {
+      "C-01": {
+        "node_class": "NORMATIVE",
+        "statement": "Durability before acknowledgment for all externally observed success paths.",
+        "law_refs": [
+          "LAW-03"
+        ]
+      },
+      "C-02": {
+        "node_class": "NORMATIVE",
+        "statement": "All privileged mutations require capability verification and audit emission.",
+        "law_refs": [
+          "LAW-05",
+          "LAW-10",
+          "LAW-16"
+        ]
+      },
+      "C-03": {
+        "node_class": "NORMATIVE",
+        "statement": "Orientation packet token usage must satisfy token_used <= W and mandatory band floors.",
+        "law_refs": [
+          "LAW-04",
+          "LAW-15"
+        ]
+      },
+      "C-04": {
+        "node_class": "NORMATIVE",
+        "statement": "State transitions must be explicit finite-state transitions; invalid transitions are rejected.",
+        "law_refs": [
+          "LAW-06",
+          "LAW-08"
+        ]
+      }
+    },
+    "control_loops": {
+      "ooda_wave": {
+        "node_class": "NORMATIVE",
+        "phases": [
+          "observe",
+          "orient",
+          "decide",
+          "act",
+          "learn"
+        ],
+        "phase_contracts": {
+          "observe": "Acquire and normalize facts with provenance and bounded fanout.",
+          "orient": "Compile bounded orientation packet from facts and profile.",
+          "decide": "Commit durable action plan and preconditions.",
+          "act": "Dispatch side effects through outbox with idempotency keys.",
+          "learn": "Ingest receipts/outcomes, update projections, score orientation quality."
+        }
+      }
+    },
+    "state_machines": {
+      "event_lifecycle": {
+        "node_class": "NORMATIVE",
+        "states": [
+          "ingested",
+          "claimable",
+          "leased",
+          "acked",
+          "nacked",
+          "dead_lettered"
+        ],
+        "terminals": [
+          "acked",
+          "dead_lettered"
+        ],
+        "invariants": [
+          "not (acked and dead_lettered)",
+          "max one active lease",
+          "expired lease returns claimable"
+        ]
+      },
+      "wave_lifecycle": {
+        "node_class": "NORMATIVE",
+        "states": [
+          "created",
+          "orienting",
+          "deciding",
+          "acting",
+          "learning",
+          "completed",
+          "failed_retryable",
+          "failed_terminal"
+        ],
+        "terminals": [
+          "completed",
+          "failed_terminal"
+        ]
+      },
+      "action_lifecycle": {
+        "node_class": "NORMATIVE",
+        "states": [
+          "planned",
+          "queued",
+          "dispatched",
+          "confirmed",
+          "failed_retryable",
+          "failed_terminal"
+        ],
+        "terminals": [
+          "confirmed",
+          "failed_terminal"
+        ]
+      }
+    },
+    "truth_topology": {
+      "authoritative": [
+        "events",
+        "wave_runs",
+        "outbox_actions",
+        "action_receipts",
+        "audit_log",
+        "capability_tokens",
+        "call_policy",
+        "orientation_profiles",
+        "orientation_packets"
+      ],
+      "projected": [
+        "dashboards",
+        "summaries",
+        "operator_views",
+        "cached_context"
+      ],
+      "rule": "Operational decisions must bind to authoritative records, not projection-only data."
+    },
+    "mechanisms": {
+      "MECH-EVENT-INBOX": {
+        "purpose": "At-least-once ingestion with lease lifecycle",
+        "law_refs": [
+          "LAW-03",
+          "LAW-07",
+          "LAW-11"
+        ]
+      },
+      "MECH-WAVE-FSM": {
+        "purpose": "Deterministic OODA phase transitions",
+        "law_refs": [
+          "LAW-06",
+          "LAW-08"
+        ]
+      },
+      "MECH-OUTBOX": {
+        "purpose": "Exactly-once-effect illusion through idempotent dispatch",
+        "law_refs": [
+          "LAW-07",
+          "LAW-08"
+        ]
+      },
+      "MECH-CAPABILITY-TOKENS": {
+        "purpose": "Scoped authority enforcement with revocation",
+        "law_refs": [
+          "LAW-05",
+          "LAW-10"
+        ]
+      },
+      "MECH-ORIENTATION-COMPILER": {
+        "purpose": "Compile bounded context under profile constraints",
+        "law_refs": [
+          "LAW-04",
+          "LAW-15"
+        ]
+      },
+      "MECH-PROFILE-PROPOSALS": {
+        "purpose": "Guarded adaptation over next N waves",
+        "law_refs": [
+          "LAW-13",
+          "LAW-19"
+        ]
+      },
+      "MECH-NAMESPACE-IDENTITY": {
+        "purpose": "Host-derived identity for intent trust boundary",
+        "law_refs": [
+          "LAW-10",
+          "LAW-14"
+        ]
+      },
+      "MECH-AUDIT-LINEAGE": {
+        "purpose": "Traceable causal lineage across event-wave-action-receipt",
+        "law_refs": [
+          "LAW-16"
+        ]
+      }
+    },
+    "risk_model": {
+      "tiers": [
+        {
+          "id": "T0",
+          "name": "informational",
+          "policy": "degrade gracefully"
+        },
+        {
+          "id": "T1",
+          "name": "low-impact",
+          "policy": "allow with bounded safeguards"
+        },
+        {
+          "id": "T2",
+          "name": "high-impact",
+          "policy": "strict verification and explicit authorization"
+        },
+        {
+          "id": "T3",
+          "name": "critical",
+          "policy": "fail-closed, explicit human approval unless emergency policy"
+        }
+      ]
+    },
+    "metrics_and_signals": {
+      "core": [
+        "events_pending",
+        "events_in_flight",
+        "wave_duration_ms",
+        "orientation_token_used",
+        "outbox_retry_total",
+        "dead_letter_total",
+        "intent_reject_total",
+        "policy_eval_latency_ms"
+      ],
+      "quality": [
+        "decision_regret_rate",
+        "missed_signal_rate",
+        "context_waste_ratio"
+      ]
+    },
+    "invariants": {
+      "INV-01": "No event is both acked and dead-lettered.",
+      "INV-02": "At most one active lease owner per event.",
+      "INV-03": "Outbox idempotency key maps to at most one externally effective dispatch.",
+      "INV-04": "Policy version is monotonic.",
+      "INV-05": "Orientation packet budget never exceeded.",
+      "INV-06": "Every privileged mutation is auditable with actor + action + target."
+    },
+    "verification_economics": {
+      "objective": "Minimize verification work per unit of trusted progress",
+      "controls": [
+        "structured data first",
+        "digest references over raw blobs",
+        "deterministic reducers",
+        "risk-tiered gate strength"
+      ]
+    }
+  }
+}

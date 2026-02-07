@@ -1,0 +1,363 @@
+{
+  "kind": "glossary.graph",
+  "meta": {
+    "stable_id": "dcp://guardian_core.theory/glossary@v1",
+    "classification": "INTERNAL",
+    "created_at": "2026-02-07T00:00:00Z"
+  },
+  "nodes": [
+    {
+      "id": "term:agent",
+      "term": "Agent",
+      "definition": "A general-purpose reasoning engine over structured data executing compute under bounded authority and budgets.",
+      "operationalization": "Runtime loop represented by wave phases in `server/src/lib/wave.ts`.",
+      "theory_refs": ["LAW-01", "LAW-06"],
+      "implementation_refs": ["server/src/lib/wave.ts"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:wave",
+      "term": "Wave",
+      "definition": "One full OODA cycle bound to a triggering event and trace lineage.",
+      "operationalization": "Persisted in `wave_runs` with phase transitions and timestamps.",
+      "theory_refs": ["LAW-01", "LAW-08"],
+      "implementation_refs": ["server/src/lib/wave.ts", "server/src/lib/db.ts"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:event",
+      "term": "Event",
+      "definition": "A durable normalized fact entering the runtime substrate.",
+      "operationalization": "Stored in `events` and managed by enqueue/claim/ack/nack/DLQ semantics.",
+      "theory_refs": ["LAW-03", "LAW-11"],
+      "implementation_refs": ["server/src/lib/inbox.ts"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:lease",
+      "term": "Lease",
+      "definition": "Exclusive, time-bounded ownership of an event/action for processing.",
+      "operationalization": "Lease fields in `events` with expiration-based reclaim.",
+      "theory_refs": ["LAW-11"],
+      "implementation_refs": ["server/src/lib/inbox.ts", "server/src/lib/db.ts"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:ooda",
+      "term": "OODA",
+      "definition": "Observe, Orient, Decide, Act, Learn control loop for agent execution.",
+      "operationalization": "Wave orchestrator FSM enforcing phase contracts.",
+      "theory_refs": ["LAW-01", "LAW-06"],
+      "implementation_refs": ["server/src/lib/wave.ts"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:observe",
+      "term": "Observe Phase",
+      "definition": "Fact acquisition and normalization under bounded fanout.",
+      "operationalization": "Observation planner and collectors with per-source quotas.",
+      "theory_refs": ["LAW-12", "LAW-15"],
+      "implementation_refs": ["server/src/lib/wave.ts"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:orient",
+      "term": "Orient Phase",
+      "definition": "Compilation of a bounded orientation packet from scored facts and profile constraints.",
+      "operationalization": "Orientation compiler with token bands and deterministic tie-breakers.",
+      "theory_refs": ["LAW-04", "LAW-15"],
+      "implementation_refs": ["server/src/lib/wave.ts"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:decide",
+      "term": "Decide Phase",
+      "definition": "Durable commitment of action plan and preconditions.",
+      "operationalization": "Insert outbox actions transactionally before dispatch.",
+      "theory_refs": ["LAW-06", "LAW-07"],
+      "implementation_refs": ["server/src/lib/outbox.ts"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:act",
+      "term": "Act Phase",
+      "definition": "Execution of planned side effects through adapters with retries and receipts.",
+      "operationalization": "Claim dispatchable outbox rows and persist action receipts.",
+      "theory_refs": ["LAW-07", "LAW-11"],
+      "implementation_refs": ["server/src/lib/outbox.ts"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:learn",
+      "term": "Learn Phase",
+      "definition": "Outcome ingestion and adaptation signal generation.",
+      "operationalization": "Record feedback, quality signals, and adaptation candidates.",
+      "theory_refs": ["LAW-19"],
+      "implementation_refs": ["server/src/lib/wave.ts"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:orientation_profile",
+      "term": "Orientation Profile",
+      "definition": "Versioned policy defining what the agent should prioritize and how budget is allocated.",
+      "operationalization": "Stored as immutable versions with proposal-based evolution.",
+      "theory_refs": ["LAW-13", "LAW-19"],
+      "implementation_refs": ["server/src/lib/db.ts"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:orientation_packet",
+      "term": "Orientation Packet",
+      "definition": "Compiled context packet bounded by token budget and mandatory floors.",
+      "operationalization": "Persisted with digest for deterministic replay verification.",
+      "theory_refs": ["LAW-04", "LAW-08", "LAW-15"],
+      "implementation_refs": ["server/src/lib/db.ts"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:budget_band",
+      "term": "Budget Band",
+      "definition": "Named allocation band inside orientation budget (identity, objectives, capabilities, situational, exploration, reserve).",
+      "operationalization": "Enforced by orientation compiler and guard validator.",
+      "theory_refs": ["LAW-04", "LAW-13"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:outbox",
+      "term": "Transactional Outbox",
+      "definition": "Durable queue of planned external actions ensuring decouple-and-retry semantics.",
+      "operationalization": "`outbox_actions` table with idempotency and retry metadata.",
+      "theory_refs": ["LAW-06", "LAW-07", "LAW-11"],
+      "implementation_refs": ["server/src/lib/outbox.ts", "server/src/lib/db.ts"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:action_receipt",
+      "term": "Action Receipt",
+      "definition": "Machine-verifiable result record of an outbox action dispatch.",
+      "operationalization": "Stored in `action_receipts` with status and response payload.",
+      "theory_refs": ["LAW-16"],
+      "implementation_refs": ["server/src/lib/outbox.ts"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:idempotency_key",
+      "term": "Idempotency Key",
+      "definition": "Stable identifier used to deduplicate logically equivalent side effects.",
+      "operationalization": "Unique constraint in outbox and intent execution stores.",
+      "theory_refs": ["LAW-07"],
+      "implementation_refs": ["server/src/lib/outbox.ts", "src/intent-processor.ts"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:capability",
+      "term": "Capability Token",
+      "definition": "Unforgeable bearer authority object with scope, subject, and expiry constraints.",
+      "operationalization": "Issued and verified through hashed token storage.",
+      "theory_refs": ["LAW-05"],
+      "implementation_refs": ["server/src/lib/capabilities.ts"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:scope",
+      "term": "Scope",
+      "definition": "Atomic permission string that authorizes a bounded action class.",
+      "operationalization": "Validated in middleware and service-layer checks.",
+      "theory_refs": ["LAW-05", "LAW-17"],
+      "implementation_refs": ["server/src/middleware/capability.ts"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:root_token",
+      "term": "Bootstrap Root Token",
+      "definition": "Temporary high-authority token used only to mint operational scoped tokens.",
+      "operationalization": "Written once to secure file with owner-only permissions.",
+      "theory_refs": ["LAW-05", "LAW-16"],
+      "implementation_refs": ["server/src/lib/bootstrap.ts"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:policy",
+      "term": "Call Policy",
+      "definition": "Versioned decision policy governing inbound call handling and trust behavior.",
+      "operationalization": "Append-only `call_policy` versions with fail-closed defaults.",
+      "theory_refs": ["LAW-09", "LAW-20"],
+      "implementation_refs": ["server/src/lib/call-policy.ts"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:risk_tier",
+      "term": "Risk Tier",
+      "definition": "Impact class controlling required verification and authorization strength.",
+      "operationalization": "Tier-driven gates in policy and execution checks.",
+      "theory_refs": ["LAW-09", "LAW-14"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:trust_score",
+      "term": "Identity Trust Score",
+      "definition": "Confidence estimate for principal identity, used for step-up gating decisions.",
+      "operationalization": "Compared against minimum assurance thresholds by risk tier.",
+      "theory_refs": ["LAW-14"],
+      "node_class": "EXPLANATORY"
+    },
+    {
+      "id": "term:intent",
+      "term": "Intent",
+      "definition": "Structured request emitted by agent to host runtime over filesystem bridge.",
+      "operationalization": "Validated envelope in `src/intent-schemas.ts` and processed by host.",
+      "theory_refs": ["LAW-02", "LAW-10"],
+      "implementation_refs": ["src/intent-schemas.ts", "src/intent-processor.ts"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:intent_receipt",
+      "term": "Intent Receipt",
+      "definition": "Deterministic terminal result for an intent execution attempt.",
+      "operationalization": "Written atomically in IPC receipts namespace.",
+      "theory_refs": ["LAW-07", "LAW-16"],
+      "implementation_refs": ["src/intent-processor.ts"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:namespace_identity",
+      "term": "Namespace-Derived Identity",
+      "definition": "Trusted source identity inferred from IPC mount namespace rather than payload claims.",
+      "operationalization": "Authorization decisions bind to derived group namespace.",
+      "theory_refs": ["LAW-10"],
+      "implementation_refs": ["src/index.ts", "src/intent-processor.ts"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:guard_validator",
+      "term": "Guard Validator",
+      "definition": "Deterministic checker ensuring adaptation proposals cannot violate safety constraints.",
+      "operationalization": "Evaluates profile proposal diffs against meta-policy floors and limits.",
+      "theory_refs": ["LAW-13", "LAW-19"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:proposal",
+      "term": "Profile Change Proposal",
+      "definition": "Structured request to tune orientation behavior for a bounded future horizon.",
+      "operationalization": "Stored with terminal decision status and audit references.",
+      "theory_refs": ["LAW-13", "LAW-19"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:horizon",
+      "term": "Horizon (N Waves)",
+      "definition": "Finite number of future waves for which a candidate orientation profile is active.",
+      "operationalization": "Proposal includes effective_waves and expiry semantics.",
+      "theory_refs": ["LAW-13", "LAW-19"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:deterministic_replay",
+      "term": "Deterministic Replay",
+      "definition": "Re-execution that reproduces equal transition traces for equal authoritative inputs.",
+      "operationalization": "Replay harness verifies digest and state-transition equivalence.",
+      "theory_refs": ["LAW-08"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:dlq",
+      "term": "Dead Letter Queue",
+      "definition": "Terminal holding path for failed work that exceeded retry policy or failed with non-retryable class.",
+      "operationalization": "Marked via dead_lettered state with reason code and operator tooling.",
+      "theory_refs": ["LAW-11"],
+      "implementation_refs": ["server/src/lib/inbox.ts"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:compensating_action",
+      "term": "Compensating Action",
+      "definition": "Follow-up action that mitigates impact when rollback is impossible.",
+      "operationalization": "Outbox action type tagged as compensation with linkage to original action.",
+      "theory_refs": ["LAW-18"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:trace_lineage",
+      "term": "Trace Lineage",
+      "definition": "Causal linkage graph across events, waves, actions, and receipts.",
+      "operationalization": "`trace_id` and lineage fields propagated at all mutation points.",
+      "theory_refs": ["LAW-16"],
+      "implementation_refs": ["server/src/lib/db.ts"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:adapter",
+      "term": "Adapter",
+      "definition": "Boundary component that maps outbox actions to external side effects under declared semantics.",
+      "operationalization": "Registry entry includes required scope, retry policy, idempotency model.",
+      "theory_refs": ["LAW-17"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:projection",
+      "term": "Projection",
+      "definition": "Derived read model computed from authoritative records for fast querying and operator UX.",
+      "operationalization": "Never treated as source of authority without backing references.",
+      "theory_refs": ["LAW-03", "LAW-08"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:meta_policy",
+      "term": "Meta-Policy",
+      "definition": "Non-agent-mutable safety envelope constraining adaptive behavior and authority boundaries.",
+      "operationalization": "Guard validator enforces immutable minimums and prohibitions.",
+      "theory_refs": ["LAW-13", "LAW-19"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:epoch",
+      "term": "Epoch",
+      "definition": "Version boundary representing a breaking semantic change in runtime or data contracts.",
+      "operationalization": "Requires explicit migration specification and replay compatibility strategy.",
+      "theory_refs": ["LAW-20"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:counterexample",
+      "term": "Counterexample",
+      "definition": "Observed behavior violating an invariant, law, or contract.",
+      "operationalization": "Captured as structured defect with evidence links and remediation workflow.",
+      "theory_refs": ["LAW-19"],
+      "implementation_refs": ["docs/theory/defects.json"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:replay_harness",
+      "term": "Replay Harness",
+      "definition": "Test/runtime utility that replays authoritative inputs to validate deterministic transitions.",
+      "operationalization": "Used in CI and migration verification to detect semantic drift.",
+      "theory_refs": ["LAW-08", "LAW-20"],
+      "node_class": "EXPLANATORY"
+    },
+    {
+      "id": "term:orientation_feedback",
+      "term": "Orientation Feedback",
+      "definition": "Structured quality signal connecting packet composition to downstream decision outcomes.",
+      "operationalization": "Persisted per wave for adaptation scoring.",
+      "theory_refs": ["LAW-19"],
+      "node_class": "NORMATIVE"
+    },
+    {
+      "id": "term:decision_regret",
+      "term": "Decision Regret Signal",
+      "definition": "Indicator that selected action underperformed relative to known or later-discovered alternatives.",
+      "operationalization": "Derived metric informing profile adaptation and defect triage.",
+      "theory_refs": ["LAW-19"],
+      "node_class": "EXPLANATORY"
+    },
+    {
+      "id": "term:verification_economics",
+      "term": "Verification Economics",
+      "definition": "Cost-quality tradeoff surface for proving correctness under bounded compute.",
+      "operationalization": "Measured as trusted progress per unit token/tool/time budget.",
+      "theory_refs": ["LAW-12", "LAW-16", "LAW-19"],
+      "node_class": "EXPLANATORY"
+    }
+  ]
+}

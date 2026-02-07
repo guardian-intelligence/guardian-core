@@ -8,7 +8,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { Cause, Effect, HashMap, Layer, List, LogLevel, Logger } from 'effect';
+import { Cause, Effect, HashMap, type Layer, List, Logger, LogLevel } from 'effect';
+
+import { redactLine } from './redact.js';
 
 // ---------------------------------------------------------------------------
 // ANSI constants
@@ -24,17 +26,14 @@ const NC = '\x1b[0m';
 // Log helpers — Effect.log with 'icon' annotation
 // ---------------------------------------------------------------------------
 
-export const info = (msg: string) =>
-	Effect.log(msg).pipe(Effect.annotateLogs('icon', 'info'));
+export const info = (msg: string) => Effect.log(msg).pipe(Effect.annotateLogs('icon', 'info'));
 
-export const ok = (msg: string) =>
-	Effect.log(msg).pipe(Effect.annotateLogs('icon', 'ok'));
+export const ok = (msg: string) => Effect.log(msg).pipe(Effect.annotateLogs('icon', 'ok'));
 
 export const warn = (msg: string) =>
 	Effect.logWarning(msg).pipe(Effect.annotateLogs('icon', 'warn'));
 
-export const fail = (msg: string) =>
-	Effect.logError(msg).pipe(Effect.annotateLogs('icon', 'fail'));
+export const fail = (msg: string) => Effect.logError(msg).pipe(Effect.annotateLogs('icon', 'fail'));
 
 // ---------------------------------------------------------------------------
 // ANSI console logger
@@ -55,9 +54,11 @@ const AnsiConsoleLogger = Logger.make(({ message, annotations }) => {
 	if (opt._tag === 'Some') iconValue = opt.value as string;
 
 	if (iconValue && iconPrefixes[iconValue]) {
-		globalThis.console.log(`${iconPrefixes[iconValue]} ${msg}`);
+		// biome-ignore lint/suspicious/noConsole: Deploy logger IS the console output layer
+		globalThis.console.log(`${iconPrefixes[iconValue]} ${redactLine(msg)}`);
 	} else {
-		globalThis.console.log(msg);
+		// biome-ignore lint/suspicious/noConsole: Deploy logger IS the console output layer
+		globalThis.console.log(redactLine(msg));
 	}
 });
 
@@ -96,31 +97,29 @@ function levelLabel(level: LogLevel.LogLevel): string {
 }
 
 function makeFileLogger(fd: number) {
-	return Logger.make(
-		({ logLevel, message, cause, annotations, spans, date }) => {
-			const entry: Record<string, unknown> = {
-				timestamp: date.toISOString(),
-				level: levelLabel(logLevel),
-				message: String(message),
-			};
+	return Logger.make(({ logLevel, message, cause, annotations, spans, date }) => {
+		const entry: Record<string, unknown> = {
+			timestamp: date.toISOString(),
+			level: levelLabel(logLevel),
+			message: String(message),
+		};
 
-			const ann = annotationsToRecord(annotations);
-			if (Object.keys(ann).length > 0) entry.annotations = ann;
+		const ann = annotationsToRecord(annotations);
+		if (Object.keys(ann).length > 0) entry.annotations = ann;
 
-			const sp = spansToRecord(spans);
-			if (Object.keys(sp).length > 0) entry.spans = sp;
+		const sp = spansToRecord(spans);
+		if (Object.keys(sp).length > 0) entry.spans = sp;
 
-			if (cause._tag !== 'Empty') {
-				entry.cause = Cause.pretty(cause);
-			}
+		if (cause._tag !== 'Empty') {
+			entry.cause = Cause.pretty(cause);
+		}
 
-			try {
-				fs.writeSync(fd, `${JSON.stringify(entry)}\n`);
-			} catch {
-				// Silently ignore disk errors to avoid crashing the deploy
-			}
-		},
-	);
+		try {
+			fs.writeSync(fd, redactLine(`${JSON.stringify(entry)}\n`));
+		} catch {
+			// Silently ignore disk errors to avoid crashing the deploy
+		}
+	});
 }
 
 // ---------------------------------------------------------------------------
@@ -146,15 +145,10 @@ function pruneOldLogs(dir: string, keep: number): void {
 // DeployLoggerLive layer
 // ---------------------------------------------------------------------------
 
-export function DeployLoggerLive(
-	target: string,
-): Layer.Layer<never> {
+export function DeployLoggerLive(target: string): Layer.Layer<never> {
 	const makeDualLogger = Effect.acquireRelease(
 		Effect.sync(() => {
-			const root = path.resolve(
-				path.dirname(new URL(import.meta.url).pathname),
-				'..',
-			);
+			const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 			const logDir = path.join(root, 'logs', 'deploy');
 			fs.mkdirSync(logDir, { recursive: true });
 

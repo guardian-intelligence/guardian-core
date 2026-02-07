@@ -132,26 +132,59 @@ assertions:
       remediation: "Only validate at system boundaries. Internal service calls trust types."
 ```
 
+## Brand Types
+
+Brand types add compile-time type refinement to prevent domain confusion (e.g., passing a `ChatJid` where a `GroupFolder` is expected).
+
+```typescript
+// Define in src/schemas.ts
+export const TaskId = Schema.String.pipe(Schema.brand('TaskId'));
+export type TaskId = typeof TaskId.Type;
+
+// Use in other schemas
+export const ScheduledTask = Schema.Struct({
+  id: TaskId,
+  // ...
+});
+
+// Decode at system boundaries (DB, JSON, external input)
+const decoded = Schema.decodeUnknownSync(TaskId)(rawString);
+```
+
+```yaml
+assertions:
+  ETS-03-040:
+    predicate: "Domain identity strings use Schema.brand"
+    on_fail:
+      severity: MAJOR
+      remediation: |
+        WRONG:  id: Schema.String
+        CORRECT: id: TaskId  (where TaskId = Schema.String.pipe(Schema.brand('TaskId')))
+
+  ETS-03-041:
+    predicate: "Branded types are decoded at system boundaries with Schema.decodeUnknownSync"
+    on_fail:
+      severity: MAJOR
+      remediation: |
+        SQLite returns plain objects. `row as ScheduledTask` silently skips branding.
+        Use Schema.decodeUnknownSync(ScheduledTask)(row) at the DB boundary.
+
+  ETS-03-042:
+    predicate: "Brand types are defined in src/schemas.ts alongside their schemas"
+    on_fail:
+      severity: MINOR
+      remediation: "Keep brand definitions co-located with the schemas that use them"
+```
+
 ## Legacy Types
 
-`src/types.ts` contains the old `interface`-based types. During migration:
-
-- New code uses Schema types from `src/schemas.ts`.
-- Legacy code continues using `src/types.ts`.
-- Legacy wrappers accept both (Schema types are structurally compatible).
-- `types.ts` is deleted in Phase 6 when all callers are migrated.
+`src/types.ts` has been deleted (Phase 3 complete). All types now live in `src/schemas.ts` using Effect Schema.
 
 ```yaml
 assertions:
   ETS-03-030:
-    predicate: "New code never imports from types.ts"
-    on_fail:
-      severity: MAJOR
-      remediation: "Import from schemas.ts instead"
-
-  ETS-03-031:
-    predicate: "Schema types are structurally compatible with legacy interfaces"
+    predicate: "No imports from types.ts exist"
     on_fail:
       severity: BLOCKER
-      remediation: "Legacy wrappers must work with both old and new callers"
+      remediation: "types.ts was deleted in Phase 3. Import from schemas.ts instead."
 ```

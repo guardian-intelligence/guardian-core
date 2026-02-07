@@ -1,0 +1,397 @@
+{
+  "schema": "gpre.theory.law_bundle.v1",
+  "schema_version": "1.0.0",
+  "kind": "gpre.law_bundle",
+  "meta": {
+    "stable_id": "dcp://guardian_core.theory/laws/bundle@1",
+    "classification": "INTERNAL",
+    "created_at": "2026-02-07T00:00:00Z",
+    "source_of_truth_ref": "docs/theory/unified_theory.json"
+  },
+  "payload": {
+    "version": "1.0.0",
+    "law_count": 20,
+    "laws": [
+      {
+        "id": "LAW-01",
+        "name": "Closed-Loop Authority",
+        "status": "active",
+        "statement": "No externally visible authoritative outcome may bypass Observe->Orient->Decide->Act->Learn closure.",
+        "verifier": {
+          "predicate_id": "LAW-01-CLOSED-LOOP",
+          "acceptance_predicate": "authoritative_outcome => wave_id_exists && phase_sequence_valid && receipt_or_reason_present",
+          "fail_closed": true
+        },
+        "failure_mode": [
+          "direct_side_effect_without_wave",
+          "missing_learn_phase_record"
+        ],
+        "remediation_pattern": [
+          "route_all_effects_via_wave_orchestrator",
+          "enforce_phase_guard_checks"
+        ]
+      },
+      {
+        "id": "LAW-02",
+        "name": "Structured Data Primacy",
+        "status": "active",
+        "statement": "Agent reasoning inputs and outputs must be represented as typed structured data before policy or execution.",
+        "verifier": {
+          "predicate_id": "LAW-02-STRUCTURED-FIRST",
+          "acceptance_predicate": "decision_or_effect => schema_validated_envelope",
+          "fail_closed": true
+        },
+        "failure_mode": [
+          "free_text_actuation",
+          "schema_drift"
+        ],
+        "remediation_pattern": [
+          "introduce_typed_schema",
+          "reject_untyped_payloads"
+        ]
+      },
+      {
+        "id": "LAW-03",
+        "name": "Durability Before Acknowledgment",
+        "status": "active",
+        "statement": "Success acknowledgments to external callers require durable persistence of the corresponding state transition.",
+        "verifier": {
+          "predicate_id": "LAW-03-DURABILITY-FIRST",
+          "acceptance_predicate": "acknowledged_success => committed_record_exists",
+          "fail_closed": true
+        },
+        "failure_mode": [
+          "ack_before_commit",
+          "volatile_success_state"
+        ],
+        "remediation_pattern": [
+          "transactional_write_before_response",
+          "idempotent_retry_on_commit_failure"
+        ]
+      },
+      {
+        "id": "LAW-04",
+        "name": "Bounded Orientation",
+        "status": "active",
+        "statement": "Orientation context is a bounded resource; packet token use must satisfy hard budget and mandatory floor constraints.",
+        "verifier": {
+          "predicate_id": "LAW-04-ORIENTATION-BOUNDS",
+          "acceptance_predicate": "orientation_packet => token_used<=budget && mandatory_floors_satisfied",
+          "fail_closed": true
+        },
+        "failure_mode": [
+          "budget_overflow",
+          "mandatory_context_starvation"
+        ],
+        "remediation_pattern": [
+          "budget_allocator_guardrails",
+          "band_floor_enforcement"
+        ]
+      },
+      {
+        "id": "LAW-05",
+        "name": "Capability-Contained Actuation",
+        "status": "active",
+        "statement": "All privileged actions require explicit capability scope checks; ambient authority is forbidden.",
+        "verifier": {
+          "predicate_id": "LAW-05-OCAP",
+          "acceptance_predicate": "privileged_mutation => valid_capability(scope,subject,expiry,revocation)",
+          "fail_closed": true
+        },
+        "failure_mode": [
+          "ambient_privilege",
+          "scope_bypass"
+        ],
+        "remediation_pattern": [
+          "enforce_scope_middleware",
+          "revoke_and_rotate_compromised_caps"
+        ]
+      },
+      {
+        "id": "LAW-06",
+        "name": "Decide-Act Separation",
+        "status": "active",
+        "statement": "Decision is durable plan commitment; action is external dispatch. They are distinct states with separate failure handling.",
+        "verifier": {
+          "predicate_id": "LAW-06-DECIDE-ACT",
+          "acceptance_predicate": "external_dispatch => outbox_action_exists && planned_before_dispatched",
+          "fail_closed": true
+        },
+        "failure_mode": [
+          "direct_dispatch_from_model_output",
+          "missing_plan_record"
+        ],
+        "remediation_pattern": [
+          "transactional_outbox",
+          "phase_transition_validation"
+        ]
+      },
+      {
+        "id": "LAW-07",
+        "name": "Idempotent Effects",
+        "status": "active",
+        "statement": "All externally visible effects must be protected by idempotency keys and dedupe-aware dispatch semantics.",
+        "verifier": {
+          "predicate_id": "LAW-07-IDEMPOTENCY",
+          "acceptance_predicate": "effect_execution => unique_idempotency_key && duplicate_safe",
+          "fail_closed": true
+        },
+        "failure_mode": [
+          "duplicate_side_effect",
+          "idempotency_key_collision"
+        ],
+        "remediation_pattern": [
+          "stable_key_derivation",
+          "provider_idempotency_binding"
+        ]
+      },
+      {
+        "id": "LAW-08",
+        "name": "Deterministic Replay",
+        "status": "active",
+        "statement": "For equal authoritative inputs and versioned policies, replay must produce equal state transitions and orientation digest.",
+        "verifier": {
+          "predicate_id": "LAW-08-REPLAY",
+          "acceptance_predicate": "replay(input,version)==original_transition_trace",
+          "fail_closed": true
+        },
+        "failure_mode": [
+          "non_deterministic_ordering",
+          "implicit_entropy_source"
+        ],
+        "remediation_pattern": [
+          "stable_sorting_and_clock_rules",
+          "record_randomness_sources"
+        ]
+      },
+      {
+        "id": "LAW-09",
+        "name": "Risk-Tiered Verification",
+        "status": "active",
+        "statement": "Verification strength scales with risk tier and blast radius; T2/T3 ambiguity fails closed.",
+        "verifier": {
+          "predicate_id": "LAW-09-TIERED-GATES",
+          "acceptance_predicate": "gate_set_strength >= required_strength(risk_tier)",
+          "fail_closed": true
+        },
+        "failure_mode": [
+          "under-gated_high_risk_action",
+          "tier_misclassification"
+        ],
+        "remediation_pattern": [
+          "raise_gate_requirements",
+          "add_tier_audit_sampling"
+        ]
+      },
+      {
+        "id": "LAW-10",
+        "name": "Trusted Identity Derivation",
+        "status": "active",
+        "statement": "Identity used for authorization must be derived from trusted runtime boundary signals, not untrusted payload assertions.",
+        "verifier": {
+          "predicate_id": "LAW-10-IDENTITY",
+          "acceptance_predicate": "auth_identity == trusted_boundary_identity",
+          "fail_closed": true
+        },
+        "failure_mode": [
+          "source_spoofing",
+          "payload_claim_trust"
+        ],
+        "remediation_pattern": [
+          "namespace_derived_identity",
+          "payload_source_as_advisory_only"
+        ]
+      },
+      {
+        "id": "LAW-11",
+        "name": "Failure Class Discipline",
+        "status": "active",
+        "statement": "Failures must be classified as retryable or terminal with explicit reason taxonomy and DLQ routing.",
+        "verifier": {
+          "predicate_id": "LAW-11-FAILURE-TAXONOMY",
+          "acceptance_predicate": "failed_transition => error_class_present && retry_policy_defined",
+          "fail_closed": false
+        },
+        "failure_mode": [
+          "silent_failure",
+          "infinite_retry_loop"
+        ],
+        "remediation_pattern": [
+          "error_taxonomy_enforcement",
+          "max_attempts_and_dlq"
+        ]
+      },
+      {
+        "id": "LAW-12",
+        "name": "Bounded Compute",
+        "status": "active",
+        "statement": "All loops and fanouts must be resource-bounded in time, count, and concurrency.",
+        "verifier": {
+          "predicate_id": "LAW-12-BOUNDEDNESS",
+          "acceptance_predicate": "execution => within(configured_limits)",
+          "fail_closed": true
+        },
+        "failure_mode": [
+          "runaway_subagents",
+          "unbounded_observation_fanout"
+        ],
+        "remediation_pattern": [
+          "hard_limit_guards",
+          "backpressure_and_shedding"
+        ]
+      },
+      {
+        "id": "LAW-13",
+        "name": "Guarded Adaptation",
+        "status": "active",
+        "statement": "Agent-driven profile adaptation is permitted only through proposal workflows constrained by meta-policy guards.",
+        "verifier": {
+          "predicate_id": "LAW-13-GUARDED-ADAPT",
+          "acceptance_predicate": "profile_change => proposal_validated && guard_checks_passed",
+          "fail_closed": true
+        },
+        "failure_mode": [
+          "direct_profile_mutation",
+          "unsafe_floor_reduction"
+        ],
+        "remediation_pattern": [
+          "proposal_approval_pipeline",
+          "guard_validator"
+        ]
+      },
+      {
+        "id": "LAW-14",
+        "name": "Trust Is Graded",
+        "status": "active",
+        "statement": "Identity confidence is probabilistic; privileged actions require step-up verification proportional to risk.",
+        "verifier": {
+          "predicate_id": "LAW-14-TRUST-GRADE",
+          "acceptance_predicate": "required_assurance(risk_tier)<=observed_assurance",
+          "fail_closed": true
+        },
+        "failure_mode": [
+          "high_risk_action_on_low_confidence_identity",
+          "missing_step_up_challenge"
+        ],
+        "remediation_pattern": [
+          "assurance_model",
+          "tiered_step_up_policies"
+        ]
+      },
+      {
+        "id": "LAW-15",
+        "name": "Compiler Over Prompt",
+        "status": "active",
+        "statement": "Orientation context must be compiled through deterministic rules and budgets; free-form prompt accretion is non-compliant.",
+        "verifier": {
+          "predicate_id": "LAW-15-COMPILED-CONTEXT",
+          "acceptance_predicate": "orientation_packet => produced_by_compiler && budget_verified",
+          "fail_closed": true
+        },
+        "failure_mode": [
+          "prompt_blob_growth",
+          "non_reproducible_context"
+        ],
+        "remediation_pattern": [
+          "orientation_compiler",
+          "packet_digest_and_replay"
+        ]
+      },
+      {
+        "id": "LAW-16",
+        "name": "Lineage-Complete Observability",
+        "status": "active",
+        "statement": "Every privileged mutation and effect must be trace-linked across event, wave, action, receipt, actor, and latency.",
+        "verifier": {
+          "predicate_id": "LAW-16-LINEAGE",
+          "acceptance_predicate": "mutation => trace_fields_present && audit_record_emitted",
+          "fail_closed": false
+        },
+        "failure_mode": [
+          "orphaned_effect",
+          "missing_audit_actor"
+        ],
+        "remediation_pattern": [
+          "trace_context_propagation",
+          "audit_field_requirements"
+        ]
+      },
+      {
+        "id": "LAW-17",
+        "name": "Adapter Declared Semantics",
+        "status": "active",
+        "statement": "Each adapter must declare its capability requirements, retry contract, idempotency semantics, and failure taxonomy.",
+        "verifier": {
+          "predicate_id": "LAW-17-ADAPTER-CONTRACT",
+          "acceptance_predicate": "adapter_registered => contract_complete",
+          "fail_closed": true
+        },
+        "failure_mode": [
+          "implicit_adapter_behavior",
+          "undocumented_retries"
+        ],
+        "remediation_pattern": [
+          "adapter_registry_contract",
+          "conformance_tests"
+        ]
+      },
+      {
+        "id": "LAW-18",
+        "name": "Human Reversibility",
+        "status": "active",
+        "statement": "High-impact outcomes must retain operator-visible rollback or compensating-action pathways.",
+        "verifier": {
+          "predicate_id": "LAW-18-REVERSIBILITY",
+          "acceptance_predicate": "high_impact_action => rollback_or_compensator_defined",
+          "fail_closed": true
+        },
+        "failure_mode": [
+          "irreversible_unapproved_action",
+          "missing_compensation_path"
+        ],
+        "remediation_pattern": [
+          "compensating_action_plan",
+          "operator_confirmation_policy"
+        ]
+      },
+      {
+        "id": "LAW-19",
+        "name": "Feedback-Constrained Self-Improvement",
+        "status": "active",
+        "statement": "Adaptation must optimize measured outcomes without violating invariants or expanding authority.",
+        "verifier": {
+          "predicate_id": "LAW-19-SAFE-IMPROVEMENT",
+          "acceptance_predicate": "profile_evolution => quality_signal_improves && invariants_hold",
+          "fail_closed": true
+        },
+        "failure_mode": [
+          "metric_gaming",
+          "unsafe_self_optimization"
+        ],
+        "remediation_pattern": [
+          "countermetric_checks",
+          "guarded_promotion_with_rollback"
+        ]
+      },
+      {
+        "id": "LAW-20",
+        "name": "Explicit Epoch Migration",
+        "status": "active",
+        "statement": "Breaking semantic changes require explicit epoch/version migration paths and replay-compatible transition notes.",
+        "verifier": {
+          "predicate_id": "LAW-20-EPOCHS",
+          "acceptance_predicate": "breaking_change => epoch_declared && migration_defined",
+          "fail_closed": true
+        },
+        "failure_mode": [
+          "silent_semantic_break",
+          "unmigratable_state"
+        ],
+        "remediation_pattern": [
+          "epoch_marker_and_migration_spec",
+          "dual-read_migration_window"
+        ]
+      }
+    ]
+  }
+}

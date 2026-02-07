@@ -31,11 +31,11 @@ stateDiagram-v2
 | Phase | Modules | Status |
 |-------|---------|--------|
 | 1 - Foundation | errors, schemas, AppConfig, AppLogger, MountSecurityService | Complete |
-| 2 - Database | DatabaseService (wraps better-sqlite3) | Pending |
-| 3 - I/O Services | ContainerService, PhoneCallerService | Pending |
-| 4 - Orchestration | IpcService, SchedulerService | Pending |
-| 5 - Entry | WhatsAppService, MainLive | Pending |
-| 6 - Cleanup | Delete legacy modules, remove wrappers, drop zod | Pending |
+| 2 - Services | DatabaseService, ContainerRunnerService, PhoneCallerService, TaskSchedulerService | Complete |
+| 3 - Legacy Cleanup | Deleted config.ts, logger.ts, types.ts, utils.ts; consolidated imports | Complete |
+| 3.5 - Hexagonal | Clock, Option, Either, Brand types, Duration across all services | Complete |
+| 4 - Entry | WhatsAppService, MainLive | Pending |
+| 5 - Cleanup | Remove legacy wrappers, full Layer composition | Pending |
 
 ## Step-by-Step Protocol
 
@@ -155,9 +155,9 @@ assertions:
     on_fail:
       severity: BLOCKER
       remediation: |
-        BEFORE: import { validateMount } from './mount-security.js';
-        AFTER:  import { validateMount } from './MountSecurityService.js';
-        No other changes in the file.
+        BEFORE: import { initDatabase } from './db.js';  // (old kebab-case path)
+        AFTER:  import { initDatabase } from './db.js';  // same path, now wraps Effect internally
+        No other changes in the file — legacy wrappers preserve call-site compatibility.
 
   ETS-05-051:
     predicate: "All importers of the old module are updated"

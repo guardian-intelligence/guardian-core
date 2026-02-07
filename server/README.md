@@ -1,15 +1,17 @@
-# rumi-server
+# Server
 
-To install dependencies:
+Webhook/API server for Guardian Core.
+
+## Commands
 
 ```bash
 bun install
+bun run dev
+bun run typecheck
 ```
 
-To run:
+## Deploy
 
 ```bash
-bun run index.ts
+bun run deploy:server
 ```
-
-This project was created using `bun init` in bun v1.3.5. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.

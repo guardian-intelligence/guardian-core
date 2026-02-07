@@ -89,6 +89,30 @@ assertions:
     on_fail:
       severity: BLOCKER
       remediation: "Use yield* new TaggedError(...) instead of throw"
+
+  ETS-02-012:
+    predicate: "No try/catch blocks in Effect code"
+    on_fail:
+      severity: BLOCKER
+      remediation: |
+        try/catch collapses all errors to `unknown`, destroying the typed error channel.
+
+        WRONG:
+          try {
+            const x = yield* someEffect;
+          } catch (err) {
+            // err is unknown — type safety lost
+          }
+
+        CORRECT:
+          const x = yield* someEffect.pipe(
+            Effect.catchAll((err) => {
+              // err is fully typed
+              return Effect.succeed(fallback);
+            }),
+          );
+
+        For external I/O, use Effect.try (sync) or Effect.tryPromise (async).
 ```
 
 ## Wrapping External Exceptions

@@ -1,0 +1,250 @@
+{
+  "schema": "gpre.theory.defect_bundle.v1",
+  "schema_version": "1.0.0",
+  "kind": "gpre.defect_bundle",
+  "meta": {
+    "stable_id": "dcp://guardian_core.theory/defects/bundle@1",
+    "classification": "INTERNAL",
+    "created_at": "2026-02-07T00:00:00Z",
+    "description": "Normative framework for classifying defects in OODA wave runtimes."
+  },
+  "payload": {
+    "version": "1.0.0",
+    "taxonomy": {
+      "defect_domain": [
+        "OBSERVATION",
+        "ORIENTATION",
+        "DECISION",
+        "ACTUATION",
+        "LEARNING",
+        "SECURITY",
+        "VERIFICATION",
+        "OPERATIONS",
+        "ECONOMICS"
+      ],
+      "stage_detected": [
+        "INGEST",
+        "CLAIM",
+        "ORIENT",
+        "DECIDE",
+        "OUTBOX",
+        "DISPATCH",
+        "RECEIPT",
+        "REPLAY",
+        "RUNTIME",
+        "INCIDENT"
+      ],
+      "severity": [
+        "S0_STOP_THE_LINE",
+        "S1_CRITICAL",
+        "S2_MAJOR",
+        "S3_MINOR",
+        "S4_INFO"
+      ],
+      "reproducibility": [
+        "DETERMINISTIC",
+        "PROBABILISTIC",
+        "FLAKY",
+        "UNKNOWN"
+      ],
+      "violation_code": [
+        "ACK_BEFORE_DURABLE_COMMIT",
+        "DUPLICATE_EFFECT",
+        "NON_DETERMINISTIC_REPLAY",
+        "CONTEXT_OVERFLOW",
+        "MANDATORY_BAND_STARVATION",
+        "SCHEMA_DRIFT",
+        "AMBIENT_AUTHORITY_USE",
+        "SCOPE_ESCALATION",
+        "NAMESPACE_IDENTITY_SPOOF",
+        "MISSING_AUDIT_LINEAGE",
+        "INFINITE_RETRY_LOOP",
+        "UNCLASSIFIED_FAILURE",
+        "INVALID_FSM_TRANSITION",
+        "UNBOUNDED_FANOUT",
+        "RECURRING_FAILURE_UNADDRESSED"
+      ],
+      "disposition": [
+        "OPEN",
+        "ACKNOWLEDGED",
+        "FIX_IN_PROGRESS",
+        "FIXED",
+        "WONT_FIX",
+        "DUPLICATE",
+        "NEEDS_INFO"
+      ]
+    },
+    "record_schema": {
+      "schema_id": "gpre.defects.record.schema.v1",
+      "required": [
+        "schema_version",
+        "id",
+        "created_at",
+        "defect_domain",
+        "stage_detected",
+        "severity",
+        "title",
+        "statement",
+        "actor",
+        "environment",
+        "links",
+        "evidence",
+        "fingerprint"
+      ],
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "const": "gpre.defects.record.v1"
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^DFT-[0-9]{6}$"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "defect_domain": {
+          "$ref": "gpre.defects.taxonomy.v1#/enums/defect_domain"
+        },
+        "violation_code": {
+          "$ref": "gpre.defects.taxonomy.v1#/enums/violation_code"
+        },
+        "stage_detected": {
+          "$ref": "gpre.defects.taxonomy.v1#/enums/stage_detected"
+        },
+        "severity": {
+          "$ref": "gpre.defects.taxonomy.v1#/enums/severity"
+        },
+        "reproducibility": {
+          "$ref": "gpre.defects.taxonomy.v1#/enums/reproducibility",
+          "default": "UNKNOWN"
+        },
+        "disposition": {
+          "$ref": "gpre.defects.taxonomy.v1#/enums/disposition",
+          "default": "OPEN"
+        },
+        "title": {
+          "type": "string",
+          "max_length": 160
+        },
+        "statement": {
+          "type": "string",
+          "max_length": 3000,
+          "description": "Counterexample format: expected predicate versus observed behavior."
+        },
+        "actor": {
+          "required": ["subject", "runtime_role"],
+          "properties": {
+            "subject": { "type": "string" },
+            "runtime_role": { "type": "string" },
+            "cap_id": { "type": "string" },
+            "wave_id": { "type": "string" }
+          }
+        },
+        "environment": {
+          "required": ["system_version", "git_rev", "runtime_mode"],
+          "properties": {
+            "system_version": { "type": "string" },
+            "git_rev": { "type": "string" },
+            "runtime_mode": { "type": "string" },
+            "db_schema_version": { "type": "string" }
+          }
+        },
+        "links": {
+          "required": ["law_refs"],
+          "properties": {
+            "law_refs": { "type": "array", "items": { "type": "string" } },
+            "principle_refs": { "type": "array", "items": { "type": "string" } },
+            "mechanism_refs": { "type": "array", "items": { "type": "string" } },
+            "trace_id": { "type": "string" },
+            "event_id": { "type": "string" },
+            "action_id": { "type": "string" }
+          }
+        },
+        "evidence": {
+          "required": ["receipt_refs"],
+          "properties": {
+            "receipt_refs": { "type": "array", "items": { "type": "string" } },
+            "log_refs": { "type": "array", "items": { "type": "string" } },
+            "artifact_refs": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "fingerprint": {
+          "required": ["key"],
+          "properties": {
+            "key": { "type": "string" },
+            "hash": { "type": "string" },
+            "cluster_hint": { "type": "string" }
+          }
+        }
+      }
+    },
+    "archetypes": [
+      {
+        "id": "ARCH-01",
+        "name": "Durability Violation",
+        "violation_code": "ACK_BEFORE_DURABLE_COMMIT",
+        "law_refs": ["LAW-03"],
+        "detection": ["response_timestamp < commit_timestamp", "missing_row_after_success"],
+        "typical_remediation": ["move_response_after_commit", "add_transaction_boundary"]
+      },
+      {
+        "id": "ARCH-02",
+        "name": "Duplicate External Effect",
+        "violation_code": "DUPLICATE_EFFECT",
+        "law_refs": ["LAW-07"],
+        "detection": ["same_idempotency_key_multiple_effects"],
+        "typical_remediation": ["enforce_unique_idempotency", "provider_dedupe_contract"]
+      },
+      {
+        "id": "ARCH-03",
+        "name": "Replay Drift",
+        "violation_code": "NON_DETERMINISTIC_REPLAY",
+        "law_refs": ["LAW-08"],
+        "detection": ["replay_digest != original_digest"],
+        "typical_remediation": ["stabilize_sorting", "record_entropy_inputs"]
+      },
+      {
+        "id": "ARCH-04",
+        "name": "Context Budget Blowout",
+        "violation_code": "CONTEXT_OVERFLOW",
+        "law_refs": ["LAW-04", "LAW-15"],
+        "detection": ["token_used > budget"],
+        "typical_remediation": ["enforce_compiler_limits", "reduce_fact_payload"]
+      },
+      {
+        "id": "ARCH-05",
+        "name": "Capability Escalation",
+        "violation_code": "SCOPE_ESCALATION",
+        "law_refs": ["LAW-05", "LAW-13"],
+        "detection": ["child_scope_not_subset_of_parent"],
+        "typical_remediation": ["strict_subset_validator", "revoke_compromised_caps"]
+      },
+      {
+        "id": "ARCH-06",
+        "name": "Identity Boundary Spoof",
+        "violation_code": "NAMESPACE_IDENTITY_SPOOF",
+        "law_refs": ["LAW-10"],
+        "detection": ["payload_identity != derived_identity"],
+        "typical_remediation": ["namespace_authoritative_identity", "reject_payload_claims"]
+      },
+      {
+        "id": "ARCH-07",
+        "name": "Retry Storm",
+        "violation_code": "INFINITE_RETRY_LOOP",
+        "law_refs": ["LAW-11", "LAW-12"],
+        "detection": ["attempts_without_progress > threshold"],
+        "typical_remediation": ["classify_terminal_failures", "route_to_dlq"]
+      },
+      {
+        "id": "ARCH-08",
+        "name": "Runaway Observation",
+        "violation_code": "UNBOUNDED_FANOUT",
+        "law_refs": ["LAW-12"],
+        "detection": ["observation_jobs_exceed_cap"],
+        "typical_remediation": ["global_job_cap", "source_quota_enforcement"]
+      }
+    ]
+  }
+}

@@ -119,13 +119,17 @@ exit_criteria:
 src/
 ├── errors.ts                  # All domain errors (Data.TaggedError)
 ├── schemas.ts                 # All domain types (Effect Schema)
-├── AppConfig.ts               # Config service (Context.Tag)
-├── AppLogger.ts               # Pino ↔ Effect logger bridge
-├── MountSecurityService.ts    # Reference service implementation
-├── container-runner.ts        # Legacy code (consumes Effect via wrappers)
+├── redact.ts                  # Pure secret redaction (redactLine)
+├── AppConfig.ts               # Config service + static constant exports
+├── AppLogger.ts               # Pino logger + Effect logger bridge
+├── DeployLogger.ts            # Dual ANSI + JSONL deploy logger (Effect)
+├── MountSecurityService.ts    # Mount validation service
+├── db.ts                      # DatabaseService (wraps better-sqlite3)
+├── phone-caller.ts            # PhoneCallerService (ElevenLabs + Twilio)
+├── container-runner.ts        # ContainerRunnerService (Docker lifecycle)
+├── task-scheduler.ts          # TaskSchedulerService (cron/interval/once)
 ├── index.ts                   # Main entry (legacy, migrating last)
 └── __tests__/
-    └── MountSecurityService.test.ts
 ```
 
 ### Module Conventions
@@ -133,7 +137,6 @@ src/
 | Convention | Rule |
 |-----------|------|
 | **Services** | `PascalCase.ts` — e.g. `MountSecurityService.ts`, `DatabaseService.ts` |
-| **Legacy modules** | `kebab-case.ts` — e.g. `container-runner.ts`, `mount-security.ts` |
 | **Errors** | All in `src/errors.ts`, never scattered across files |
 | **Schemas** | All in `src/schemas.ts`, never scattered across files |
 | **Tests** | `src/__tests__/ServiceName.test.ts` |
@@ -263,11 +266,11 @@ See [05_migration_protocol.md](references/05_migration_protocol.md) for full spe
 | Phase | Modules | Status |
 |-------|---------|--------|
 | 1 - Foundation | errors, schemas, AppConfig, AppLogger, MountSecurityService | Complete |
-| 2 - Database | DatabaseService (wraps better-sqlite3) | Pending |
-| 3 - I/O Services | ContainerService, PhoneCallerService | Pending |
-| 4 - Orchestration | IpcService, SchedulerService | Pending |
-| 5 - Entry | WhatsAppService, MainLive | Pending |
-| 6 - Cleanup | Delete legacy modules, remove wrappers, drop zod | Pending |
+| 2 - Services | DatabaseService, ContainerRunnerService, PhoneCallerService, TaskSchedulerService | Complete |
+| 3 - Legacy Cleanup | Deleted config.ts, logger.ts, types.ts, utils.ts; consolidated imports | Complete |
+| 3.5 - Hexagonal | Clock, Option, Either, Brand types, Duration across all services | Complete |
+| 4 - Entry | WhatsAppService, MainLive | Pending |
+| 5 - Cleanup | Remove legacy wrappers, full Layer composition | Pending |
 
 ---
 
@@ -287,6 +290,11 @@ See [06_effect_typescript_hazards.md](references/06_effect_typescript_hazards.md
 | HAZ-008 | `@effect/vitest` strict peer deps on effect + vitest versions | MAJOR |
 | HAZ-009 | ESM mocking requires both default and named export mocks | MAJOR |
 | HAZ-010 | `Effect.runSync` on async effects throws `AsyncFiberException` | BLOCKER |
+| HAZ-011 | `try/catch` inside Effect code — collapses errors to `unknown` | BLOCKER |
+| HAZ-012 | `if/else/switch` instead of `Match` — non-exhaustive branching | MAJOR |
+| HAZ-013 | Ad-hoc `pino()` or `console.*` bypasses secret redaction | BLOCKER |
+| HAZ-014 | `BunFileSystem.layer` methods are async — breaks `Effect.runSync` in legacy wrappers | BLOCKER |
+| HAZ-015 | `Clock.make()` needed for legacy wrappers: `Layer.succeed(Clock.Clock, Clock.make())` | MAJOR |
 
 ---
 
@@ -295,7 +303,9 @@ See [06_effect_typescript_hazards.md](references/06_effect_typescript_hazards.md
 | Anti-Pattern | Correct Pattern |
 |-------------|----------------|
 | `throw new Error(...)` in Effect code | `yield* new TaggedError(...)` |
-| `try/catch` blocks inside `Effect.gen` | `Effect.try` / `Effect.tryPromise` |
+| `try/catch` anywhere in Effect code | `Effect.try` / `Effect.tryPromise` + `Effect.catchAll` / `Effect.catchTag` — keeps errors typed |
+| `if/else` chains | `Match.value(x).pipe(Match.when(...), Match.exhaustive)` — exhaustive, expression-based |
+| `switch` statements | `Match.value(x).pipe(Match.tag(...), Match.exhaustive)` — exhaustive, no `break` needed |
 | `Promise`-based code in new services | `Effect.tryPromise` or `Effect.async` |
 | `any` type | `unknown` + runtime validation via Schema |
 | Mutable module-level `let` for state | `Ref<T>` |
@@ -306,6 +316,28 @@ See [06_effect_typescript_hazards.md](references/06_effect_typescript_hazards.md
 | `setTimeout` loops | `Effect.repeat(Schedule.spaced(...))` |
 | Manual retry logic | `Effect.retry(Schedule.exponential(...))` |
 | `process.exit()` | `Effect.interrupt` or let the runtime shut down |
+| Ad-hoc `pino()` instance | Import `logger` from `src/AppLogger.ts` (or `.child()`) |
+| `console.log`/`console.error` with dynamic data | Use `logger.info()`/`logger.error()` |
+| `Date.now()` / `new Date()` in services | `clock.unsafeCurrentTimeMillis()` via `yield* Clock.Clock` |
+| `T \| undefined` for nullable service returns | `Option<T>` with `Option.fromNullable` |
+| `let result; let error;` mutation pattern | `Either.match(outcome, { onLeft, onRight })` destructure |
+| `vi.mock('fs')` for services using FileSystem port | Provide `makeTestFileSystem()` layer |
+
+---
+
+## Logging Invariant
+
+All production log output MUST flow through the redacting logger (`src/AppLogger.ts`).
+The `hooks.streamWrite` hook applies `redactLine()` to every serialized log line
+before it reaches any transport.
+
+Rules:
+1. Import `logger` from `./AppLogger.js` — never create ad-hoc `pino()` instances
+2. Use `logger.child({ ...bindings })` for scoped loggers (inherits redaction)
+3. For Effect code, DeployLogger applies `redactLine()` explicitly
+4. `console.log`/`console.error` are allowed ONLY for bounded, static UX messages
+   (e.g., setup CLI prompts, Docker banner) — never for dynamic data
+5. CI guard (`src/__tests__/bypass-guard.test.ts`) enforces this via allowlist
 
 ---
 
@@ -338,3 +370,5 @@ bun run dev         # App starts, processes messages normally
 | ETS-04 | [04_testing_and_verification.md](references/04_testing_and_verification.md) | Testing standards |
 | ETS-05 | [05_migration_protocol.md](references/05_migration_protocol.md) | Legacy → Effect migration |
 | ETS-06 | [06_effect_typescript_hazards.md](references/06_effect_typescript_hazards.md) | Hazard catalog |
+| ETS-07 | [07_functional_invariants.md](references/07_functional_invariants.md) | Purity, immutability, Option, Brand, Duration |
+| ETS-08 | [08_hexagonal_architecture.md](references/08_hexagonal_architecture.md) | Ports, layers, Clock, test injection |

@@ -1,0 +1,363 @@
+{
+  "schema": "gpre.theory.principle_bundle.v1",
+  "schema_version": "1.0.0",
+  "kind": "gpre.principle_bundle",
+  "meta": {
+    "stable_id": "dcp://guardian_core.theory/principles/bundle@1",
+    "classification": "INTERNAL",
+    "created_at": "2026-02-07T00:00:00Z",
+    "description": "Operational principles for building and running agent-native OODA wave systems.",
+    "source_of_truth_ref": "docs/theory/laws.json"
+  },
+  "payload": {
+    "version": "1.0.0",
+    "principle_count": 48,
+    "principles": [
+      {
+        "id": "PRIN-001",
+        "name": "Context Is Bandwidth",
+        "title": "Treat context budget as a hard systems resource",
+        "statement": "Orientation token budget is equivalent to bounded channel capacity; waste reduces decision quality.",
+        "law_refs": ["LAW-04", "LAW-15"],
+        "mechanism_refs": ["MECH-ORIENTATION-COMPILER"],
+        "defect_refs": ["CONTEXT_OVERFLOW"]
+      },
+      {
+        "id": "PRIN-002",
+        "name": "Structured Over Narrative",
+        "title": "Prefer typed envelopes over prose",
+        "statement": "Typed payloads reduce ambiguity, improve replay, and make policy gating tractable.",
+        "law_refs": ["LAW-02"],
+        "defect_refs": ["SCHEMA_DRIFT"]
+      },
+      {
+        "id": "PRIN-003",
+        "name": "Digest-First Transport",
+        "title": "Ship references before blobs",
+        "statement": "Prefer hashes and references to reduce bandwidth and improve dedupe.",
+        "law_refs": ["LAW-02", "LAW-08"],
+        "defect_refs": ["REDUNDANT_IO"]
+      },
+      {
+        "id": "PRIN-004",
+        "name": "Canonical Ordering",
+        "title": "Determinism requires stable sort order",
+        "statement": "All set-like collections must use deterministic ordering in storage and replay.",
+        "law_refs": ["LAW-08"],
+        "defect_refs": ["NON_DETERMINISTIC_REPLAY"]
+      },
+      {
+        "id": "PRIN-005",
+        "name": "Transactional Boundaries",
+        "title": "Bind state updates atomically",
+        "statement": "Claim/update/receipt transitions must occur in explicit transactions at each boundary.",
+        "law_refs": ["LAW-03", "LAW-07"]
+      },
+      {
+        "id": "PRIN-006",
+        "name": "Crash-Only Discipline",
+        "title": "Assume process death at any instruction",
+        "statement": "All runtime progress must be recoverable from durable state without memory dependence.",
+        "law_refs": ["LAW-03", "LAW-08"]
+      },
+      {
+        "id": "PRIN-007",
+        "name": "Leases Are Safety Rails",
+        "title": "Use leases for concurrency control",
+        "statement": "Exclusive leased ownership is simpler and safer than lock-free ad hoc claim semantics.",
+        "law_refs": ["LAW-11"]
+      },
+      {
+        "id": "PRIN-008",
+        "name": "Idempotency by Construction",
+        "title": "Derive stable idempotency keys",
+        "statement": "Effects should be dedupe-safe under retries and replay.",
+        "law_refs": ["LAW-07"],
+        "defect_refs": ["DUPLICATE_EFFECT"]
+      },
+      {
+        "id": "PRIN-009",
+        "name": "Fail Closed Above Tier 1",
+        "title": "Ambiguity is denial for high-risk paths",
+        "statement": "If risk is high and trust/evidence is uncertain, default must deny.",
+        "law_refs": ["LAW-09", "LAW-14"]
+      },
+      {
+        "id": "PRIN-010",
+        "name": "Capability Narrowing",
+        "title": "Delegation can only attenuate",
+        "statement": "Child execution scopes must be strict subsets of parent authority.",
+        "law_refs": ["LAW-05", "LAW-13"]
+      },
+      {
+        "id": "PRIN-011",
+        "name": "No Ambient Privilege",
+        "title": "Environment is untrusted authority",
+        "statement": "Never infer authorization from process locality alone.",
+        "law_refs": ["LAW-05"]
+      },
+      {
+        "id": "PRIN-012",
+        "name": "Namespace Identity",
+        "title": "Identity from trusted boundary",
+        "statement": "Use host-derived namespace identity for agent intents.",
+        "law_refs": ["LAW-10"],
+        "mechanism_refs": ["MECH-NAMESPACE-IDENTITY"]
+      },
+      {
+        "id": "PRIN-013",
+        "name": "Decision Commitment",
+        "title": "Persist plan before external action",
+        "statement": "Outbox action records are the canonical decision commitment.",
+        "law_refs": ["LAW-06", "LAW-07"],
+        "mechanism_refs": ["MECH-OUTBOX"]
+      },
+      {
+        "id": "PRIN-014",
+        "name": "Actuation Receipts",
+        "title": "Execution must produce machine receipts",
+        "statement": "Every external call outcome should be represented as structured receipt data.",
+        "law_refs": ["LAW-16"]
+      },
+      {
+        "id": "PRIN-015",
+        "name": "Error Taxonomy First",
+        "title": "Classify before retry",
+        "statement": "Retries require explicit retryability classes, not generic exception handling.",
+        "law_refs": ["LAW-11"]
+      },
+      {
+        "id": "PRIN-016",
+        "name": "DLQ Is a Feature",
+        "title": "Poison work must terminate safely",
+        "statement": "Dead-letter queues preserve availability and operator visibility.",
+        "law_refs": ["LAW-11"]
+      },
+      {
+        "id": "PRIN-017",
+        "name": "Bounded Fanout",
+        "title": "Observation scale requires hard caps",
+        "statement": "Observe phase must enforce job count, timeout, and concurrency limits.",
+        "law_refs": ["LAW-12"]
+      },
+      {
+        "id": "PRIN-018",
+        "name": "Shed Early",
+        "title": "Drop low-value work before overload",
+        "statement": "Backpressure should prefer sacrificing low-priority observations.",
+        "law_refs": ["LAW-12", "LAW-09"]
+      },
+      {
+        "id": "PRIN-019",
+        "name": "Mandatory Context Floors",
+        "title": "Never starve identity/objective/constraint bands",
+        "statement": "Essential context cannot be traded away by dynamic optimization.",
+        "law_refs": ["LAW-04", "LAW-13"]
+      },
+      {
+        "id": "PRIN-020",
+        "name": "Elastic Context Allocation",
+        "title": "Spend leftover budget by utility",
+        "statement": "After mandatory floors, allocate tokens by scored value with diversity constraints.",
+        "law_refs": ["LAW-04", "LAW-15"]
+      },
+      {
+        "id": "PRIN-021",
+        "name": "Profile Version Pinning",
+        "title": "Wave execution sees immutable profile version",
+        "statement": "Orientation profile changes apply to future waves, not in-flight waves.",
+        "law_refs": ["LAW-08", "LAW-13"]
+      },
+      {
+        "id": "PRIN-022",
+        "name": "Adaptation via Proposals",
+        "title": "No direct mutable tuning of active policy",
+        "statement": "Agent adaptation must pass proposal and guard validation workflow.",
+        "law_refs": ["LAW-13", "LAW-19"]
+      },
+      {
+        "id": "PRIN-023",
+        "name": "Horizon-Bound Changes",
+        "title": "Prefer temporary policy experiments",
+        "statement": "Apply adaptive profile changes for N waves before promotion.",
+        "law_refs": ["LAW-13", "LAW-19"]
+      },
+      {
+        "id": "PRIN-024",
+        "name": "Rollback Ready",
+        "title": "Every adaptation needs safe revert",
+        "statement": "Policy and profile evolution must define explicit rollback triggers.",
+        "law_refs": ["LAW-18", "LAW-19"]
+      },
+      {
+        "id": "PRIN-025",
+        "name": "Metric Anti-Gaming",
+        "title": "Scorecards need countermetrics",
+        "statement": "Optimize with paired metrics to resist Goodhart-style drift.",
+        "law_refs": ["LAW-19"]
+      },
+      {
+        "id": "PRIN-026",
+        "name": "Trace-Lineage Completeness",
+        "title": "Causal graph over logs",
+        "statement": "Trace IDs must connect event, wave, action, receipt, and audit records.",
+        "law_refs": ["LAW-16"]
+      },
+      {
+        "id": "PRIN-027",
+        "name": "Latency as Policy Input",
+        "title": "Performance affects correctness",
+        "statement": "Tail latency and queue depth should influence gating and degradation behavior.",
+        "law_refs": ["LAW-09", "LAW-12"]
+      },
+      {
+        "id": "PRIN-028",
+        "name": "One-Way Privilege Escalation Ban",
+        "title": "No implicit escalation from context",
+        "statement": "Context content alone cannot elevate capability.",
+        "law_refs": ["LAW-05", "LAW-10"]
+      },
+      {
+        "id": "PRIN-029",
+        "name": "Strong Defaults",
+        "title": "Fail-closed startup posture",
+        "statement": "Missing runtime policy must resolve to safe deny or low-impact fallback.",
+        "law_refs": ["LAW-09"]
+      },
+      {
+        "id": "PRIN-030",
+        "name": "Operator Interpretability",
+        "title": "Human-readable summaries from machine state",
+        "statement": "Operational views should derive from structured state, not ad hoc text logs.",
+        "law_refs": ["LAW-16"]
+      },
+      {
+        "id": "PRIN-031",
+        "name": "Schema Evolution Discipline",
+        "title": "Version schemas explicitly",
+        "statement": "Breaking schema changes require epoch markers and migration strategy.",
+        "law_refs": ["LAW-20"]
+      },
+      {
+        "id": "PRIN-032",
+        "name": "Replay as Regression Test",
+        "title": "Historic traces are test fixtures",
+        "statement": "Production traces should be replayed in CI to validate determinism and migrations.",
+        "law_refs": ["LAW-08", "LAW-20"]
+      },
+      {
+        "id": "PRIN-033",
+        "name": "Adapter Contract Completeness",
+        "title": "No opaque adapters",
+        "statement": "Every adapter declares retries, idempotency, scope, and failure taxonomy.",
+        "law_refs": ["LAW-17"]
+      },
+      {
+        "id": "PRIN-034",
+        "name": "Evidence Before Promotion",
+        "title": "Claims require receipts",
+        "statement": "High-impact claims are non-authoritative without receipt binding.",
+        "law_refs": ["LAW-01", "LAW-16"]
+      },
+      {
+        "id": "PRIN-035",
+        "name": "Minimal Trusted Computing Base",
+        "title": "Keep kernel small",
+        "statement": "Authorization and state-transition logic should remain compact and testable.",
+        "law_refs": ["LAW-05", "LAW-06"]
+      },
+      {
+        "id": "PRIN-036",
+        "name": "Asymmetric Safety",
+        "title": "Be stricter on writes than reads",
+        "statement": "Mutation paths require stronger validation than observation paths.",
+        "law_refs": ["LAW-09"]
+      },
+      {
+        "id": "PRIN-037",
+        "name": "Budget-Aware Reasoning",
+        "title": "Reason with explicit compute budgets",
+        "statement": "Decision routines should consume declared token/time/tool-call budgets.",
+        "law_refs": ["LAW-12", "LAW-04"]
+      },
+      {
+        "id": "PRIN-038",
+        "name": "Prompt Hygiene",
+        "title": "Context compilation beats concatenation",
+        "statement": "Do not append arbitrary history; compile semantically bounded packets.",
+        "law_refs": ["LAW-15"]
+      },
+      {
+        "id": "PRIN-039",
+        "name": "Feedback as Data",
+        "title": "Learning uses structured feedback",
+        "statement": "Post-action learning should consume typed quality signals and operator annotations.",
+        "law_refs": ["LAW-19"]
+      },
+      {
+        "id": "PRIN-040",
+        "name": "Source Diversity",
+        "title": "Avoid monoculture orientation",
+        "statement": "Orientation compiler should enforce diversity to reduce blind spots.",
+        "law_refs": ["LAW-04", "LAW-19"]
+      },
+      {
+        "id": "PRIN-041",
+        "name": "Staleness Awareness",
+        "title": "Time-decay signals matter",
+        "statement": "Fact utility should decay with age unless anchored by durable relevance.",
+        "law_refs": ["LAW-15"]
+      },
+      {
+        "id": "PRIN-042",
+        "name": "High-Risk Human Checkpoint",
+        "title": "Keep reversible human control",
+        "statement": "T3 actions require explicit approval or emergency policy exception.",
+        "law_refs": ["LAW-18", "LAW-14"]
+      },
+      {
+        "id": "PRIN-043",
+        "name": "Token Secret Hygiene",
+        "title": "Store hashes, never raw bearer tokens",
+        "statement": "Capability secret storage should use one-way digests and strict rotation.",
+        "law_refs": ["LAW-05"]
+      },
+      {
+        "id": "PRIN-044",
+        "name": "Bootstrap Reduction",
+        "title": "Minimize root capability exposure",
+        "statement": "Root credentials are bootstrap-only and should be revoked after scoped issuance.",
+        "law_refs": ["LAW-05", "LAW-16"]
+      },
+      {
+        "id": "PRIN-045",
+        "name": "Temporal Locality",
+        "title": "Prefer recent relevant evidence",
+        "statement": "Orientation quality improves when recency is modeled explicitly in scoring.",
+        "law_refs": ["LAW-15"]
+      },
+      {
+        "id": "PRIN-046",
+        "name": "Cold-Start Safety",
+        "title": "Startup must be safe with empty caches",
+        "statement": "Missing warm state should reduce functionality, not reduce safeguards.",
+        "law_refs": ["LAW-09", "LAW-03"]
+      },
+      {
+        "id": "PRIN-047",
+        "name": "Compensation Over Silence",
+        "title": "Handle irreversible failures explicitly",
+        "statement": "When rollback is impossible, emit compensating workflows and operator alerts.",
+        "law_refs": ["LAW-18", "LAW-11"]
+      },
+      {
+        "id": "PRIN-048",
+        "name": "Recurrence Reduction",
+        "title": "Defects must strengthen the factory",
+        "statement": "Counterexamples should result in stronger guards, contracts, or primitives.",
+        "law_refs": ["LAW-19", "LAW-17"],
+        "defect_refs": ["RECURRING_FAILURE_UNADDRESSED"]
+      }
+    ]
+  }
+}

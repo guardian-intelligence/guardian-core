@@ -135,7 +135,7 @@ id: HAZ-008
 severity: MAJOR
 pattern: "Mismatched effect/vitest versions with @effect/vitest"
 symptom: "bun install fails due to peer dependency mismatch"
-fix: "Check bunx npm info @effect/vitest peerDependencies"
+fix: "Check package metadata with a Bun-compatible registry query before bumping @effect/vitest"
 ```
 
 `@effect/vitest` has strict peer dependency requirements:
@@ -180,3 +180,62 @@ fix: "Use Effect.runPromise for async effects, Effect.runSync only for sync"
 ```
 
 If any part of the Effect pipeline uses `Effect.tryPromise`, `Effect.async`, or `Effect.sleep`, it cannot be run with `Effect.runSync`. Use `Effect.runPromise` instead.
+
+---
+
+### HAZ-011: try/catch Inside Effect Code
+
+```yaml
+id: HAZ-011
+severity: BLOCKER
+pattern: "try { yield* ... } catch (err) { ... } inside Effect.gen"
+symptom: "Error type collapses to unknown — defeats Effect's typed error channel"
+fix: "Replace with Effect.catchAll, Effect.catchTag, or Effect.either"
+```
+
+```typescript
+// HAZARD: err is unknown, type safety lost
+try {
+  const output = yield* Effect.tryPromise({...});
+} catch (err) {
+  error = err instanceof Error ? err.message : String(err);
+}
+
+// CORRECT: err is fully typed (TaskSchedulerError)
+const output = yield* Effect.tryPromise({...}).pipe(
+  Effect.catchAll((err) => {
+    logger.error({ err }, 'Task failed');
+    return Effect.succeed(fallback);
+  }),
+);
+```
+
+---
+
+### HAZ-012: if/else/switch Instead of Match
+
+```yaml
+id: HAZ-012
+severity: MAJOR
+pattern: "if/else chain or switch statement for branching"
+symptom: "Non-exhaustive branching, imperative style, easy to miss cases"
+fix: "Use Match.value() or Match.type() with Match.exhaustive"
+```
+
+```typescript
+// HAZARD: non-exhaustive, imperative
+if (task.schedule_type === 'cron') {
+  nextRun = parseCron(task.schedule_value);
+} else if (task.schedule_type === 'interval') {
+  nextRun = new Date(Date.now() + parseInt(task.schedule_value)).toISOString();
+}
+// 'once' silently falls through with nextRun = null
+
+// CORRECT: exhaustive, expression
+const nextRun = Match.value(task.schedule_type).pipe(
+  Match.when('cron', () => parseCron(task.schedule_value)),
+  Match.when('interval', () => new Date(Date.now() + parseInt(task.schedule_value, 10)).toISOString()),
+  Match.when('once', () => null),
+  Match.exhaustive,
+);
+```

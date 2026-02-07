@@ -58,33 +58,22 @@ export const ServerDeployServiceLive = Layer.effect(
 
 		const deploy: ServerDeployServiceShape['deploy'] = (dryRun) =>
 			Effect.gen(function* () {
-				yield* Effect.log(
-					`=== Deploying server to ${REMOTE} ===`,
-				);
+				yield* Effect.log(`=== Deploying server to ${REMOTE} ===`);
 
 				// 1. Typecheck
 				yield* Effect.gen(function* () {
 					yield* info('Typechecking server...');
-					yield* shell
-						.run('bun', [
-							'--cwd',
-							rumiDir,
-							'run',
-							'typecheck',
-						])
-						.pipe(
-							Effect.catchAll((e) =>
-								Effect.gen(function* () {
-									yield* fail(
-										'Typecheck failed — fix errors before deploying',
-									);
-									return yield* new DeployError({
-										stage: 'server:typecheck',
-										message: e.message,
-									});
-								}),
-							),
-						);
+					yield* shell.run('bun', ['--cwd', rumiDir, 'run', 'typecheck']).pipe(
+						Effect.catchAll((e) =>
+							Effect.gen(function* () {
+								yield* fail('Typecheck failed — fix errors before deploying');
+								return yield* new DeployError({
+									stage: 'server:typecheck',
+									message: e.message,
+								});
+							}),
+						),
+					);
 					yield* ok('Typecheck passed');
 				}).pipe(Effect.withLogSpan('server-deploy.typecheck'));
 
@@ -92,13 +81,9 @@ export const ServerDeployServiceLive = Layer.effect(
 				if (dryRun) {
 					yield* Effect.log('');
 					yield* Effect.log('Deploy plan:');
-					yield* Effect.log(
-						`  • rsync server/ → ${REMOTE}:${REMOTE_DIR}/`,
-					);
+					yield* Effect.log(`  • rsync server/ → ${REMOTE}:${REMOTE_DIR}/`);
 					yield* Effect.log('  • bun install on remote');
-					yield* Effect.log(
-						'  • sudo systemctl restart server',
-					);
+					yield* Effect.log('  • sudo systemctl restart server');
 					yield* Effect.log('  • Verify health endpoint');
 					yield* Effect.log('');
 
@@ -107,9 +92,7 @@ export const ServerDeployServiceLive = Layer.effect(
 						.run('rsync', rsyncArgs(['--dry-run']))
 						.pipe(
 							Effect.catchAll(() =>
-								Effect.succeed(
-									'(could not preview — SSH to rumi-server unavailable)',
-								),
+								Effect.succeed('(could not preview — SSH to rumi-server unavailable)'),
 							),
 						);
 					yield* Effect.log(preview);
@@ -127,9 +110,7 @@ export const ServerDeployServiceLive = Layer.effect(
 
 				// 4. Install deps + restart
 				yield* Effect.gen(function* () {
-					yield* info(
-						'Installing deps + restarting service...',
-					);
+					yield* info('Installing deps + restarting service...');
 					yield* shell.run('ssh', [
 						REMOTE,
 						`cd ${REMOTE_DIR} && bun install && sudo systemctl restart rumi-server`,
@@ -149,10 +130,7 @@ export const ServerDeployServiceLive = Layer.effect(
 
 				yield* Effect.log('');
 				yield* ok('server deployed successfully');
-			}).pipe(
-				Effect.withLogSpan('server-deploy'),
-				Effect.annotateLogs({ dryRun }),
-			);
+			}).pipe(Effect.withLogSpan('server-deploy'), Effect.annotateLogs({ dryRun }));
 
 		return { deploy } satisfies ServerDeployServiceShape;
 	}),

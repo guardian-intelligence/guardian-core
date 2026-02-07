@@ -1,0 +1,281 @@
+{
+  "schema": "gpre.theory.architecture_bundle.v1",
+  "meta": {
+    "title": "Agent-Native Architecture: General-Purpose Reasoning Engines Over Structured Data Executing Compute",
+    "version": "1.0.0",
+    "created_at": "2026-02-07T00:00:00Z",
+    "description": "Unified architecture doctrine for single-node, MCP-free, OODA wave runtimes with adaptive orientation.",
+    "concepts_count": 72
+  },
+  "payload": {
+    "axioms": [
+      {
+        "id": "AX-01",
+        "name": "Stochastic Cognition",
+        "statement": "Model outputs are probabilistic suggestions, not authority-bearing facts.",
+        "law_refs": ["LAW-02", "LAW-05"]
+      },
+      {
+        "id": "AX-02",
+        "name": "Bounded Orientation Channel",
+        "statement": "Reasoning input bandwidth is finite and must be engineered explicitly.",
+        "law_refs": ["LAW-04", "LAW-15"]
+      },
+      {
+        "id": "AX-03",
+        "name": "Durable Substrate",
+        "statement": "Authoritative runtime state is append-friendly durable data, not process memory.",
+        "law_refs": ["LAW-03", "LAW-08"]
+      },
+      {
+        "id": "AX-04",
+        "name": "Decision-Action Split",
+        "statement": "Correctness under retries requires durable decision commitment before external action.",
+        "law_refs": ["LAW-06", "LAW-07"]
+      },
+      {
+        "id": "AX-05",
+        "name": "Explicit Authority",
+        "statement": "All privileged execution is mediated by explicit capability objects.",
+        "law_refs": ["LAW-05", "LAW-10"]
+      },
+      {
+        "id": "AX-06",
+        "name": "Adaptive but Guarded",
+        "statement": "Agent adaptation is useful only when constrained by immutable safety meta-policy.",
+        "law_refs": ["LAW-13", "LAW-19"]
+      },
+      {
+        "id": "AX-07",
+        "name": "Provenance Continuity",
+        "statement": "Every relevant artifact should maintain provenance links to source event and decision context.",
+        "law_refs": ["LAW-16"]
+      },
+      {
+        "id": "AX-08",
+        "name": "Recoverability",
+        "statement": "Every state change must be replayable or compensable.",
+        "law_refs": ["LAW-08", "LAW-18"]
+      },
+      {
+        "id": "AX-09",
+        "name": "Resource Bounds",
+        "statement": "Unbounded loops are correctness bugs, not performance bugs.",
+        "law_refs": ["LAW-12"]
+      },
+      {
+        "id": "AX-10",
+        "name": "Auditability",
+        "statement": "Operational trust requires machine-queryable lineage across the full loop.",
+        "law_refs": ["LAW-16"]
+      }
+    ],
+    "models": [
+      {
+        "id": "MODEL-01",
+        "name": "Wave Runtime Model",
+        "type": "fsm",
+        "definition": {
+          "states": ["created", "orienting", "deciding", "acting", "learning", "completed", "failed_retryable", "failed_terminal"],
+          "entry": "created",
+          "terminal": ["completed", "failed_terminal"],
+          "required_sequence": ["created", "orienting", "deciding", "acting", "learning", "completed"]
+        },
+        "law_refs": ["LAW-01", "LAW-06", "LAW-08"]
+      },
+      {
+        "id": "MODEL-02",
+        "name": "Event Delivery Model",
+        "type": "lease_queue",
+        "definition": {
+          "delivery": "at_least_once",
+          "exclusive_lease": true,
+          "terminal_states": ["acked", "dead_lettered"],
+          "retry_path": "nack_with_delay"
+        },
+        "law_refs": ["LAW-03", "LAW-11"]
+      },
+      {
+        "id": "MODEL-03",
+        "name": "Exactly-Once Effect Illusion",
+        "type": "outbox_idempotency",
+        "definition": {
+          "internal": "at_least_once",
+          "external": "idempotency_key_enforced",
+          "reconciliation": "receipt_based"
+        },
+        "law_refs": ["LAW-07", "LAW-08"]
+      },
+      {
+        "id": "MODEL-04",
+        "name": "Adaptive Orientation Model",
+        "type": "profiled_budget_compiler",
+        "definition": {
+          "inputs": ["facts", "profile_version", "risk_tier", "mandatory_bands"],
+          "output": "orientation_packet",
+          "constraints": ["token_budget", "band_floors", "source_diversity"]
+        },
+        "law_refs": ["LAW-04", "LAW-13", "LAW-15", "LAW-19"]
+      }
+    ],
+    "protocols": [
+      {
+        "id": "PROTO-01",
+        "name": "Intent Envelope Protocol",
+        "purpose": "MCP-free agent->host control requests",
+        "required_fields": ["intent_id", "intent_type", "requested_at", "idempotency_key", "payload"],
+        "security_notes": [
+          "payload source claims are advisory",
+          "namespace-derived identity is authoritative"
+        ],
+        "law_refs": ["LAW-02", "LAW-10", "LAW-13"]
+      },
+      {
+        "id": "PROTO-02",
+        "name": "Receipt Protocol",
+        "purpose": "Deterministic execution outcome signaling",
+        "required_fields": ["id", "status", "completed_at", "result", "error_code"],
+        "immutability": "append_only",
+        "law_refs": ["LAW-07", "LAW-16"]
+      },
+      {
+        "id": "PROTO-03",
+        "name": "Capability Verification Protocol",
+        "purpose": "Runtime scope checks",
+        "checks": ["hash_match", "not_revoked", "not_expired", "scope_contains"],
+        "fail_mode": "deny",
+        "law_refs": ["LAW-05"]
+      },
+      {
+        "id": "PROTO-04",
+        "name": "Profile Proposal Protocol",
+        "purpose": "Safe adaptation over next N waves",
+        "checks": ["schema_valid", "guard_valid", "bounds_valid", "horizon_valid"],
+        "terminal_status": ["approved", "rejected", "expired"],
+        "law_refs": ["LAW-13", "LAW-19"]
+      }
+    ],
+    "doctrines": [
+      {
+        "id": "DOC-01",
+        "name": "Kernel Immutability Doctrine",
+        "statement": "Core safety kernel logic must not be agent-mutable.",
+        "law_refs": ["LAW-05", "LAW-13"]
+      },
+      {
+        "id": "DOC-02",
+        "name": "Policy as Versioned Data",
+        "statement": "Policy evolution is append-only versioning with explicit actor attribution.",
+        "law_refs": ["LAW-16", "LAW-20"]
+      },
+      {
+        "id": "DOC-03",
+        "name": "Adapter Explicitness Doctrine",
+        "statement": "Adapters are first-class runtime contracts, not hidden implementation details.",
+        "law_refs": ["LAW-17"]
+      },
+      {
+        "id": "DOC-04",
+        "name": "Operator Sovereignty Doctrine",
+        "statement": "Operators retain override and reversibility for high-impact actions.",
+        "law_refs": ["LAW-18"]
+      }
+    ],
+    "prescriptions": [
+      {
+        "id": "PRES-01",
+        "statement": "Use SQLite WAL with explicit transactions and busy timeout for single-node durable runtime.",
+        "rationale": "Maximizes simplicity and crash resilience.",
+        "law_refs": ["LAW-03", "LAW-08"]
+      },
+      {
+        "id": "PRES-02",
+        "statement": "Treat queue metrics as control-plane feedback, not passive telemetry.",
+        "rationale": "Prevents latency-induced correctness failures.",
+        "law_refs": ["LAW-12", "LAW-16"]
+      },
+      {
+        "id": "PRES-03",
+        "statement": "Compile orientation packets from facts and profile rules; never assemble by ad hoc concatenation.",
+        "rationale": "Enforces determinism and budget constraints.",
+        "law_refs": ["LAW-04", "LAW-15"]
+      },
+      {
+        "id": "PRES-04",
+        "statement": "Emit machine-readable audit records for every privileged mutation.",
+        "rationale": "Supports incident response and trust.",
+        "law_refs": ["LAW-16"]
+      },
+      {
+        "id": "PRES-05",
+        "statement": "Bootstrap root authority through secure file handoff and immediate scoped-token minting.",
+        "rationale": "Reduces long-lived high-privilege exposure.",
+        "law_refs": ["LAW-05", "LAW-16"]
+      },
+      {
+        "id": "PRES-06",
+        "statement": "Use deterministic tie-breakers in all selection algorithms.",
+        "rationale": "Enables replay and stable quality attribution.",
+        "law_refs": ["LAW-08"]
+      },
+      {
+        "id": "PRES-07",
+        "statement": "Require idempotency keys for all side-effecting intents and outbox actions.",
+        "rationale": "Prevents duplicate impact under retry/replay.",
+        "law_refs": ["LAW-07"]
+      },
+      {
+        "id": "PRES-08",
+        "statement": "Classify and quarantine malformed intents; never process partially valid payloads.",
+        "rationale": "Preserves safety and diagnosability.",
+        "law_refs": ["LAW-02", "LAW-11"]
+      }
+    ],
+    "strategies": [
+      {
+        "id": "STRAT-01",
+        "name": "Wave Throughput Strategy",
+        "objective": "maximize trusted progress per unit compute",
+        "controls": [
+          "adaptive claim sizes",
+          "priority queues",
+          "risk-aware backoff"
+        ],
+        "law_refs": ["LAW-09", "LAW-12"]
+      },
+      {
+        "id": "STRAT-02",
+        "name": "Orientation Quality Strategy",
+        "objective": "maximize decision utility under budget",
+        "controls": [
+          "mandatory bands",
+          "source diversity constraints",
+          "feedback-driven profile tuning"
+        ],
+        "law_refs": ["LAW-04", "LAW-19"]
+      },
+      {
+        "id": "STRAT-03",
+        "name": "Resilience Strategy",
+        "objective": "maintain correctness under partial failure",
+        "controls": [
+          "transactional writes",
+          "dlq + replay tools",
+          "compensating actions"
+        ],
+        "law_refs": ["LAW-03", "LAW-11", "LAW-18"]
+      },
+      {
+        "id": "STRAT-04",
+        "name": "Evolution Strategy",
+        "objective": "reduce recurrence and improve quality",
+        "controls": [
+          "defect clustering",
+          "guardrail synthesis",
+          "proposal shadow evaluation"
+        ],
+        "law_refs": ["LAW-19", "LAW-20"]
+      }
+    ]
+  }
+}

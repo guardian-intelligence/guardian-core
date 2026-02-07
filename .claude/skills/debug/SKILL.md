@@ -10,11 +10,11 @@ This guide covers debugging the containerized agent execution system.
 ## Architecture Overview
 
 ```
-Host (macOS)                          Container (Linux VM)
+Host (macOS)                          Container (Docker)
 ─────────────────────────────────────────────────────────────
 src/container-runner.ts               container/agent-runner/
     │                                      │
-    │ spawns Apple Container               │ runs Claude Agent SDK
+    │ spawns Docker               │ runs Claude Agent SDK
     │ with volume mounts                   │ with MCP servers
     │                                      │
     ├── data/env/env ──────────────> /workspace/env-dir/env
@@ -80,13 +80,13 @@ cat .env  # Should show one of:
 
 ### 2. Environment Variables Not Passing
 
-**Apple Container Bug:** Environment variables passed via `-e` are lost when using `-i` (interactive/piped stdin).
+**Docker env policy:** This project intentionally mounts a filtered env file instead of passing arbitrary `-e` variables.
 
-**Workaround:** The system extracts only authentication variables (`CLAUDE_CODE_OAUTH_TOKEN`, `ANTHROPIC_API_KEY`) from `.env` and mounts them for sourcing inside the container. Other env vars are not exposed.
+**Reason:** The system extracts only authentication variables (`CLAUDE_CODE_OAUTH_TOKEN`, `ANTHROPIC_API_KEY`) from `.env` and mounts them for sourcing inside the container. Other env vars are not exposed.
 
 To verify env vars are reaching the container:
 ```bash
-echo '{}' | container run -i \
+echo '{}' | docker run -i \
   --mount type=bind,source=$(pwd)/data/env,target=/workspace/env-dir,readonly \
   --entrypoint /bin/bash guardian-core-agent:latest \
   -c 'export $(cat /workspace/env-dir/env | xargs); echo "OAuth: ${#CLAUDE_CODE_OAUTH_TOKEN} chars, API: ${#ANTHROPIC_API_KEY} chars"'
@@ -94,9 +94,9 @@ echo '{}' | container run -i \
 
 ### 3. Mount Issues
 
-**Apple Container quirks:**
-- Only mounts directories, not individual files
-- `-v` syntax does NOT support `:ro` suffix - use `--mount` for readonly:
+**Docker mount notes:**
+- Bind mounts can target files or directories.
+- Read-only can be expressed with either `:ro` or `--mount ... readonly`:
   ```bash
   # Readonly: use --mount
   --mount "type=bind,source=/path,target=/container/path,readonly"
@@ -107,7 +107,7 @@ echo '{}' | container run -i \
 
 To check what's mounted inside a container:
 ```bash
-container run --rm --entrypoint /bin/bash guardian-core-agent:latest -c 'ls -la /workspace/'
+docker run --rm --entrypoint /bin/bash guardian-core-agent:latest -c 'ls -la /workspace/'
 ```
 
 Expected structure:
@@ -129,7 +129,7 @@ Expected structure:
 
 The container runs as user `node` (uid 1000). Check ownership:
 ```bash
-container run --rm --entrypoint /bin/bash guardian-core-agent:latest -c '
+docker run --rm --entrypoint /bin/bash guardian-core-agent:latest -c '
   whoami
   ls -la /workspace/
   ls -la /app/
@@ -152,7 +152,7 @@ grep -A3 "Claude sessions" src/container-runner.ts
 
 **Verify sessions are accessible:**
 ```bash
-container run --rm --entrypoint /bin/bash \
+docker run --rm --entrypoint /bin/bash \
   -v ~/.claude:/home/node/.claude \
   guardian-core-agent:latest -c '
 echo "HOME=$HOME"
@@ -183,7 +183,7 @@ cp .env data/env/env
 
 # Run test query
 echo '{"prompt":"What is 2+2?","groupFolder":"test","chatJid":"test@g.us","isMain":false}' | \
-  container run -i \
+  docker run -i \
   --mount "type=bind,source=$(pwd)/data/env,target=/workspace/env-dir,readonly" \
   -v $(pwd)/groups/test:/workspace/group \
   -v $(pwd)/data/ipc:/workspace/ipc \
@@ -192,7 +192,7 @@ echo '{"prompt":"What is 2+2?","groupFolder":"test","chatJid":"test@g.us","isMai
 
 ### Test Claude Code directly:
 ```bash
-container run --rm --entrypoint /bin/bash \
+docker run --rm --entrypoint /bin/bash \
   --mount "type=bind,source=$(pwd)/data/env,target=/workspace/env-dir,readonly" \
   guardian-core-agent:latest -c '
   export $(cat /workspace/env-dir/env | xargs)
@@ -202,7 +202,7 @@ container run --rm --entrypoint /bin/bash \
 
 ### Interactive shell in container:
 ```bash
-container run --rm -it --entrypoint /bin/bash guardian-core-agent:latest
+docker run --rm -it --entrypoint /bin/bash guardian-core-agent:latest
 ```
 
 ## SDK Options Reference
@@ -235,7 +235,7 @@ bun run build
 ./container/build.sh
 
 # Or force full rebuild
-container builder prune -af
+docker builder prune -af
 ./container/build.sh
 ```
 
@@ -243,10 +243,10 @@ container builder prune -af
 
 ```bash
 # List images
-container images
+docker images
 
 # Check what's in the image
-container run --rm --entrypoint /bin/bash guardian-core-agent:latest -c '
+docker run --rm --entrypoint /bin/bash guardian-core-agent:latest -c '
   echo "=== Node version ==="
   node --version
 
@@ -326,11 +326,11 @@ echo -e "\n1. Authentication configured?"
 echo -e "\n2. Env file copied for container?"
 [ -f data/env/env ] && echo "OK" || echo "MISSING - will be created on first run"
 
-echo -e "\n3. Apple Container system running?"
-container system status &>/dev/null && echo "OK" || echo "NOT RUNNING - Guardian Core should auto-start it; check logs"
+echo -e "\n3. Docker daemon reachable?"
+docker info &>/dev/null && echo "OK" || echo "NOT RUNNING - start Docker Desktop (macOS) or run sudo systemctl start docker (Linux)"
 
 echo -e "\n4. Container image exists?"
-echo '{}' | container run -i --entrypoint /bin/echo guardian-core-agent:latest "OK" 2>/dev/null || echo "MISSING - run ./container/build.sh"
+echo '{}' | docker run -i --entrypoint /bin/echo guardian-core-agent:latest "OK" 2>/dev/null || echo "MISSING - run ./container/build.sh"
 
 echo -e "\n5. Session mount path correct?"
 grep -q "/home/node/.claude" src/container-runner.ts 2>/dev/null && echo "OK" || echo "WRONG - should mount to /home/node/.claude/, not /root/.claude/"

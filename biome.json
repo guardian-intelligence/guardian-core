@@ -7,7 +7,7 @@
 	},
 	"files": {
 		"ignoreUnknown": true,
-		"includes": ["src/**", "container/**"]
+		"includes": ["src/**", "container/**", "scripts/**"]
 	},
 	"formatter": {
 		"enabled": true,
@@ -31,42 +31,47 @@
 				"noBannedTypes": "off",
 				"noForEach": "off",
 				"noStaticOnlyClass": "off",
-				"noUselessConstructor": "warn",
+				"noUselessConstructor": "error",
 				"noExcessiveCognitiveComplexity": "off"
 			},
 
 			"correctness": {
-				"noUnusedVariables": "warn",
-				"noUnusedImports": "warn",
+				"noUnusedVariables": "error",
+				"noUnusedImports": "error",
 				"useExhaustiveDependencies": "off"
 			},
 
 			"style": {
 				"noNonNullAssertion": "off",
-				"useConst": "warn",
-				"noParameterAssign": "off",
+				"useConst": "error",
+				"noParameterAssign": "error",
 				"useDefaultParameterLast": "off",
 				"useEnumInitializers": "off",
 				"useExponentiationOperator": "off",
-				"useImportType": "warn",
-				"useNodejsImportProtocol": "warn",
+				"useImportType": "error",
+				"useNodejsImportProtocol": "error",
 				"useNumberNamespace": "off",
 				"useSelfClosingElements": "off",
 				"useShorthandAssign": "off",
 				"useTemplate": "off",
 				"noUnusedTemplateLiteral": "off",
-				"noUselessElse": "off",
+				"noUselessElse": "error",
 				"useFilenamingConvention": "off",
-				"useNamingConvention": "off"
+				"useNamingConvention": "off",
+				"useThrowOnlyError": "error"
 			},
 
 			"suspicious": {
 				"noExplicitAny": "off",
-				"noAssignInExpressions": "off",
+				"noAssignInExpressions": "error",
 				"noConfusingVoidType": "off",
-				"noConsole": "off",
-				"noAsyncPromiseExecutor": "warn",
-				"noEmptyInterface": "off"
+				"noConsole": {
+					"level": "error",
+					"options": { "allow": ["error"] }
+				},
+				"noAsyncPromiseExecutor": "error",
+				"noEmptyInterface": "off",
+				"noImplicitAnyLet": "error"
 			},
 
 			"performance": {
