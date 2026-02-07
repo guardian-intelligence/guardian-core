@@ -64,12 +64,10 @@ if config_env() == :prod do
     private_key: github_private_key,
     installation_id: github_installation_id
 
-  # ElevenLabs webhook — fail-closed
-  elevenlabs_secret =
-    System.get_env("ELEVENLABS_WEBHOOK_SECRET") ||
-      raise "environment variable ELEVENLABS_WEBHOOK_SECRET is missing"
-
-  config :guardian, :elevenlabs_webhook_secret, elevenlabs_secret
+  # ElevenLabs webhook — optional (only configure if provided)
+  if elevenlabs_secret = System.get_env("ELEVENLABS_WEBHOOK_SECRET") do
+    config :guardian, :elevenlabs_webhook_secret, elevenlabs_secret
+  end
 end
 
 # Dev/test: optional env-based config (won't crash if missing)

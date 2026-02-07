@@ -43,7 +43,6 @@ defmodule Guardian.Deploy.ConfigTest do
 
     test "archive names are .age files" do
       assert String.ends_with?(Config.primary_env_archive(), ".age")
-      assert String.ends_with?(Config.legacy_env_archive(), ".age")
       assert String.ends_with?(Config.server_env_archive(), ".age")
     end
   end

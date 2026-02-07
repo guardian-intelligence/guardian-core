@@ -11,7 +11,6 @@ defmodule Guardian.Deploy.Config do
   @platform_service "rumi-platform"
 
   @primary_env_archive "guardian-core.env.age"
-  @legacy_env_archive "nanoclaw.env.age"
   @server_env_archive "server.env.age"
 
   @template_paths [
@@ -113,7 +112,6 @@ defmodule Guardian.Deploy.Config do
   def server_service, do: @server_service
   def platform_service, do: @platform_service
   def primary_env_archive, do: @primary_env_archive
-  def legacy_env_archive, do: @legacy_env_archive
   def server_env_archive, do: @server_env_archive
   def template_paths, do: @template_paths
 end

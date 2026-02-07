@@ -390,18 +390,8 @@ defmodule Guardian.Deploy.Secrets do
     if file_exists.(primary) do
       {:ok, primary, Config.primary_env_archive()}
     else
-      legacy = Path.join(secrets_dir, Config.legacy_env_archive())
-
-      if file_exists.(legacy) do
-        Logger.warn(
-          "Using legacy archive name #{Config.legacy_env_archive()}; run backup to regenerate #{Config.primary_env_archive()}."
-        )
-
-        {:ok, legacy, Config.legacy_env_archive()}
-      else
-        {:error, stage,
-         "Neither #{Config.primary_env_archive()} nor #{Config.legacy_env_archive()} was found in #{secrets_dir}"}
-      end
+      {:error, stage,
+       "#{Config.primary_env_archive()} was not found in #{secrets_dir}"}
     end
   end
 

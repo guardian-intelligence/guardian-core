@@ -28,7 +28,7 @@ in
       User = "rumi";
       Group = "users";
       WorkingDirectory = "/opt/guardian-core";
-      ExecStart = "${pkgs.bun}/bin/bun dist/index.js";
+      ExecStart = "${pkgs.nodejs_22}/bin/node /opt/guardian-core/dist/index.js";
       Restart = "always";
       RestartSec = 5;
       EnvironmentFile = envFile;
