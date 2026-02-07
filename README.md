@@ -1,166 +1,432 @@
-<p align="center">
-  <img src="assets/nanoclaw-logo.png" alt="NanoClaw" width="400">
-</p>
+# Guardian Core Agent Operating Spec
 
-<p align="center">
-  My personal Claude assistant that runs securely in containers. Lightweight and built to be understood and customized for your own needs.
-</p>
+## 1. Scope
 
-## Why I Built This
+- Audience: autonomous coding agents.
+- Primary codebase: root app (`src/`), container runner (`container/agent-runner/`), webhook server (`server/`), deploy tooling (`scripts/`, `src/deploy*.ts`).
+- Runtime truth source order:
+  1. `src/**/*.ts`, `container/agent-runner/src/**/*.ts`, `server/src/**/*.ts`
+  2. `scripts/**/*.ts`, `launchd/*.plist`, `systemd/*.service`, `nixos/**/*.nix`
+  3. `docs/*.md`, `.claude/skills/*` (can be stale)
 
-[OpenClaw](https://github.com/openclaw/openclaw) is an impressive project with a great vision. But I can't sleep well running software I don't understand with access to my life. OpenClaw has 52+ modules, 8 config management files, 45+ dependencies, and abstractions for 15 channel providers. Security is application-level (allowlists, pairing codes) rather than OS isolation. Everything runs in one Node process with shared memory.
+## 2. Current Runtime Topology
 
-NanoClaw gives you the same core functionality in a codebase you can understand in 8 minutes. One process. A handful of files. Agents run in actual Linux containers with filesystem isolation, not behind permission checks.
+- Host process: Node.js app (`src/index.ts`) for WhatsApp I/O, routing, DB, IPC watcher, scheduler.
+- Agent execution: Docker container per invocation (`src/container-runner.ts`).
+- Container image: `guardian-core-agent:latest` built from `container/Dockerfile`.
+- Container agent runtime: Claude Agent SDK (`container/agent-runner/src/index.ts`) with IPC MCP tools (`container/agent-runner/src/ipc-mcp.ts`).
+- Optional webhook server: Bun + Hono (`server/src/index.ts`) for ElevenLabs-signed GitHub tool endpoints.
 
-## Quick Start
+## 3. Fast Commands
+
+### Root app
 
 ```bash
-git clone https://github.com/gavrielc/nanoclaw.git
-cd nanoclaw
-claude
+bun run dev
+bun run build
+bun run start
+bun run typecheck
+bun run test
+bun run auth
 ```
 
-Then run `/setup`. Claude Code handles everything: dependencies, authentication, container setup, service configuration.
+### Deploy
 
-## Philosophy
-
-**Small enough to understand.** One process, a few source files. No microservices, no message queues, no abstraction layers. Have Claude Code walk you through it.
-
-**Secure by isolation.** Agents run in Linux containers (Apple Container on macOS, or Docker). They can only see what's explicitly mounted. Bash access is safe because commands run inside the container, not on your host.
-
-**Built for one user.** This isn't a framework. It's working software that fits my exact needs. You fork it and have Claude Code make it match your exact needs.
-
-**Customization = code changes.** No configuration sprawl. Want different behavior? Modify the code. The codebase is small enough that this is safe.
-
-**AI-native.** No installation wizard; Claude Code guides setup. No monitoring dashboard; ask Claude what's happening. No debugging tools; describe the problem, Claude fixes it.
-
-**Skills over features.** Contributors shouldn't add features (e.g. support for Telegram) to the codebase. Instead, they contribute [claude code skills](https://code.claude.com/docs/en/skills) like `/add-telegram` that transform your fork. You end up with clean code that does exactly what you need.
-
-**Best harness, best model.** This runs on Claude Agent SDK, which means you're running Claude Code directly. The harness matters. A bad harness makes even smart models seem dumb, a good harness gives them superpowers. Claude Code is (IMO) the best harness available.
-
-## What It Supports
-
-- **WhatsApp I/O** - Message Claude from your phone
-- **Isolated group context** - Each group has its own `CLAUDE.md` memory, isolated filesystem, and runs in its own container sandbox with only that filesystem mounted
-- **Main channel** - Your private channel (self-chat) for admin control; every other group is completely isolated
-- **Scheduled tasks** - Recurring jobs that run Claude and can message you back
-- **Web access** - Search and fetch content
-- **Container isolation** - Agents sandboxed in Apple Container (macOS) or Docker (macOS/Linux)
-- **Optional integrations** - Add Gmail (`/add-gmail`) and more via skills
-
-## Usage
-
-Talk to your assistant with the trigger word (default: `@Andy`):
-
-```
-@Andy send an overview of the sales pipeline every weekday morning at 9am (has access to my Obsidian vault folder)
-@Andy review the git history for the past week each Friday and update the README if there's drift
-@Andy every Monday at 8am, compile news on AI developments from Hacker News and TechCrunch and message me a briefing
+```bash
+bun run deploy                 # smart mode
+bun run deploy:brain:app
+bun run deploy:brain:container
+bun run deploy:brain:all
+bun run deploy:server
 ```
 
-From the main channel (your self-chat), you can manage groups and tasks:
-```
-@Andy list all scheduled tasks across groups
-@Andy pause the Monday briefing task
-@Andy join the Family Chat group
-```
+### Container image
 
-## Customizing
-
-There are no configuration files to learn. Just tell Claude Code what you want:
-
-- "Change the trigger word to @Bob"
-- "Remember in the future to make responses shorter and more direct"
-- "Add a custom greeting when I say good morning"
-- "Store conversation summaries weekly"
-
-Or run `/customize` for guided changes.
-
-The codebase is small enough that Claude can safely modify it.
-
-## Contributing
-
-**Don't add features. Add skills.**
-
-If you want to add Telegram support, don't create a PR that adds Telegram alongside WhatsApp. Instead, contribute a skill file (`.claude/skills/add-telegram/SKILL.md`) that teaches Claude Code how to transform a NanoClaw installation to use Telegram.
-
-Users then run `/add-telegram` on their fork and get clean code that does exactly what they need, not a bloated system trying to support every use case.
-
-### RFS (Request for Skills)
-
-Skills we'd love to see:
-
-**Communication Channels**
-- `/add-telegram` - Add Telegram as channel. Should give the user option to replace WhatsApp or add as additional channel. Also should be possible to add it as a control channel (where it can trigger actions) or just a channel that can be used in actions triggered elsewhere
-- `/add-slack` - Add Slack
-- `/add-discord` - Add Discord
-
-**Platform Support**
-- `/setup-windows` - Windows via WSL2 + Docker
-
-**Session Management**
-- `/add-clear` - Add a `/clear` command that compacts the conversation (summarizes context while preserving critical information in the same session). Requires figuring out how to trigger compaction programmatically via the Claude Agent SDK.
-
-## Requirements
-
-- macOS or Linux
-- Node.js 20+
-- [Claude Code](https://claude.ai/download)
-- [Apple Container](https://github.com/apple/container) (macOS) or [Docker](https://docker.com/products/docker-desktop) (macOS/Linux)
-
-## Architecture
-
-```
-WhatsApp (baileys) --> SQLite --> Polling loop --> Container (Claude Agent SDK) --> Response
+```bash
+./container/build.sh
 ```
 
-Single Node.js process. Agents execute in isolated Linux containers with mounted directories. IPC via filesystem. No daemons, no queues, no complexity.
+### Server subproject
 
-Key files:
-- `src/index.ts` - Main app: WhatsApp connection, routing, IPC
-- `src/container-runner.ts` - Spawns agent containers
-- `src/task-scheduler.ts` - Runs scheduled tasks
-- `src/db.ts` - SQLite operations
-- `groups/*/CLAUDE.md` - Per-group memory
+```bash
+bun --cwd server run dev
+bun --cwd server run typecheck
+```
 
-## FAQ
+## 4. Repository Map
 
-**Why WhatsApp and not Telegram/Signal/etc?**
+| Path | Role |
+|---|---|
+| `src/index.ts` | Host runtime entrypoint |
+| `src/container-runner.ts` | Docker spawn, mount setup, container output parsing |
+| `src/task-scheduler.ts` | Due-task loop, scheduled execution |
+| `src/db.ts` | SQLite schema + query layer |
+| `src/MountSecurityService.ts` | Mount allowlist validation (active) |
+| `src/phone-caller.ts` | ElevenLabs outbound call + transcript capture |
+| `container/agent-runner/src/index.ts` | Container-side Claude query loop |
+| `container/agent-runner/src/ipc-mcp.ts` | MCP tools writing IPC files |
+| `server/src/index.ts` | Webhook tool API |
+| `src/deploy.ts` | Brain deploy pipeline |
+| `src/deploy-server.ts` | Server deploy pipeline |
 
-Because I use WhatsApp. Fork it and run a skill to change it. That's the whole point.
+## 5. Host Runtime Behavior (`src/index.ts`)
 
-**Why Apple Container instead of Docker?**
+### Startup sequence
 
-On macOS, Apple Container is lightweight, fast, and optimized for Apple silicon. But Docker is also fully supported—during `/setup`, you can choose which runtime to use. On Linux, Docker is used automatically.
+1. `ensureDockerRunning()` checks `docker info`.
+2. `initDatabase()` creates/migrates SQLite tables.
+3. Load state from `data/router_state.json`, `data/sessions.json`, `data/registered_groups.json`.
+4. Migrate `ALERT_PHONE_NUMBER` to `~/.config/guardian-core/phone-contacts.json` if needed.
+5. Connect WhatsApp (Baileys).
+6. On connection open:
+   - Start scheduler loop (guarded singleton).
+   - Start IPC watcher (guarded singleton).
+   - Start message loop (guarded singleton).
+   - Run group metadata sync (daily cache + timer).
 
-**Can I run this on Linux?**
+### Message ingestion and routing
 
-Yes. Run `/setup` and it will automatically configure Docker as the container runtime. Thanks to [@dotsetgreg](https://github.com/dotsetgreg) for contributing the `/convert-to-docker` skill.
+- All incoming chats: only metadata stored (`chats` table).
+- Full message content stored only for registered groups (`messages` table).
+- Group resolution key: `chat_jid` in `data/registered_groups.json`.
+- Trigger behavior:
+  - Main group (`folder === "main"`): responds to all messages.
+  - Non-main groups: requires `TRIGGER_PATTERN` (`^@ASSISTANT_NAME\\b`, case-insensitive).
+- Prompt format to container:
+  - XML-like payload containing all missed messages since last agent timestamp:
+    - `<messages><message sender="..." time="...">...</message>...</messages>`
+- Response dispatch:
+  - Host always prefixes outgoing message with `${ASSISTANT_NAME}: `.
 
-**Is this secure?**
+### Group registration
 
-Agents run in containers, not behind application-level permission checks. They can only access explicitly mounted directories. You should still review what you're running, but the codebase is small enough that you actually can. See [docs/SECURITY.md](docs/SECURITY.md) for the full security model.
+- Registration path: IPC task type `register_group` (main only), then `registerGroup()`.
+- Creates `groups/{folder}/logs`.
+- Stored fields include `trigger`, but runtime trigger check uses global `ASSISTANT_NAME`; per-group trigger is not enforced by `processMessage()`.
 
-**Why no configuration files?**
+## 6. Container Execution Contract
 
-We don't want configuration sprawl. Every user should customize it to so that the code matches exactly what they want rather than configuring a generic system. If you like having config files, tell Claude to add them.
+### Input JSON (host -> container stdin)
 
-**How do I debug issues?**
+```json
+{
+  "prompt": "string",
+  "sessionId": "string | undefined",
+  "groupFolder": "string",
+  "chatJid": "string",
+  "isMain": "boolean",
+  "isScheduledTask": "boolean | undefined"
+}
+```
 
-Ask Claude Code. "Why isn't the scheduler running?" "What's in the recent logs?" "Why did this message not get a response?" That's the AI-native approach.
+### Output JSON (container -> host stdout)
 
-**Why isn't the setup working for me?**
+- Wrapped between sentinels:
+  - `---GUARDIAN_CORE_OUTPUT_START---`
+  - `---GUARDIAN_CORE_OUTPUT_END---`
+- Payload:
 
-I don't know. Run `claude`, then run `/debug`. If claude finds an issue that is likely affecting other users, open a PR to modify the setup SKILL.md.
+```json
+{
+  "status": "success | error",
+  "result": "string | null",
+  "newSessionId": "string | undefined",
+  "error": "string | undefined"
+}
+```
 
-**What changes will be accepted into the codebase?**
+### Mount model (`src/container-runner.ts`)
 
-Security fixes, bug fixes, and clear improvements to the base configuration. That's it.
+- Main group mounts:
+  - host project root -> `/workspace/project` (rw)
+  - group folder -> `/workspace/group` (rw)
+- Non-main mounts:
+  - group folder -> `/workspace/group` (rw)
+  - `groups/global` -> `/workspace/global` (ro, if exists)
+- Always mounted:
+  - `data/sessions/{group}/.claude` -> `/home/node/.claude` (rw)
+  - `data/ipc/{group}` -> `/workspace/ipc` (rw)
+  - filtered auth env dir -> `/workspace/env-dir` (ro, only if generated)
+- Optional:
+  - validated additional mounts -> `/workspace/extra/{containerPath}`
 
-Everything else (new capabilities, OS compatibility, hardware support, enhancements) should be contributed as skills.
+### Timeouts and output limits
 
-This keeps the base system minimal and lets every user customize their installation without inheriting features they don't want.
+- Default timeout: `CONTAINER_TIMEOUT` (300000ms).
+- Group override: `registeredGroups[*].containerConfig.timeout`.
+- Stdout/stderr cap: `CONTAINER_MAX_OUTPUT_SIZE` per stream (default 10MB).
+- Timeout handling: `docker stop` first, then SIGKILL fallback.
 
-## License
+### Container logs
 
-MIT
+- Path: `groups/{folder}/logs/container-<timestamp>.log`.
+- Verbose mode if `LOG_LEVEL` is `debug` or `trace`:
+  - includes full input, args, mounts, full stderr/stdout.
+
+## 7. Container Agent Behavior (`container/agent-runner/src/index.ts`)
+
+### Tools allowed to Claude Agent SDK
+
+- `Bash`
+- `Read`, `Write`, `Edit`, `Glob`, `Grep`
+- `WebSearch`, `WebFetch`
+- `mcp__guardian_core__*`
+
+### Prompt augmentation
+
+- On each run, backup template files from `/workspace/group` into `_backups/<timestamp>/` (rolling keep 5).
+- Template files loaded (if present and valid):
+  - `SOUL.md`, `IDENTITY.md`, `USER.md`, `TOOLS.md`, `HEARTBEAT.md`, `BOOT.md`, `VOICE_PROMPT.md`, `THREAT_MODEL.json`
+- Injected as:
+  - `<context><FILE>...</FILE>...</context>` prepended to prompt.
+- Corruption heuristic:
+  - file content `< 10` chars -> attempt restore from latest backup.
+- Scheduled task marker prepended when `isScheduledTask=true`.
+
+### Session compaction hook
+
+- PreCompact hook archives transcript into `/workspace/group/conversations/<date>-<name>.md`.
+- Title source:
+  - session summary from `sessions-index.json` if available.
+  - fallback timestamp-based name.
+
+## 8. IPC Protocol (container <-> host)
+
+### Directory model
+
+- Per group namespace: `data/ipc/{groupFolder}/`.
+- Subdirs:
+  - `messages/` (container writes outbound messages)
+  - `tasks/` (container writes task/control ops)
+- Host-generated snapshots:
+  - `current_tasks.json`
+  - `available_groups.json`
+- Parse failures moved to: `data/ipc/errors/`.
+
+### MCP tools emitted by container (`ipc-mcp.ts`)
+
+- `send_message`
+- `schedule_task`
+- `list_tasks`
+- `pause_task`
+- `resume_task`
+- `cancel_task`
+- `make_phone_call` (main only)
+- `register_group` (main only)
+
+### Host authorization rules (`processTaskIpc`)
+
+- `schedule_task`: non-main may only target own group.
+- `pause/resume/cancel_task`: non-main may only manage own tasks.
+- `refresh_groups`: main only.
+- `phone_call`: main only.
+- `register_group`: main only.
+- Message send: main can send anywhere; non-main only to own mapped chat.
+
+## 9. Scheduler Semantics (`src/task-scheduler.ts`)
+
+- Poll interval: `SCHEDULER_POLL_INTERVAL` (60000ms).
+- Due query: active tasks with `next_run <= now`.
+- Execution context:
+  - `context_mode = group` -> reuse current group session id.
+  - `context_mode = isolated` -> no resume session.
+- After run:
+  - task run logged in `task_run_logs`.
+  - `next_run` recomputed for cron/interval.
+  - `once` becomes completed (`next_run = null`).
+- Timezone for cron parse:
+  - `TIMEZONE` from `TZ` env or system timezone.
+
+## 10. SQLite Schema (`src/db.ts`)
+
+- DB file: `store/messages.db`.
+
+### Tables
+
+- `chats(jid PK, name, last_message_time)`
+- `messages(id, chat_jid, sender, sender_name, content, timestamp, is_from_me, PK(id, chat_jid))`
+- `scheduled_tasks(id PK, group_folder, chat_jid, prompt, schedule_type, schedule_value, context_mode, next_run, last_run, last_result, status, created_at)`
+- `task_run_logs(id PK AUTOINCREMENT, task_id FK, run_at, duration_ms, status, result, error)`
+
+### Notable behavior
+
+- Bot message filtering uses content prefix `${ASSISTANT_NAME}:` (not `is_from_me`).
+- Group discovery uses chat metadata for all chats; full content only registered groups.
+- Group metadata sync timestamp stored via synthetic chat row `jid='__group_sync__'`.
+
+## 11. Security Model
+
+### Core boundary
+
+- Primary isolation boundary: Docker container filesystem/process boundary.
+
+### Additional mount protection
+
+- Allowlist file path: `~/.config/guardian-core/mount-allowlist.json` (outside repo).
+- Validation service: `src/MountSecurityService.ts`.
+- Rules:
+  - host path must exist and resolve (realpath).
+  - must fall under an allowed root.
+  - blocked patterns rejected.
+  - container path must be relative, non-empty, no `..`.
+  - non-main groups can be forced read-only (`nonMainReadOnly`).
+
+### Default blocked patterns
+
+- `.ssh`, `.gnupg`, `.gpg`, `.aws`, `.azure`, `.gcloud`, `.kube`, `.docker`,
+  `credentials`, `.env`, `.netrc`, `.npmrc`, `.pypirc`, `id_rsa`, `id_ed25519`,
+  `private_key`, `.secret`.
+
+### Credential exposure
+
+- Host `.env` is filtered before mounting into container.
+- Exposed vars to container env file:
+  - `CLAUDE_CODE_OAUTH_TOKEN`
+  - `ANTHROPIC_API_KEY`
+  - `GITHUB_TOKEN`
+
+## 12. Phone Call Subsystem (`src/phone-caller.ts`)
+
+- Outbound API: ElevenLabs Conversational AI Twilio endpoint.
+- Required env vars (host):
+  - `ELEVENLABS_API_KEY`
+  - `ELEVENLABS_AGENT_ID`
+  - `ELEVENLABS_PHONE_NUMBER_ID`
+- Contact source:
+  - `~/.config/guardian-core/phone-contacts.json`
+- Migration fallback:
+  - if contacts file missing and `ALERT_PHONE_NUMBER` set, auto-generates contacts file.
+- Reason sanitization:
+  - control chars stripped, max 500 chars.
+- Transcript polling:
+  - polls conversation status every 5s up to 10 minutes.
+  - saves transcript under `groups/main/conversations/`.
+  - enqueues follow-up scheduled task in main IPC.
+
+## 13. Webhook Server (`server/`)
+
+- Runtime: Bun + Hono.
+- Health endpoint: `GET /health`.
+- Tool endpoints (signed):
+  - `POST /tools/github-status`
+  - `POST /tools/github-issue`
+- Signature verification:
+  - header `ElevenLabs-Signature` with `t=<unix>,v0=<hex>`.
+  - HMAC-SHA256 over `${timestamp}.${body}` with `ELEVENLABS_WEBHOOK_SECRET`.
+  - max drift: 5 minutes.
+- GitHub auth env:
+  - `GITHUB_APP_ID`
+  - `GITHUB_APP_PRIVATE_KEY`
+  - `GITHUB_APP_INSTALLATION_ID`
+
+## 14. Deployment System
+
+### Brain deploy (`src/deploy.ts`, `scripts/deploy.ts`)
+
+- Modes:
+  - `smart`, `app`, `container`, `all`.
+- Smart detection:
+  - checks uncommitted git diff (`HEAD` + staged).
+  - fallback timestamp/image checks when no diff.
+- App pipeline:
+  1. `bun install`
+  2. `bun run typecheck`
+  3. `bun run test`
+  4. `bun run build`
+- Container pipeline:
+  1. `./container/build.sh`
+- Service management:
+  - Darwin: install/update `~/Library/LaunchAgents/com.guardian-core.plist`, restart via `launchctl`.
+  - Linux: install/update `~/.config/systemd/user/guardian-core.service`, restart via `systemctl --user`.
+
+### Server deploy (`src/deploy-server.ts`, `scripts/deploy-server.ts`)
+
+- Remote alias: `rumi-server`.
+- Sync target: `/opt/guardian-core/server`.
+- Flow:
+  1. server typecheck
+  2. `rsync` with excludes (`node_modules`, `.env`, `.git`)
+  3. remote `bun install`
+  4. remote `sudo systemctl restart rumi-server`
+  5. health verification (`systemctl is-active` + `curl localhost:3000/health`)
+
+### Deploy logs
+
+- JSONL + console dual logging.
+- Path: `logs/deploy/`.
+- Symlink: `<target>-latest.jsonl`.
+
+## 15. Environment Variables
+
+| Var | Scope | Default | Usage |
+|---|---|---|---|
+| `ASSISTANT_NAME` | Host | `Andy` | Trigger regex + response prefix |
+| `CONTAINER_IMAGE` | Host | `guardian-core-agent:latest` | Docker image tag |
+| `CONTAINER_TIMEOUT` | Host | `300000` | Container timeout |
+| `CONTAINER_MAX_OUTPUT_SIZE` | Host | `10485760` | Stdout/stderr cap |
+| `TZ` | Host | system timezone | Cron parsing timezone |
+| `LOG_LEVEL` | Host | `info` | Pino log level |
+| `CLAUDE_CODE_OAUTH_TOKEN` | Mounted to container | none | Claude auth |
+| `ANTHROPIC_API_KEY` | Mounted to container | none | Claude auth |
+| `GITHUB_TOKEN` | Mounted to container | none | In-container `gh` usage |
+| `ELEVENLABS_API_KEY` | Host | none | Phone calls |
+| `ELEVENLABS_AGENT_ID` | Host | none | Phone calls |
+| `ELEVENLABS_PHONE_NUMBER_ID` | Host | none | Phone calls |
+| `ALERT_PHONE_NUMBER` | Host | none | Legacy migration to contacts file |
+| `PORT` | Server | `3000` | Webhook server port |
+| `ELEVENLABS_WEBHOOK_SECRET` | Server | none | Request verification |
+| `GITHUB_APP_ID` | Server | none | GitHub App auth |
+| `GITHUB_APP_PRIVATE_KEY` | Server | none | GitHub App auth |
+| `GITHUB_APP_INSTALLATION_ID` | Server | none | GitHub App auth |
+
+## 16. State and Data Files
+
+| Path | Producer | Notes |
+|---|---|---|
+| `data/registered_groups.json` | Host / IPC | JID -> group config |
+| `data/sessions.json` | Host | group folder -> session id |
+| `data/router_state.json` | Host | message cursor timestamps |
+| `data/ipc/{group}/...` | Host + container | IPC namespace |
+| `data/sessions/{group}/.claude` | Host-mounted | per-group Claude session store |
+| `store/messages.db` | Host | main SQLite DB |
+| `store/auth/` | Baileys | WhatsApp auth state |
+| `groups/{group}/logs/` | Host | per-run container logs |
+| `logs/guardian-core.log` | Host service | stdout |
+| `logs/guardian-core.error.log` | Host service | stderr |
+
+## 17. Tests and Coverage
+
+- Test runner: Vitest (`bun run test`).
+- Present test suites:
+  - `src/__tests__/MountSecurityService.test.ts`
+  - `src/__tests__/deploy.test.ts`
+- No integration/e2e coverage for WhatsApp flow, Docker execution, IPC watcher, scheduler, or phone-caller network calls.
+
+## 18. Coupled Change Matrix
+
+| Change target | Required companion updates |
+|---|---|
+| Container input/output fields | `src/container-runner.ts`, `container/agent-runner/src/index.ts` |
+| MCP tool schemas/actions | `container/agent-runner/src/ipc-mcp.ts`, `src/index.ts` (`processTaskIpc`) |
+| Task schema/state fields | `src/types.ts`, `src/schemas.ts`, `src/db.ts`, scheduler logic |
+| Mount security rules | `src/MountSecurityService.ts`, `config-examples/mount-allowlist.json`, tests |
+| Deploy behavior | `src/deploy.ts`, `scripts/deploy.ts`, service templates, deploy tests |
+| Server tool contracts | `server/src/tools/*.ts`, webhook callers, signature middleware |
+
+## 19. Known Drift / Legacy Files
+
+- Runtime uses Docker (`docker run` / `docker info`), not Apple Container.
+- Some docs/skills still reference Apple Container:
+  - `docs/SPEC.md` (architecture text)
+  - `.claude/skills/setup/SKILL.md`
+  - `.claude/skills/debug/SKILL.md`
+- `src/mount-security.ts` is a legacy version; runtime imports `src/MountSecurityService.ts`.
+- `src/AppConfig.ts` and `src/AppLogger.ts` define Effect layers not currently wired into `src/index.ts`.
+
+## 20. Agent Editing Rules (Repository-Specific)
+
+- Do not hand-edit `dist/`; regenerate via `bun run build`.
+- Avoid modifying live runtime state under `data/`, `store/`, `logs/` unless task explicitly targets state repair.
+- Preserve IPC authorization boundaries when adding new IPC task types.
+- Preserve per-group session isolation (`/home/node/.claude` mount target).
+- Preserve prefix-based bot-message filtering unless replacing with a proven same-account-safe strategy.

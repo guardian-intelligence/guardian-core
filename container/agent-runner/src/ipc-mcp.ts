@@ -1,5 +1,5 @@
 /**
- * IPC-based MCP Server for NanoClaw
+ * IPC-based MCP Server for Guardian Core
  * Writes messages and tasks to files for the host process to pick up
  */
 
@@ -37,7 +37,7 @@ export function createIpcMcp(ctx: IpcMcpContext) {
   const { chatJid, groupFolder, isMain } = ctx;
 
   return createSdkMcpServer({
-    name: 'nanoclaw',
+    name: 'guardian_core',
     version: '1.0.0',
     tools: [
       tool(
@@ -273,6 +273,49 @@ SCHEDULE VALUE FORMAT (all times are LOCAL timezone):
             content: [{
               type: 'text',
               text: `Task ${args.task_id} cancellation requested.`
+            }]
+          };
+        }
+      ),
+
+      tool(
+        'make_phone_call',
+        `Make an outbound phone call using ElevenLabs Conversational AI.
+Only use for CRITICAL alerts after sending a WhatsApp message first.
+The call will be handled by the configured ElevenLabs alert agent.
+
+Contact allowlist is managed on the host. Pass contact_id to call a specific person,
+or omit it to call the owner (default). Unknown contacts are denied by default.`,
+        {
+          reason: z.string().describe('Brief reason for the call (will be passed to the voice agent, max 500 chars)'),
+          urgency: z.enum(['critical', 'high']).describe('critical=immediate call, high=call if no WhatsApp response in 5min'),
+          contact_id: z.string().optional().describe(
+            'Contact ID from the phone contacts allowlist. Omit to call the owner.'
+          ),
+        },
+        async (args) => {
+          if (!isMain) {
+            return {
+              content: [{ type: 'text', text: 'Only main group can make phone calls.' }],
+              isError: true
+            };
+          }
+
+          const data = {
+            type: 'phone_call',
+            reason: args.reason,
+            urgency: args.urgency,
+            contact_id: args.contact_id,
+            groupFolder,
+            timestamp: new Date().toISOString()
+          };
+
+          writeIpcFile(TASKS_DIR, data);
+
+          return {
+            content: [{
+              type: 'text',
+              text: `Phone call queued (${args.urgency})${args.contact_id ? ` to ${args.contact_id}` : ''}: ${args.reason}`
             }]
           };
         }

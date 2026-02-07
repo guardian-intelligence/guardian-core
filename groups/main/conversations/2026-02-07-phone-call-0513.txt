@@ -1,0 +1,26 @@
+# Phone Call Transcript
+Conversation ID: conv_9501kgv89tz2evta43s0zk42bqk4
+Reason: Test call requested by Shovon
+Duration: 29s
+Summary: Rumi called to confirm a test call requested by Shovon, with details sent via WhatsApp. The user inquired about a potential internet outage for their Wi-Fi. Rumi stated it lacked real-time outage info and advised contacting the service provider. The user acknowledged this.
+
+Date: 2026-02-07T05:13:59.147Z
+
+---
+
+**Rumi** [0s]: Hey, this is Rumi. I'm calling because: Test call requested by Shovon. I've sent the full details to your WhatsApp. Do you have any questions?
+
+**Shovon** [11s]: Can you look up if there's an internet outage for a sound Wi-Fi?
+
+**Rumi** [17s]: 
+I don't have access to real-time outage information for Wi-Fi services. To check for an internet outage, you'll need to contact your service...
+
+**Shovon** [24s]: Okay.
+
+**Rumi** [25s]: 
+Got it. If you need help with...
+
+**Shovon** [25s]: I will give that to you.
+
+**Rumi** [27s]: 
+Understood. Let me know what...

@@ -1,5 +1,5 @@
 /**
- * NanoClaw Agent Runner
+ * Guardian Core Agent Runner
  * Runs inside a container, receives config via stdin, outputs result to stdout
  */
 
@@ -45,8 +45,8 @@ async function readStdin(): Promise<string> {
   });
 }
 
-const OUTPUT_START_MARKER = '---NANOCLAW_OUTPUT_START---';
-const OUTPUT_END_MARKER = '---NANOCLAW_OUTPUT_END---';
+const OUTPUT_START_MARKER = '---GUARDIAN_CORE_OUTPUT_START---';
+const OUTPUT_END_MARKER = '---GUARDIAN_CORE_OUTPUT_END---';
 
 function writeOutput(output: ContainerOutput): void {
   console.log(OUTPUT_START_MARKER);
@@ -189,7 +189,7 @@ function formatTranscriptMarkdown(messages: ParsedMessage[], title?: string | nu
   lines.push('');
 
   for (const msg of messages) {
-    const sender = msg.role === 'user' ? 'User' : 'Andy';
+    const sender = msg.role === 'user' ? 'User' : 'Rumi';
     const content = msg.content.length > 2000
       ? msg.content.slice(0, 2000) + '...'
       : msg.content;
@@ -225,10 +225,104 @@ async function main(): Promise<void> {
   let result: string | null = null;
   let newSessionId: string | undefined;
 
-  // Add context for scheduled tasks
+  // BCP: Backup template files before each session, validate on read
+  const TEMPLATE_FILES = ['SOUL.md', 'IDENTITY.md', 'USER.md', 'TOOLS.md', 'HEARTBEAT.md', 'BOOT.md', 'VOICE_PROMPT.md', 'THREAT_MODEL.json'];
+  const GROUP_DIR = '/workspace/group';
+  const BACKUP_DIR = path.join(GROUP_DIR, '_backups');
+  const MAX_BACKUPS = 5;
+
+  // Create rolling backup of all templates
+  try {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const backupSubdir = path.join(BACKUP_DIR, timestamp);
+    fs.mkdirSync(backupSubdir, { recursive: true });
+
+    for (const file of TEMPLATE_FILES) {
+      const src = path.join(GROUP_DIR, file);
+      if (fs.existsSync(src)) {
+        fs.copyFileSync(src, path.join(backupSubdir, file));
+      }
+    }
+
+    // Prune old backups beyond MAX_BACKUPS
+    const backups = fs.readdirSync(BACKUP_DIR)
+      .filter(d => fs.statSync(path.join(BACKUP_DIR, d)).isDirectory())
+      .sort()
+      .reverse();
+    for (const old of backups.slice(MAX_BACKUPS)) {
+      const oldDir = path.join(BACKUP_DIR, old);
+      for (const f of fs.readdirSync(oldDir)) {
+        fs.unlinkSync(path.join(oldDir, f));
+      }
+      fs.rmdirSync(oldDir);
+    }
+    log(`Template backup created: ${timestamp} (${backups.length} total)`);
+  } catch (err) {
+    log(`Template backup failed (non-fatal): ${err instanceof Error ? err.message : String(err)}`);
+  }
+
+  // Inject template files (OpenClaw-style) into the prompt context
+  // Validate each file: if empty/corrupted, restore from latest backup
+  const templateSections: string[] = [];
+  for (const file of TEMPLATE_FILES) {
+    const filePath = path.join(GROUP_DIR, file);
+    try {
+      if (fs.existsSync(filePath)) {
+        let content = fs.readFileSync(filePath, 'utf-8').trim();
+
+        // Validation: file exists but is empty or suspiciously short (<10 chars)
+        if (content.length < 10) {
+          log(`WARNING: ${file} appears corrupted (${content.length} chars), attempting restore`);
+          const restored = restoreFromBackup(file);
+          if (restored) {
+            content = restored;
+            log(`Restored ${file} from backup`);
+          } else {
+            log(`No backup available for ${file}, skipping`);
+            continue;
+          }
+        }
+
+        templateSections.push(`<${file}>\n${content}\n</${file}>`);
+      }
+    } catch {
+      // Skip unreadable files
+    }
+  }
+
+  function restoreFromBackup(file: string): string | null {
+    try {
+      const backups = fs.readdirSync(BACKUP_DIR)
+        .filter(d => fs.statSync(path.join(BACKUP_DIR, d)).isDirectory())
+        .sort()
+        .reverse();
+
+      for (const backup of backups) {
+        const backupFile = path.join(BACKUP_DIR, backup, file);
+        if (fs.existsSync(backupFile)) {
+          const content = fs.readFileSync(backupFile, 'utf-8').trim();
+          if (content.length >= 10) {
+            // Restore to live file
+            fs.writeFileSync(path.join(GROUP_DIR, file), content);
+            return content;
+          }
+        }
+      }
+    } catch {
+      // Backup dir doesn't exist or isn't readable
+    }
+    return null;
+  }
+
   let prompt = input.prompt;
+
+  if (templateSections.length > 0) {
+    prompt = `<context>\n${templateSections.join('\n\n')}\n</context>\n\n${prompt}`;
+  }
+
+  // Add context for scheduled tasks
   if (input.isScheduledTask) {
-    prompt = `[SCHEDULED TASK - You are running automatically, not in response to a user message. Use mcp__nanoclaw__send_message if needed to communicate with the user.]\n\n${input.prompt}`;
+    prompt = `[SCHEDULED TASK - You are running automatically, not in response to a user message. Use mcp__guardian_core__send_message if needed to communicate with the user.]\n\n${prompt}`;
   }
 
   try {
@@ -243,13 +337,13 @@ async function main(): Promise<void> {
           'Bash',
           'Read', 'Write', 'Edit', 'Glob', 'Grep',
           'WebSearch', 'WebFetch',
-          'mcp__nanoclaw__*'
+          'mcp__guardian_core__*'
         ],
         permissionMode: 'bypassPermissions',
         allowDangerouslySkipPermissions: true,
         settingSources: ['project'],
         mcpServers: {
-          nanoclaw: ipcMcp
+          guardian_core: ipcMcp
         },
         hooks: {
           PreCompact: [{ hooks: [createPreCompactHook()] }]

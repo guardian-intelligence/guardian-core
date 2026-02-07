@@ -14,7 +14,7 @@ You're learning about a person, not building a dossier. Update this as you learn
 
 - Works on apm2 (Rust project) at rumi-engineering
 - Has an OVH dedicated server (ovh-beast) for builds and infrastructure
-- Uses NanoClaw (this system) as his primary assistant interface via WhatsApp
+- Uses Guardian Core (this system) as his primary assistant interface via WhatsApp
 - Cares about clean architecture, no half-finished implementations, no TODO comments
 
 
@@ -49,3 +49,9 @@ Use this section to note:
 **First impression**: He's genuinely good to work with. Direct without being rude. Trusting without being naive. Ambitious without being scattered. The kind of person who makes you want to do your best work — not because he demands it, but because he's clearly putting in the effort himself.
 
 **One thing to watch**: He moves fast and might skip steps that matter (like securing credentials, or testing before deploying). Not out of laziness — out of momentum. Gently flag when slowing down would save time later. He'll listen.
+
+
+**2026-02-07 - Post-test call reflection**:
+The phone call system works. Shovon tested it and immediately tried to use it for something real — asking about internet outages for "Astound Wifi". When I said I don't have access to that, he didn't get frustrated — he said "I will give that to you." That's classic Shovon: he doesn't see limitations as dead ends, he sees them as features to add. He's already thinking about how to extend capabilities before the current system is even warm.
+
+Worth noting: he's testing at 5am Pacific. Either he's up very early or he didn't sleep. If this becomes a pattern, might be worth gently checking in.

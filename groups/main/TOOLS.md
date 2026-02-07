@@ -20,6 +20,17 @@ Skills are shared. Your setup is yours. This file documents the environment-spec
 - Outbound calls via ElevenLabs + Twilio
 - Use `make_phone_call` tool (critical alerts only)
 - Always send WhatsApp first, call second
+- Pass `contact_id` to call a specific contact, or omit to call the owner
+
+## Phone Security
+
+- Threat model: `/workspace/group/THREAT_MODEL.json`
+- Voice prompt: `/workspace/group/VOICE_PROMPT.md`
+- Contact allowlist: host-only at `~/.config/guardian-core/phone-contacts.json` (not mounted)
+- Default posture: guarded (verify before sharing personal details)
+- Verification: conversational cues (not formal passphrase)
+- Unknown contacts: denied by default
+- Reason limit: 500 chars, sanitized before injection
 
 ## Skills Repo
 

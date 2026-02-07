@@ -1,0 +1,84 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.3.14/schema.json",
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	},
+	"files": {
+		"ignoreUnknown": true,
+		"includes": ["src/**", "container/**"]
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab",
+		"indentWidth": 2,
+		"lineWidth": 100
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "single",
+			"trailingCommas": "all",
+			"semicolons": "always"
+		}
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+
+			"complexity": {
+				"noBannedTypes": "off",
+				"noForEach": "off",
+				"noStaticOnlyClass": "off",
+				"noUselessConstructor": "warn",
+				"noExcessiveCognitiveComplexity": "off"
+			},
+
+			"correctness": {
+				"noUnusedVariables": "warn",
+				"noUnusedImports": "warn",
+				"useExhaustiveDependencies": "off"
+			},
+
+			"style": {
+				"noNonNullAssertion": "off",
+				"useConst": "warn",
+				"noParameterAssign": "off",
+				"useDefaultParameterLast": "off",
+				"useEnumInitializers": "off",
+				"useExponentiationOperator": "off",
+				"useImportType": "warn",
+				"useNodejsImportProtocol": "warn",
+				"useNumberNamespace": "off",
+				"useSelfClosingElements": "off",
+				"useShorthandAssign": "off",
+				"useTemplate": "off",
+				"noUnusedTemplateLiteral": "off",
+				"noUselessElse": "off",
+				"useFilenamingConvention": "off",
+				"useNamingConvention": "off"
+			},
+
+			"suspicious": {
+				"noExplicitAny": "off",
+				"noAssignInExpressions": "off",
+				"noConfusingVoidType": "off",
+				"noConsole": "off",
+				"noAsyncPromiseExecutor": "warn",
+				"noEmptyInterface": "off"
+			},
+
+			"performance": {
+				"noDelete": "off"
+			}
+		}
+	},
+	"assist": {
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
+	}
+}

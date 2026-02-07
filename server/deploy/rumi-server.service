@@ -1,0 +1,16 @@
+[Unit]
+Description=Rumi Webhook Server
+After=network.target
+
+[Service]
+Type=simple
+User=rumi
+Group=rumi
+WorkingDirectory=/opt/rumi-server
+ExecStart=/usr/local/bin/bun run src/index.ts
+Restart=always
+RestartSec=5
+EnvironmentFile=/opt/rumi-server/.env
+
+[Install]
+WantedBy=multi-user.target

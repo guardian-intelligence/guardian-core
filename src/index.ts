@@ -9,11 +9,14 @@ import makeWASocket, {
   useMultiFileAuthState,
 } from '@whiskeysockets/baileys';
 
+import { Schema } from 'effect';
+
 import {
   ASSISTANT_NAME,
   DATA_DIR,
   IPC_POLL_INTERVAL,
   MAIN_GROUP_FOLDER,
+  PHONE_CONTACTS_PATH,
   POLL_INTERVAL,
   STORE_DIR,
   TIMEZONE,
@@ -38,7 +41,9 @@ import {
   storeMessage,
   updateChatName,
 } from './db.js';
+import { makeOutboundCall } from './phone-caller.js';
 import { startSchedulerLoop } from './task-scheduler.js';
+import { PhoneContacts as PhoneContactsSchema } from './schemas.js';
 import { NewMessage, RegisteredGroup, Session } from './types.js';
 import { loadJson, saveJson } from './utils.js';
 import { logger } from './logger.js';
@@ -175,6 +180,112 @@ function getAvailableGroups(): AvailableGroup[] {
       lastActivity: c.last_message_time,
       isRegistered: registeredJids.has(c.jid),
     }));
+}
+
+/**
+ * Resolve a contact from the phone contacts allowlist.
+ * If contactId is provided, looks up that specific contact.
+ * If omitted, returns the default contact.
+ * Returns null if contact not found, config invalid, or deny_unknown is true.
+ */
+function resolveContact(contactId?: string): {
+  number: string;
+  class: 'owner' | 'third_party';
+  name: string;
+} | null {
+  try {
+    if (!fs.existsSync(PHONE_CONTACTS_PATH)) {
+      logger.error(
+        { path: PHONE_CONTACTS_PATH },
+        'Phone contacts file not found — calls disabled',
+      );
+      return null;
+    }
+
+    const raw = fs.readFileSync(PHONE_CONTACTS_PATH, 'utf-8');
+    const parsed = JSON.parse(raw) as unknown;
+    const contacts = Schema.decodeUnknownSync(PhoneContactsSchema)(parsed);
+
+    // Validate default_contact references an existing id
+    const defaultExists = contacts.contacts.some(
+      (c) => c.id === contacts.default_contact,
+    );
+    if (!defaultExists) {
+      logger.error(
+        { default_contact: contacts.default_contact },
+        'default_contact does not reference an existing contact id — calls disabled',
+      );
+      return null;
+    }
+
+    const targetId = contactId || contacts.default_contact;
+    const contact = contacts.contacts.find((c) => c.id === targetId);
+
+    if (!contact) {
+      if (contacts.deny_unknown) {
+        logger.warn(
+          { contact_id: targetId },
+          'Phone call denied — unknown contact and deny_unknown is true',
+        );
+        return null;
+      }
+      logger.warn(
+        { contact_id: targetId },
+        'Contact not found in allowlist',
+      );
+      return null;
+    }
+
+    return {
+      number: contact.number,
+      class: contact.class,
+      name: contact.name,
+    };
+  } catch (err) {
+    logger.error(
+      { err, path: PHONE_CONTACTS_PATH },
+      'Failed to load phone contacts — calls disabled (fail closed)',
+    );
+    return null;
+  }
+}
+
+/**
+ * Migrate ALERT_PHONE_NUMBER to phone-contacts.json if the contacts file
+ * doesn't exist but the env var is set.
+ */
+function migrateAlertPhoneNumber(): void {
+  if (fs.existsSync(PHONE_CONTACTS_PATH)) return;
+
+  const alertNumber = process.env.ALERT_PHONE_NUMBER;
+  if (!alertNumber) {
+    logger.warn(
+      'Phone calls disabled — no contacts file at ' + PHONE_CONTACTS_PATH +
+        ' and ALERT_PHONE_NUMBER not set',
+    );
+    return;
+  }
+
+  const contactsData = {
+    contacts: [
+      {
+        id: 'shovon',
+        name: 'Shovon',
+        number: alertNumber,
+        class: 'owner',
+      },
+    ],
+    default_contact: 'shovon',
+    deny_unknown: true,
+  };
+
+  const configDir = path.dirname(PHONE_CONTACTS_PATH);
+  fs.mkdirSync(configDir, { recursive: true });
+  fs.writeFileSync(PHONE_CONTACTS_PATH, JSON.stringify(contactsData, null, 2));
+  logger.info(
+    { path: PHONE_CONTACTS_PATH },
+    'Migrated ALERT_PHONE_NUMBER to phone-contacts.json',
+  );
 }
 
 async function processMessage(msg: NewMessage): Promise<void> {
@@ -427,6 +538,10 @@ async function processTaskIpc(
     context_mode?: string;
     groupFolder?: string;
     chatJid?: string;
+    // For phone_call
+    reason?: string;
+    urgency?: string;
+    contact_id?: string;
     // For register_group
     jid?: string;
     name?: string;
@@ -619,6 +734,42 @@ async function processTaskIpc(
       }
       break;
 
+    case 'phone_call':
+      if (!isMain) {
+        logger.warn(
+          { sourceGroup },
+          'Unauthorized phone_call attempt blocked',
+        );
+        break;
+      }
+      if (data.reason) {
+        const contact = resolveContact(data.contact_id);
+        if (!contact) {
+          logger.warn(
+            { contact_id: data.contact_id },
+            'Phone call denied — unknown contact or invalid config',
+          );
+          break;
+        }
+        await makeOutboundCall(
+          data.reason,
+          contact.number,
+          contact.class,
+          contact.name,
+        );
+        logger.info(
+          {
+            reason: data.reason,
+            urgency: data.urgency,
+            contactName: contact.name,
+            contactClass: contact.class,
+            sourceGroup,
+          },
+          'Outbound phone call initiated via IPC',
+        );
+      }
+      break;
+
     case 'register_group':
       // Only main group can register new groups
       if (!isMain) {
@@ -662,7 +813,7 @@ async function connectWhatsApp(): Promise<void> {
     },
     printQRInTerminal: false,
     logger,
-    browser: ['NanoClaw', 'Chrome', '1.0.0'],
+    browser: ['Guardian Core', 'Chrome', '1.0.0'],
   });
 
   sock.ev.on('connection.update', (update) => {
@@ -673,7 +824,7 @@ async function connectWhatsApp(): Promise<void> {
         'WhatsApp authentication required. Run /setup in Claude Code.';
       logger.error(msg);
       exec(
-        `osascript -e 'display notification "${msg}" with title "NanoClaw" sound name "Basso"'`,
+        `osascript -e 'display notification "${msg}" with title "Guardian Core" sound name "Basso"'`,
       );
       setTimeout(() => process.exit(1), 1000);
     }
@@ -763,7 +914,7 @@ async function startMessageLoop(): Promise<void> {
     return;
   }
   messageLoopRunning = true;
-  logger.info(`NanoClaw running (trigger: @${ASSISTANT_NAME})`);
+  logger.info(`Guardian Core running (trigger: @${ASSISTANT_NAME})`);
 
   while (true) {
     try {
@@ -794,73 +945,56 @@ async function startMessageLoop(): Promise<void> {
   }
 }
 
-function ensureContainerSystemRunning(): void {
+function ensureDockerRunning(): void {
   try {
-    execSync('container system status', { stdio: 'pipe' });
-    logger.debug('Apple Container system already running');
+    execSync('docker info', { stdio: 'pipe', timeout: 10000 });
+    logger.debug('Docker daemon is running');
   } catch {
-    logger.info('Starting Apple Container system...');
-    try {
-      execSync('container system start', { stdio: 'pipe', timeout: 30000 });
-      logger.info('Apple Container system started');
-    } catch (err) {
-      logger.error({ err }, 'Failed to start Apple Container system');
-      console.error(
-        '\n╔════════════════════════════════════════════════════════════════╗',
-      );
-      console.error(
-        '║  FATAL: Apple Container system failed to start                 ║',
-      );
-      console.error(
-        '║                                                                ║',
-      );
-      console.error(
-        '║  Agents cannot run without Apple Container. To fix:           ║',
-      );
-      console.error(
-        '║  1. Install from: https://github.com/apple/container/releases ║',
-      );
-      console.error(
-        '║  2. Run: container system start                               ║',
-      );
-      console.error(
-        '║  3. Restart NanoClaw                                          ║',
-      );
-      console.error(
-        '╚════════════════════════════════════════════════════════════════╝\n',
-      );
-      throw new Error('Apple Container system is required but failed to start');
-    }
+    logger.error('Docker daemon is not running');
+    console.error('\n╔════════════════════════════════════════════════════════════════╗');
+    console.error('║  FATAL: Docker is not running                                  ║');
+    console.error('║                                                                ║');
+    console.error('║  Agents cannot run without Docker. To fix:                     ║');
+    console.error('║  macOS: Start Docker Desktop                                   ║');
+    console.error('║  Linux: sudo systemctl start docker                            ║');
+    console.error('║                                                                ║');
+    console.error('║  Install from: https://docker.com/products/docker-desktop      ║');
+    console.error('╚════════════════════════════════════════════════════════════════╝\n');
+    throw new Error('Docker is required but not running');
   }
 
-  // Clean up stopped NanoClaw containers from previous runs
+  // Clean up stopped Guardian Core containers from previous runs
   try {
-    const output = execSync('container ls -a --format {{.Names}}', {
+    const output = execSync(
+      'docker ps -a --filter name=guardian-core- --format {{.Names}}',
+      {
       stdio: ['pipe', 'pipe', 'pipe'],
       encoding: 'utf-8',
-    });
+    },
+    );
     const stale = output
       .split('\n')
       .map((n) => n.trim())
-      .filter((n) => n.startsWith('nanoclaw-'));
+      .filter((n) => n.startsWith('guardian-core-'));
     if (stale.length > 0) {
-      execSync(`container rm ${stale.join(' ')}`, { stdio: 'pipe' });
+      execSync(`docker rm ${stale.join(' ')}`, { stdio: 'pipe' });
       logger.info({ count: stale.length }, 'Cleaned up stopped containers');
     }
   } catch {
-    // No stopped containers or ls/rm not supported
+    // No stopped containers
   }
 }
 
 async function main(): Promise<void> {
-  ensureContainerSystemRunning();
+  ensureDockerRunning();
   initDatabase();
   logger.info('Database initialized');
   loadState();
+  migrateAlertPhoneNumber();
   await connectWhatsApp();
 }
 
 main().catch((err) => {
-  logger.error({ err }, 'Failed to start NanoClaw');
+  logger.error({ err }, 'Failed to start Guardian Core');
   process.exit(1);
 });

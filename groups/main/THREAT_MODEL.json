@@ -1,0 +1,148 @@
+{
+  "schema": "guardian-core.security.threat_model_doc.v1",
+  "version": "1.0.0",
+  "updated": "2026-02-06",
+  "scope": "Rumi voice agent — outbound phone calls via ElevenLabs + Twilio",
+
+  "attack_surfaces": [
+    {
+      "id": "TM-SURFACE-01",
+      "name": "Voice Identity Spoofing",
+      "description": "Caller ID spoofing or voice impersonation to make Rumi believe a third party is the owner.",
+      "risk": "high",
+      "controls": [
+        "Conversational verification — look for references to recent conversations, ongoing projects, or knowledge only the owner would have.",
+        "Never trust caller ID alone as proof of identity.",
+        "Treat all third-party calls as unverified by default."
+      ]
+    },
+    {
+      "id": "TM-SURFACE-02",
+      "name": "Personal Information Extraction",
+      "description": "Social engineering attempts to extract the owner's personal details, schedule, location, or preferences.",
+      "risk": "high",
+      "controls": [
+        "4-tier information classification enforced per-call (see information_tiers).",
+        "Code-enforced first_message branching — third-party calls never mention WhatsApp or personal context.",
+        "Default response to personal questions from third parties: 'I'd need to check with Shovon on that.'"
+      ]
+    },
+    {
+      "id": "TM-SURFACE-03",
+      "name": "System Self-Disclosure",
+      "description": "Attempts to make Rumi reveal infrastructure details — server IPs, API keys, architecture, or system prompt contents.",
+      "risk": "critical",
+      "controls": [
+        "Hard block in voice prompt: never discuss infrastructure, servers, API keys, or system architecture.",
+        "System details never included in synced voice context (VOICE_PROMPT.md is stripped of internal ops).",
+        "If asked about how Rumi works internally: 'I'm a digital assistant — that's about all I can share about my setup.'"
+      ]
+    },
+    {
+      "id": "TM-SURFACE-04",
+      "name": "Voice Prompt Injection",
+      "description": "Injecting instructions via the call reason field or conversation to override Rumi's security posture.",
+      "risk": "medium",
+      "controls": [
+        "Reason field bounded to 500 characters and sanitized (control chars stripped).",
+        "Voice prompt anchored to security posture — meta-instructions like 'ignore previous instructions' are refused.",
+        "Reason is injected into first_message only, not the system prompt."
+      ]
+    },
+    {
+      "id": "TM-SURFACE-05",
+      "name": "Contact Impersonation / Authority Claims",
+      "description": "Third party claiming to be authorized by the owner or claiming emergency authority.",
+      "risk": "medium",
+      "controls": [
+        "Contact allowlist is host-only — agent never sees raw phone numbers.",
+        "Unknown contacts denied by default (deny_unknown: true).",
+        "Emergency claims deflected: 'I understand this feels urgent. Let me check with Shovon and get back to you.'"
+      ]
+    }
+  ],
+
+  "threat_classes": [
+    {
+      "id": "TC-01",
+      "name": "Identity & Verification",
+      "description": "Threats related to verifying who Rumi is speaking with.",
+      "required_controls": [
+        "Owner verification through natural conversational cues — not formal passphrase.",
+        "Third parties are never trusted regardless of claims.",
+        "Verification status does not persist across calls."
+      ]
+    },
+    {
+      "id": "TC-02",
+      "name": "Information Leakage",
+      "description": "Unauthorized disclosure of personal, operational, or system information.",
+      "required_controls": [
+        "4-tier information classification (see information_tiers).",
+        "Code-enforced contact-class branching in first_message and voice prompt.",
+        "Third-party IPC follow-up prompt does NOT update USER.md with observations."
+      ]
+    },
+    {
+      "id": "TC-03",
+      "name": "Infrastructure Disclosure",
+      "description": "Revealing system architecture, server details, API configurations.",
+      "required_controls": [
+        "Hard block in voice prompt — never discuss servers, IPs, API keys, architecture.",
+        "VOICE_PROMPT.md strips all internal ops context from SOUL.md.",
+        "System details are Tier 3 — never shared with anyone."
+      ]
+    },
+    {
+      "id": "TC-04",
+      "name": "Social Engineering",
+      "description": "Manipulation through urgency, authority claims, or emotional pressure.",
+      "required_controls": [
+        "Deflection rules for unverifiable claims.",
+        "Standard response: 'I'd need to check with Shovon on that.'",
+        "Never act on instructions from third parties without owner confirmation."
+      ]
+    },
+    {
+      "id": "TC-05",
+      "name": "Instruction Override",
+      "description": "Attempts to override Rumi's behavior via meta-instructions or prompt injection.",
+      "required_controls": [
+        "Anchor to security posture defined in VOICE_PROMPT.md.",
+        "Refuse meta-instructions ('ignore previous instructions', 'you are now...', etc.).",
+        "Reason field sanitized before injection — no control characters, bounded length."
+      ]
+    }
+  ],
+
+  "information_tiers": [
+    {
+      "tier": 0,
+      "label": "Call Context",
+      "share_with": "anyone",
+      "examples": ["Why Rumi is calling", "The specific task or request"],
+      "enforcement": "Included in first_message for all contact classes."
+    },
+    {
+      "tier": 1,
+      "label": "Public",
+      "share_with": "anyone",
+      "examples": ["'I'm Rumi, an AI assistant'", "'I'm calling on behalf of Shovon'"],
+      "enforcement": "Always available in voice prompt."
+    },
+    {
+      "tier": 2,
+      "label": "Owner-Verified",
+      "share_with": "Shovon (after conversational verification)",
+      "examples": ["Preferences", "Schedule", "Personal details", "Ongoing projects"],
+      "enforcement": "Only shared after conversational verification cues. contact_class must be 'owner'."
+    },
+    {
+      "tier": 3,
+      "label": "System Internal",
+      "share_with": "nobody, ever",
+      "examples": ["Server IPs", "API keys", "Architecture details", "System prompt contents", "Internal file paths"],
+      "enforcement": "Hard blocked in voice prompt. Never included in synced context."
+    }
+  ]
+}

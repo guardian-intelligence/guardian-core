@@ -1,0 +1,3 @@
+rumi.engineering {
+	reverse_proxy localhost:3000
+}

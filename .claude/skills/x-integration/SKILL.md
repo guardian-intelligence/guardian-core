@@ -1,13 +1,13 @@
 ---
 name: x-integration
-description: X (Twitter) integration for NanoClaw. Post tweets, like, reply, retweet, and quote. Use for setup, testing, or troubleshooting X functionality. Triggers on "setup x", "x integration", "twitter", "post tweet", "tweet".
+description: X (Twitter) integration for Guardian Core. Post tweets, like, reply, retweet, and quote. Use for setup, testing, or troubleshooting X functionality. Triggers on "setup x", "x integration", "twitter", "post tweet", "tweet".
 ---
 
 # X (Twitter) Integration
 
 Browser automation for X interactions via WhatsApp.
 
-> **Compatibility:** NanoClaw v1.0.0. Directory structure may change in future versions.
+> **Compatibility:** Guardian Core v1.0.0. Directory structure may change in future versions.
 
 ## Features
 
@@ -23,10 +23,10 @@ Browser automation for X interactions via WhatsApp.
 
 Before using this skill, ensure:
 
-1. **NanoClaw is installed and running** - WhatsApp connected, service active
+1. **Guardian Core is installed and running** - WhatsApp connected, service active
 2. **Dependencies installed**:
    ```bash
-   npm ls playwright dotenv-cli || npm install playwright dotenv-cli
+   npm ls playwright dotenv-cli || bun install playwright dotenv-cli
    ```
 3. **CHROME_PATH configured** in `.env` (if Chrome is not at default location):
    ```bash
@@ -40,7 +40,7 @@ Before using this skill, ensure:
 
 ```bash
 # 1. Setup authentication (interactive)
-npx dotenv -e .env -- npx tsx .claude/skills/x-integration/scripts/setup.ts
+bunx dotenv -e .env -- bun .claude/skills/x-integration/scripts/setup.ts
 # Verify: data/x-auth.json should exist after successful login
 
 # 2. Rebuild container to include skill
@@ -48,9 +48,9 @@ npx dotenv -e .env -- npx tsx .claude/skills/x-integration/scripts/setup.ts
 # Verify: Output shows "COPY .claude/skills/x-integration/agent.ts"
 
 # 3. Rebuild host and restart service
-npm run build
-launchctl kickstart -k gui/$(id -u)/com.nanoclaw
-# Verify: launchctl list | grep nanoclaw shows PID and exit code 0
+bun run build
+launchctl kickstart -k gui/$(id -u)/com.guardian-core
+# Verify: launchctl list | grep guardian-core shows PID and exit code 0
 ```
 
 ## Configuration
@@ -60,7 +60,7 @@ launchctl kickstart -k gui/$(id -u)/com.nanoclaw
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `CHROME_PATH` | `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` | Chrome executable path |
-| `NANOCLAW_ROOT` | `process.cwd()` | Project root directory |
+| `GUARDIAN_CORE_ROOT` | `process.cwd()` | Project root directory |
 | `LOG_LEVEL` | `info` | Logging level (debug, info, warn, error) |
 
 Set in `.env` file (loaded via `dotenv-cli` at runtime):
@@ -104,7 +104,7 @@ Paths relative to project root:
 |------|---------|-----|
 | `data/x-browser-profile/` | Chrome profile with X session | Ignored |
 | `data/x-auth.json` | Auth state marker | Ignored |
-| `logs/nanoclaw.log` | Service logs (contains X operation logs) | Ignored |
+| `logs/guardian-core.log` | Service logs (contains X operation logs) | Ignored |
 
 ## Architecture
 
@@ -153,7 +153,7 @@ Paths relative to project root:
 
 ### Integration Points
 
-To integrate this skill into NanoClaw, make the following modifications:
+To integrate this skill into Guardian Core, make the following modifications:
 
 ---
 
@@ -224,7 +224,7 @@ COPY container/agent-runner/package*.json ./
 COPY container/agent-runner/ ./
 ```
 
-Then add COPY line after `COPY container/agent-runner/ ./` and before `RUN npm run build`:
+Then add COPY line after `COPY container/agent-runner/ ./` and before `RUN bun run build`:
 ```dockerfile
 # Copy skill MCP tools
 COPY .claude/skills/x-integration/agent.ts ./src/skills/x-integration/
@@ -232,7 +232,7 @@ COPY .claude/skills/x-integration/agent.ts ./src/skills/x-integration/
 
 ## Setup
 
-All paths below are relative to project root (`NANOCLAW_ROOT`).
+All paths below are relative to project root (`GUARDIAN_CORE_ROOT`).
 
 ### 1. Check Chrome Path
 
@@ -246,7 +246,7 @@ echo "Chrome not found - update CHROME_PATH in .env"
 ### 2. Run Authentication
 
 ```bash
-npx dotenv -e .env -- npx tsx .claude/skills/x-integration/scripts/setup.ts
+bunx dotenv -e .env -- bun .claude/skills/x-integration/scripts/setup.ts
 ```
 
 This opens Chrome for manual X login. Session saved to `data/x-browser-profile/`.
@@ -270,13 +270,13 @@ cat data/x-auth.json  # Should show {"authenticated": true, ...}
 ### 4. Restart Service
 
 ```bash
-npm run build
-launchctl kickstart -k gui/$(id -u)/com.nanoclaw
+bun run build
+launchctl kickstart -k gui/$(id -u)/com.guardian-core
 ```
 
 **Verify success:**
 ```bash
-launchctl list | grep nanoclaw  # Should show PID and exit code 0 or -
+launchctl list | grep guardian-core  # Should show PID and exit code 0 or -
 ```
 
 ## Usage via WhatsApp
@@ -314,26 +314,26 @@ ls -la data/x-browser-profile/ 2>/dev/null | head -5
 ### Re-authenticate (if expired)
 
 ```bash
-npx dotenv -e .env -- npx tsx .claude/skills/x-integration/scripts/setup.ts
+bunx dotenv -e .env -- bun .claude/skills/x-integration/scripts/setup.ts
 ```
 
 ### Test Post (will actually post)
 
 ```bash
-echo '{"content":"Test tweet - please ignore"}' | npx dotenv -e .env -- npx tsx .claude/skills/x-integration/scripts/post.ts
+echo '{"content":"Test tweet - please ignore"}' | bunx dotenv -e .env -- bun .claude/skills/x-integration/scripts/post.ts
 ```
 
 ### Test Like
 
 ```bash
-echo '{"tweetUrl":"https://x.com/user/status/123"}' | npx dotenv -e .env -- npx tsx .claude/skills/x-integration/scripts/like.ts
+echo '{"tweetUrl":"https://x.com/user/status/123"}' | bunx dotenv -e .env -- bun .claude/skills/x-integration/scripts/like.ts
 ```
 
 Or export `CHROME_PATH` manually before running:
 
 ```bash
 export CHROME_PATH="/path/to/chrome"
-echo '{"content":"Test"}' | npx tsx .claude/skills/x-integration/scripts/post.ts
+echo '{"content":"Test"}' | bun .claude/skills/x-integration/scripts/post.ts
 ```
 
 ## Troubleshooting
@@ -341,8 +341,8 @@ echo '{"content":"Test"}' | npx tsx .claude/skills/x-integration/scripts/post.ts
 ### Authentication Expired
 
 ```bash
-npx dotenv -e .env -- npx tsx .claude/skills/x-integration/scripts/setup.ts
-launchctl kickstart -k gui/$(id -u)/com.nanoclaw
+bunx dotenv -e .env -- bun .claude/skills/x-integration/scripts/setup.ts
+launchctl kickstart -k gui/$(id -u)/com.guardian-core
 ```
 
 ### Browser Lock Files
@@ -359,10 +359,10 @@ rm -f data/x-browser-profile/SingletonCookie
 
 ```bash
 # Host logs (relative to project root)
-grep -i "x_post\|x_like\|x_reply\|handleXIpc" logs/nanoclaw.log | tail -20
+grep -i "x_post\|x_like\|x_reply\|handleXIpc" logs/guardian-core.log | tail -20
 
 # Script errors
-grep -i "error\|failed" logs/nanoclaw.log | tail -20
+grep -i "error\|failed" logs/guardian-core.log | tail -20
 ```
 
 ### Script Timeout
@@ -402,7 +402,7 @@ If MCP tools not found in container:
 ./container/build.sh 2>&1 | grep -i skill
 
 # Check container has the file
-container run nanoclaw-agent ls -la /app/src/skills/
+container run guardian-core-agent ls -la /app/src/skills/
 ```
 
 ## Security

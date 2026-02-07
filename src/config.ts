@@ -12,8 +12,14 @@ const HOME_DIR = process.env.HOME || '/Users/user';
 export const MOUNT_ALLOWLIST_PATH = path.join(
   HOME_DIR,
   '.config',
-  'nanoclaw',
+  'guardian-core',
   'mount-allowlist.json',
+);
+export const PHONE_CONTACTS_PATH = path.join(
+  HOME_DIR,
+  '.config',
+  'guardian-core',
+  'phone-contacts.json',
 );
 export const STORE_DIR = path.resolve(PROJECT_ROOT, 'store');
 export const GROUPS_DIR = path.resolve(PROJECT_ROOT, 'groups');
@@ -21,7 +27,7 @@ export const DATA_DIR = path.resolve(PROJECT_ROOT, 'data');
 export const MAIN_GROUP_FOLDER = 'main';
 
 export const CONTAINER_IMAGE =
-  process.env.CONTAINER_IMAGE || 'nanoclaw-agent:latest';
+  process.env.CONTAINER_IMAGE || 'guardian-core-agent:latest';
 export const CONTAINER_TIMEOUT = parseInt(
   process.env.CONTAINER_TIMEOUT || '300000',
   10,

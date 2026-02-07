@@ -13,11 +13,18 @@ logs/
 *.keys.json
 .env
 
+# Template backups (BCP rolling backups inside containers)
+_backups/
+
 # OS
 .DS_Store
 
 # IDE
 .idea/
 .vscode/
+
+# Nix
+result
+.direnv/
 
 agents-sdk-docs
