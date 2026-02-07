@@ -3,6 +3,118 @@
     "status": "ACTIVE",
     "date": "2026-02-07",
     "scope": "Single Guardian node: Elixir/OTP with agent containers, voice/webhook ingress, Dolt storage, external APIs",
+    "trust_model": {
+      "entities": [
+        { "entity": "Main group", "trust": "Trusted", "rationale": "Private self-chat, admin control" },
+        { "entity": "Non-main groups", "trust": "Untrusted", "rationale": "Other users may be malicious" },
+        { "entity": "Container agents", "trust": "Sandboxed", "rationale": "Isolated execution environment" },
+        { "entity": "WhatsApp messages", "trust": "User input", "rationale": "Potential prompt injection" }
+      ]
+    },
+    "security_boundaries": [
+      {
+        "id": "BOUNDARY-01",
+        "name": "Container Isolation",
+        "desc": "Primary security boundary: agents execute in Docker containers with process/filesystem isolation and non-root execution",
+        "properties": [
+          "Process isolation",
+          "Filesystem isolation via explicit mounts only",
+          "Non-root execution (uid 1000)",
+          "Ephemeral containers per invocation"
+        ]
+      },
+      {
+        "id": "BOUNDARY-02",
+        "name": "Mount Security",
+        "desc": "Mount allowlist enforced outside repo; default deny on sensitive patterns",
+        "properties": [
+          "External allowlist at ~/.config/guardian-core/mount-allowlist.json",
+          "Allowlist never mounted into containers",
+          "Symlink resolution before validation",
+          "Reject .. and absolute paths in container mounts",
+          "nonMainReadOnly enforces read-only for non-main groups"
+        ]
+      },
+      {
+        "id": "BOUNDARY-03",
+        "name": "Session Isolation",
+        "desc": "Per-group session separation and history isolation",
+        "properties": [
+          "Session data at data/sessions/{group}/.claude/",
+          "Groups cannot access other group histories or files"
+        ]
+      },
+      {
+        "id": "BOUNDARY-04",
+        "name": "IPC Authorization",
+        "desc": "IPC and task operations enforced against group identity and capability",
+        "properties": [
+          "Main group can manage other groups; non-main cannot",
+          "Operations scoped to group identity"
+        ]
+      }
+    ],
+    "mount_security": {
+      "allowlist_path": "~/.config/guardian-core/mount-allowlist.json",
+      "not_mounted_into_containers": true,
+      "default_blocked_patterns": [
+        ".ssh",
+        ".gnupg",
+        ".aws",
+        ".azure",
+        ".gcloud",
+        ".kube",
+        ".docker",
+        "credentials",
+        ".env",
+        ".netrc",
+        ".npmrc",
+        "id_rsa",
+        "id_ed25519",
+        "private_key",
+        ".secret"
+      ],
+      "protections": [
+        "Symlink resolution before validation",
+        "Reject .. and absolute paths in container paths",
+        "nonMainReadOnly option forces read-only for non-main groups"
+      ]
+    },
+    "session_isolation": {
+      "path": "data/sessions/{group}/.claude/",
+      "properties": [
+        "Group-scoped message history and file access",
+        "No cross-group session visibility"
+      ]
+    },
+    "ipc_authorization": {
+      "matrix": [
+        { "operation": "Send message to own chat", "main_group": true, "non_main_group": true },
+        { "operation": "Send message to other chats", "main_group": true, "non_main_group": false },
+        { "operation": "Schedule task for self", "main_group": true, "non_main_group": true },
+        { "operation": "Schedule task for others", "main_group": true, "non_main_group": false },
+        { "operation": "View all tasks", "main_group": true, "non_main_group": false },
+        { "operation": "Manage other groups", "main_group": true, "non_main_group": false }
+      ]
+    },
+    "privilege_comparison": {
+      "main_group": {
+        "project_root_access": "/workspace/project (rw)",
+        "group_folder": "/workspace/group (rw)",
+        "global_memory": "Implicit via project",
+        "additional_mounts": "Configurable",
+        "network_access": "Unrestricted",
+        "mcp_tools": "All"
+      },
+      "non_main_group": {
+        "project_root_access": "None",
+        "group_folder": "/workspace/group (rw)",
+        "global_memory": "/workspace/global (ro)",
+        "additional_mounts": "Read-only unless allowlisted",
+        "network_access": "Unrestricted",
+        "mcp_tools": "All"
+      }
+    },
     "adversaries": [
       {
         "id": "ADV-01",

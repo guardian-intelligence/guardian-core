@@ -91,3 +91,56 @@ launchctl load ~/Library/LaunchAgents/com.guardian-core.plist
 launchctl unload ~/Library/LaunchAgents/com.guardian-core.plist
 launchctl kickstart -k gui/$(id -u)/com.guardian-core  # Force restart
 ```
+
+## NixOS Infrastructure (rumi-vps)
+
+NixOS configuration is managed via Nix flake at `infra/nixos/`. Secrets use **sops-nix** with age encryption — encrypted dotenv files are committed to the repo, decrypted at runtime to tmpfs.
+
+### Architecture
+
+```
+infra/nixos/
+├── configuration.nix              # Public system config (tracked)
+├── hardware-configuration.nix     # Delegates to private input (tracked)
+├── sops-secrets.nix               # SOPS secret definitions (tracked)
+├── services/
+│   ├── guardian-core.nix          # Brain service unit (tracked)
+│   ├── rumi-platform.nix         # Phoenix platform unit (tracked)
+│   └── server.nix                # Webhook server unit (tracked)
+├── secrets/
+│   ├── guardian-core.env          # Encrypted (sops+age, tracked)
+│   ├── rumi-platform.env         # Encrypted (sops+age, tracked)
+│   └── rumi-server.env           # Encrypted (sops+age, tracked)
+└── .gitignore                     # Excludes private.nix, hardware-configuration.private.nix
+
+/etc/guardian-private/              # Host-only, not in repo
+├── private.nix                    # Hostname, SSH keys, domain, sops config
+└── hardware-configuration.private.nix  # Boot/disk/kernel modules
+```
+
+### Deploying NixOS Changes
+
+```bash
+# Deploy from repo (pass private config as external input)
+sudo nixos-rebuild switch --flake .#rumi-vps \
+  --override-input private-config path:/etc/guardian-private
+
+# Edit encrypted secrets
+nix-shell -p sops age --run "SOPS_AGE_KEY_FILE=/var/lib/sops-nix/key.txt sops infra/nixos/secrets/guardian-core.env"
+```
+
+### Key Management
+
+- Age key: `/var/lib/sops-nix/key.txt` (0400 root:root)
+- Public key: listed in `.sops.yaml`
+- Bootstrap: see `RUNBOOK-SOPS-BOOTSTRAP` in `docs/security/orchestration_runbook.json`
+- Rotation: 90 days per `docs/security/secrets_management.json`
+
+### Security Controls
+
+| Control | Enforcement |
+|---------|------------|
+| SP-SECRET-001 | No plaintext secrets in repo; encrypted dotenv files only |
+| SP-SECRET-002 | systemd hardening (NoNewPrivileges, ProtectSystem=strict, PrivateTmp) |
+| SP-SECRET-003 | sops-nix runtime injection via EnvironmentFile; fail-closed on missing secret |
+| SP-GATE-SECRETS | gitleaks scan blocks release on detected secrets |

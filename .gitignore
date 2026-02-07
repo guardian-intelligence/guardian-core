@@ -40,3 +40,6 @@ agents-sdk-docs
 
 
 secrets/
+# Encrypted sops files are safe to track (age-encrypted, no plaintext)
+!infra/nixos/secrets/
+!infra/nixos/secrets/*.env

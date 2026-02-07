@@ -99,6 +99,31 @@
         ]
       },
       {
+        "id": "IR-NIXOS-SECRET-LEAK",
+        "triggers": [
+          "Secret or host identifier found in tracked NixOS config files",
+          "sops-nix age key compromised or lost",
+          "Service fails to start after sops-nix migration",
+          "Encrypted dotenv file decryption failure"
+        ],
+        "actions": [
+          "Follow IR-SECRET-LEAK: revoke leaked credentials immediately",
+          "Rotate adjacent potentially-exposed credentials",
+          "Audit access/usage logs for abuse during exposure window",
+          "If key loss: recreate age key, re-encrypt all sops secrets, rotate all affected credentials",
+          "If config rollback needed: restore previous config from Git, re-inject secrets",
+          "Verify no secrets in tracked files via gitleaks + pattern scan",
+          "Preserve evidence and incident timeline"
+        ],
+        "checks": [
+          "Confirm no secrets in release artifacts, logs, or error channels",
+          "Confirm services start with new sops configuration",
+          "Confirm age key backup integrity"
+        ],
+        "goal": "No plaintext secrets in repo; all services running with encrypted runtime injection",
+        "references": ["IR-SECRET-LEAK"]
+      },
+      {
         "id": "IR-NIF-CRASH",
         "triggers": [
           "Rustler NIF segfault/panic causing BEAM VM crash",

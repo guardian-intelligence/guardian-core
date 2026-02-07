@@ -244,6 +244,52 @@
           "iex -S mix; Guardian.Crypto.self_test()",
           "systemctl start guardian-kernel"
         ]
+      },
+      {
+        "id": "RUNBOOK-RECOVERY-05",
+        "name": "SOPS-Nix Secret Recovery",
+        "steps": [
+          "Verify age key exists: sudo test -f /var/lib/sops-nix/key.txt && echo OK",
+          "If key lost: restore from encrypted backup (see RUNBOOK-SOPS-BOOTSTRAP)",
+          "If key compromised: age-keygen -o /var/lib/sops-nix/key.txt && chmod 0400 /var/lib/sops-nix/key.txt",
+          "Re-encrypt all sops files with new recipient: cd infra/nixos/secrets && for f in *.env; do sops updatekeys $f; done",
+          "Rotate all credentials stored in sops files (per IR-SECRET-LEAK)",
+          "nixos-rebuild switch --flake .#rumi-vps",
+          "systemctl status guardian-core rumi-platform rumi-server",
+          "Verify secrets accessible: sudo ls -l $(nix eval --raw .#nixosConfigurations.rumi-vps.config.sops.secrets.guardian-core-env.path)"
+        ],
+        "references": ["IR-NIXOS-SECRET-LEAK", "IR-SECRET-LEAK"]
+      },
+      {
+        "id": "RUNBOOK-SOPS-BOOTSTRAP",
+        "name": "SOPS-Nix Initial Setup",
+        "prereqs": ["age CLI installed", "sops CLI installed", "NixOS with sops-nix module enabled"],
+        "steps": [
+          "1. Generate age key: sudo mkdir -p /var/lib/sops-nix && sudo age-keygen -o /var/lib/sops-nix/key.txt",
+          "2. Lock down permissions: sudo chmod 0400 /var/lib/sops-nix/key.txt && sudo chown root:root /var/lib/sops-nix/key.txt",
+          "3. Export public key: sudo age-keygen -y /var/lib/sops-nix/key.txt (save this for .sops.yaml)",
+          "4. Create .sops.yaml in repo root with age recipients",
+          "5. Create encrypted dotenv files: sops --encrypt --age <PUBLIC_KEY> infra/nixos/secrets/guardian-core.env",
+          "6. Repeat for rumi-platform.env and rumi-server.env",
+          "7. Create private.nix from config-examples/nixos/private.nix with actual values",
+          "8. Create hardware-configuration.private.nix from config-examples/nixos/hardware-configuration.private.nix",
+          "9. Deploy: nixos-rebuild switch --flake .#rumi-vps",
+          "10. Verify: systemctl status guardian-core rumi-platform rumi-server",
+          "11. Backup age key: age -r <BACKUP_RECIPIENT> -o key.txt.age /var/lib/sops-nix/key.txt (store offline)"
+        ],
+        "key_custody": {
+          "primary": "/var/lib/sops-nix/key.txt (0400 root:root)",
+          "backup": "Encrypted offline backup (age-encrypted to operator key)",
+          "rotation": "90d aligned with secrets_management.json rotation.default",
+          "options_for_hardening": ["TPM-backed age key via age-plugin-tpm", "YubiKey-backed via age-plugin-yubikey", "Host on LUKS-encrypted root volume"]
+        },
+        "validation": [
+          "sudo test -f /var/lib/sops-nix/key.txt && echo 'Key exists'",
+          "sudo stat -c '%a %U:%G' /var/lib/sops-nix/key.txt (expect: 0400 root:root)",
+          "sops -d infra/nixos/secrets/guardian-core.env > /dev/null && echo 'Decryption OK'",
+          "nix eval .#nixosConfigurations.rumi-vps.config.sops.secrets.guardian-core-env.path",
+          "systemctl status guardian-core rumi-platform rumi-server"
+        ]
       }
     ],
     "escalation": [

@@ -4,9 +4,14 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    sops-nix.url = "github:Mic92/sops-nix";
+    private-config = {
+      url = "path:/etc/guardian-private";
+      flake = false;
+    };
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs = { self, nixpkgs, flake-utils, sops-nix, private-config }:
     (flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
@@ -48,7 +53,11 @@
     {
       nixosConfigurations.rumi-vps = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        modules = [ ./nixos/configuration.nix ];
+        specialArgs = { inherit private-config; };
+        modules = [
+          sops-nix.nixosModules.sops
+          ./infra/nixos/configuration.nix
+        ];
       };
     };
 }

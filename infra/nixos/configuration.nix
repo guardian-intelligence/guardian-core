@@ -1,15 +1,17 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, private-config, ... }:
 
 {
   imports = [
     ./hardware-configuration.nix
     ./services/guardian-core.nix
     ./services/rumi-platform.nix
+    ./services/server.nix
+    ./sops-secrets.nix
+    (private-config + "/private.nix")
   ];
 
   # System
   system.stateVersion = "24.11";
-  networking.hostName = "rumi-vps";
   time.timeZone = "UTC";
 
   # Nix settings
@@ -22,18 +24,10 @@
   users.users.rumi = {
     isNormalUser = true;
     extraGroups = [ "docker" "wheel" ];
-    openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILKQukb2F24qn538p6Bc+gEXl+P8hgDvRdvNlOpZZVeN rch-worker-ovh"
-    ];
   };
 
   # Passwordless sudo for wheel
   security.sudo.wheelNeedsPassword = false;
-
-  # Root SSH access (same key as rumi)
-  users.users.root.openssh.authorizedKeys.keys = [
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILKQukb2F24qn538p6Bc+gEXl+P8hgDvRdvNlOpZZVeN rch-worker-ovh"
-  ];
 
   # SSH
   services.openssh = {
@@ -43,6 +37,9 @@
       PermitRootLogin = "prohibit-password";
     };
   };
+
+  # Allow running generic Linux dynamic binaries (e.g., vendor CLIs)
+  programs.nix-ld.enable = true;
 
   # Docker
   virtualisation.docker = {
@@ -59,11 +56,6 @@
     globalConfig = ''
       acme_ca https://acme-v02.api.letsencrypt.org/directory
     '';
-    virtualHosts."self.rumi.engineering" = {
-      extraConfig = ''
-        reverse_proxy 127.0.0.1:4000
-      '';
-    };
   };
 
   # Tailscale
@@ -75,6 +67,14 @@
     allowedTCPPorts = [ 22 80 443 ];
     trustedInterfaces = [ "tailscale0" ];
   };
+
+  # Shell aliases
+  environment.interactiveShellInit = ''
+    export PATH="$HOME/.npm-global/bin:$PATH"
+    alias cc="$HOME/.npm-global/bin/claude --dangerously-skip-permissions"
+    alias cod='codex --yolo'
+    alias gmi='gemini --yolo'
+  '';
 
   # System packages
   environment.systemPackages = with pkgs; [

@@ -1,0 +1,8 @@
+keys:
+  - &rumi-vps age1gngjsgsqhdjre3yjnk2dqregh3dt7n38273uxsjx52xqszz3jujqfcthcp
+
+creation_rules:
+  - path_regex: infra/nixos/secrets/.*\.env$
+    key_groups:
+      - age:
+          - *rumi-vps

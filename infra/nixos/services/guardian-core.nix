@@ -2,6 +2,12 @@
 
 let
   nodejs = pkgs.nodejs_22;
+  envSecretName = "guardian-core-env";
+  envFile =
+    if builtins.hasAttr envSecretName config.sops.secrets then
+      config.sops.secrets.${envSecretName}.path
+    else
+      throw "guardian-core requires sops secret ${envSecretName}; do not use plaintext .env files.";
 in
 {
   systemd.services.guardian-core = {
@@ -25,9 +31,17 @@ in
       ExecStart = "${pkgs.bun}/bin/bun dist/index.js";
       Restart = "always";
       RestartSec = 5;
-      EnvironmentFile = "/opt/guardian-core/.env";
+      EnvironmentFile = envFile;
       StandardOutput = "append:/opt/guardian-core/logs/guardian-core.log";
       StandardError = "append:/opt/guardian-core/logs/guardian-core.error.log";
+
+      # SP-SECRET-002: Prevent secret leakage via systemd hardening
+      NoNewPrivileges = true;
+      PrivateTmp = true;
+      ProtectSystem = "strict";
+      ReadWritePaths = [ "/opt/guardian-core" "/home/rumi" ];
+      ProtectHome = "tmpfs";
+      BindPaths = [ "/home/rumi" ];
     };
   };
 }

@@ -415,7 +415,11 @@
       "watch": [
         "FIPS-206",
         "HQC"
-      ]
+      ],
+      "scope": {
+        "runtime_authority": "Tier2+ runtime and authority paths require policy-pinned PQC suites (Blake3, ML-KEM-768, ML-DSA-65) per SP-CRYPTO-001",
+        "at_rest_secrets": "At-rest secret encryption for NixOS infrastructure uses age (X25519 + ChaCha20-Poly1305) via sops-nix. This is scoped separately from Tier2+ runtime crypto requirements because at-rest secrets are decrypted by a host-local activation service and never traverse authority or delegation paths. The age key itself is subject to custody controls in secrets_management.json."
+      }
     },
     "freshness_policy": {
       "token_ttl_s": 300,
