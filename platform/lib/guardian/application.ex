@@ -28,7 +28,12 @@ defmodule Guardian.Application do
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Guardian.Supervisor]
-    Supervisor.start_link(children, opts)
+    {:ok, pid} = Supervisor.start_link(children, opts)
+
+    # Run idempotent migrations after Repo is started
+    Guardian.Repo.Migrations.run!()
+
+    {:ok, pid}
   end
 
   # Tell Phoenix to update the endpoint configuration

@@ -1,10 +1,26 @@
 {
   "incident_response": {
     "severity": [
-      { "lvl": "Critical", "desc": "Active exploitation or immediate safety/integrity risk", "target": "Immediate" },
-      { "lvl": "High", "desc": "Major security impact without confirmed active exploitation", "target": "24h" },
-      { "lvl": "Medium", "desc": "Material but bounded security weakness", "target": "7d" },
-      { "lvl": "Low", "desc": "Minor security debt or process gap", "target": "30d" }
+      {
+        "lvl": "Critical",
+        "desc": "Active exploitation or immediate safety/integrity risk",
+        "target": "Immediate"
+      },
+      {
+        "lvl": "High",
+        "desc": "Major security impact without confirmed active exploitation",
+        "target": "24h"
+      },
+      {
+        "lvl": "Medium",
+        "desc": "Material but bounded security weakness",
+        "target": "7d"
+      },
+      {
+        "lvl": "Low",
+        "desc": "Minor security debt or process gap",
+        "target": "30d"
+      }
     ],
     "rules": [
       "Contain first, investigate second",
@@ -121,7 +137,9 @@
           "Confirm age key backup integrity"
         ],
         "goal": "No plaintext secrets in repo; all services running with encrypted runtime injection",
-        "references": ["IR-SECRET-LEAK"]
+        "references": [
+          "IR-SECRET-LEAK"
+        ]
       },
       {
         "id": "IR-NIF-CRASH",
@@ -149,9 +167,54 @@
       "Timestamp containment actions"
     ],
     "notification": {
-      "model": "Single-operator, no escalation chain",
-      "channels": ["WhatsApp", "voice"],
-      "includes": ["severity", "what_happened", "impact", "containment_actions", "next_actions"]
+      "model": "Primary operator with delegated emergency principals",
+      "channels": [
+        "WhatsApp",
+        "voice",
+        "oob_sms"
+      ],
+      "includes": [
+        "severity",
+        "what_happened",
+        "impact",
+        "containment_actions",
+        "next_actions"
+      ],
+      "delegated_emergency_principals": [
+        {
+          "id": "delegate_1",
+          "role": "Emergency operator",
+          "capabilities": [
+            "containment",
+            "restore_gate_toggle",
+            "key_rotation_trigger"
+          ]
+        },
+        {
+          "id": "delegate_2",
+          "role": "Emergency operator",
+          "capabilities": [
+            "containment",
+            "restore_gate_toggle",
+            "key_rotation_trigger"
+          ]
+        }
+      ],
+      "on_call_principals": [
+        {
+          "id": "primary_on_call",
+          "role": "Primary operator"
+        },
+        {
+          "id": "delegate_1",
+          "role": "Emergency operator"
+        },
+        {
+          "id": "delegate_2",
+          "role": "Emergency operator"
+        }
+      ],
+      "routing": "Page all on_call_principals for Critical and High incidents"
     },
     "closure": [
       "Containment verified",
@@ -160,10 +223,23 @@
       "Remediation evidence linked"
     ],
     "contacts": [
-      { "role": "Owner/Operator", "resp": "Triage, coordinate, execute remediation" },
-      { "role": "Security contact", "resp": "Receive external reports, coordinate disclosure" }
+      {
+        "role": "Owner/Operator",
+        "resp": "Triage, coordinate, execute remediation"
+      },
+      {
+        "role": "Security contact",
+        "resp": "Receive external reports, coordinate disclosure"
+      }
     ],
     "reporting_channel": "GitHub Security Advisories private disclosure",
-    "crypto": { "hash": "Blake3", "pqc": ["ML-KEM-768", "ML-DSA-65"], "status": "active_day1" }
+    "crypto": {
+      "hash": "Blake3",
+      "pqc": [
+        "ML-KEM-768",
+        "ML-DSA-65"
+      ],
+      "status": "active_day1"
+    }
   }
 }

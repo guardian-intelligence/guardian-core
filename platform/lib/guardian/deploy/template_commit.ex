@@ -3,7 +3,7 @@ defmodule Guardian.Deploy.TemplateCommit do
   Auto-commit template changes (BCP for Rumi's memory files).
 
   Checks template files for git changes, stages and commits with timestamp.
-  Runs via launchd on a schedule.
+  Runs on a schedule via systemd timer or mix task.
   """
 
   alias Guardian.Deploy.{Config, Logger}

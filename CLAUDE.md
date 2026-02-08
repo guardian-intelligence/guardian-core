@@ -65,12 +65,6 @@ cd platform && mix deploy.brain --dry-run     # Show plan without executing
 cd platform && mix deploy.platform            # test, rsync, build release, restart
 cd platform && mix deploy.platform --dry-run  # Show plan without executing
 
-# Secrets Management
-cd platform && mix secrets.backup             # Encrypt .env files to age archives
-cd platform && mix secrets.restore            # Decrypt archives to local .env files
-cd platform && mix secrets.deploy             # Decrypt + push to VPS + restart services
-cd platform && mix secrets.verify             # Check remote file perms + service health
-
 # Template Backup
 cd platform && mix templates.commit           # Auto-commit template file changes
 ```
@@ -81,16 +75,9 @@ The brain deploy pipeline:
 3. `mix test` (aborts on failure)
 4. `mix release --overwrite` (builds Elixir release)
 5. Container image rebuild (if needed)
-6. Install launchd/systemd template (resolves `{{PLACEHOLDERS}}`)
+6. Install systemd service template (resolves `{{PLACEHOLDERS}}`)
 7. Restart the service
 8. Verify the service is running
-
-Manual service management:
-```bash
-launchctl load ~/Library/LaunchAgents/com.guardian-core.plist
-launchctl unload ~/Library/LaunchAgents/com.guardian-core.plist
-launchctl kickstart -k gui/$(id -u)/com.guardian-core  # Force restart
-```
 
 ## NixOS Infrastructure (rumi-vps)
 

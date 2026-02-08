@@ -10,9 +10,9 @@ This guide covers debugging the containerized agent execution system.
 ## Architecture Overview
 
 ```
-Host (macOS)                          Container (Docker)
+Host (Linux)                          Container (Docker)
 ─────────────────────────────────────────────────────────────
-src/container-runner.ts               container/agent-runner/
+container_runner.ex                   container/agent-runner/
     │                                      │
     │ spawns Docker               │ runs Claude Agent SDK
     │ with volume mounts                   │ with MCP servers
@@ -41,11 +41,12 @@ Set `LOG_LEVEL=debug` for verbose output:
 
 ```bash
 # For development
-LOG_LEVEL=debug bun run dev
+LOG_LEVEL=debug mix phx.server
 
-# For launchd service, add to plist EnvironmentVariables:
-<key>LOG_LEVEL</key>
-<string>debug</string>
+# For systemd service, add to environment override:
+# systemctl --user edit guardian-core
+# [Service]
+# Environment=LOG_LEVEL=debug
 ```
 
 Debug level shows:
@@ -65,11 +66,10 @@ Common causes:
 ```
 Invalid API key · Please run /login
 ```
-**Fix:** Ensure `.env` file exists with either OAuth token or API key:
+**Fix:** Ensure `.env` file exists with the OAuth token:
 ```bash
-cat .env  # Should show one of:
-# CLAUDE_CODE_OAUTH_TOKEN=sk-ant-oat01-...  (subscription)
-# ANTHROPIC_API_KEY=sk-ant-api03-...        (pay-per-use)
+cat .env  # Should show:
+# CLAUDE_CODE_OAUTH_TOKEN=sk-ant-oat01-...
 ```
 
 #### Root User Restriction
@@ -82,14 +82,14 @@ cat .env  # Should show one of:
 
 **Docker env policy:** This project intentionally mounts a filtered env file instead of passing arbitrary `-e` variables.
 
-**Reason:** The system extracts only authentication variables (`CLAUDE_CODE_OAUTH_TOKEN`, `ANTHROPIC_API_KEY`) from `.env` and mounts them for sourcing inside the container. Other env vars are not exposed.
+**Reason:** The system extracts only authentication variables (`CLAUDE_CODE_OAUTH_TOKEN`) from `.env` and mounts them for sourcing inside the container. Other env vars are not exposed.
 
 To verify env vars are reaching the container:
 ```bash
 echo '{}' | docker run -i \
   --mount type=bind,source=$(pwd)/data/env,target=/workspace/env-dir,readonly \
   --entrypoint /bin/bash guardian-core-agent:latest \
-  -c 'export $(cat /workspace/env-dir/env | xargs); echo "OAuth: ${#CLAUDE_CODE_OAUTH_TOKEN} chars, API: ${#ANTHROPIC_API_KEY} chars"'
+  -c 'export $(cat /workspace/env-dir/env | xargs); echo "OAuth: ${#CLAUDE_CODE_OAUTH_TOKEN} chars"'
 ```
 
 ### 3. Mount Issues
@@ -113,7 +113,7 @@ docker run --rm --entrypoint /bin/bash guardian-core-agent:latest -c 'ls -la /wo
 Expected structure:
 ```
 /workspace/
-├── env-dir/env           # Environment file (CLAUDE_CODE_OAUTH_TOKEN or ANTHROPIC_API_KEY)
+├── env-dir/env           # Environment file (CLAUDE_CODE_OAUTH_TOKEN)
 ├── group/                # Current group folder (cwd)
 ├── project/              # Project root (main channel only)
 ├── global/               # Global CLAUDE.md (non-main only)
@@ -146,8 +146,8 @@ If sessions aren't being resumed (new session ID every time), or Claude Code exi
 
 **Check the mount path:**
 ```bash
-# In container-runner.ts, verify mount is to /home/node/.claude/, NOT /root/.claude/
-grep -A3 "Claude sessions" src/container-runner.ts
+# In container_runner.ex, verify mount is to /home/node/.claude/, NOT /root/.claude/
+grep -A3 "claude" platform/lib/guardian/kernel/container_runner.ex
 ```
 
 **Verify sessions are accessible:**
@@ -160,14 +160,7 @@ ls -la $HOME/.claude/projects/ 2>&1 | head -5
 '
 ```
 
-**Fix:** Ensure `container-runner.ts` mounts to `/home/node/.claude/`:
-```typescript
-mounts.push({
-  hostPath: claudeDir,
-  containerPath: '/home/node/.claude',  // NOT /root/.claude
-  readonly: false
-});
-```
+**Fix:** Ensure `container_runner.ex` mounts to `/home/node/.claude/`. Check the mount configuration in `platform/lib/guardian/kernel/container_runner.ex`.
 
 ### 6. MCP Server Failures
 
@@ -229,7 +222,7 @@ query({
 
 ```bash
 # Rebuild main app
-bun run build
+cd platform && mix compile
 
 # Rebuild container (use --no-cache for clean rebuild)
 ./container/build.sh
@@ -321,19 +314,19 @@ Run this to check common issues:
 echo "=== Checking Guardian Core Container Setup ==="
 
 echo -e "\n1. Authentication configured?"
-[ -f .env ] && (grep -q "CLAUDE_CODE_OAUTH_TOKEN=sk-" .env || grep -q "ANTHROPIC_API_KEY=sk-" .env) && echo "OK" || echo "MISSING - add CLAUDE_CODE_OAUTH_TOKEN or ANTHROPIC_API_KEY to .env"
+[ -f .env ] && grep -q "CLAUDE_CODE_OAUTH_TOKEN=sk-" .env && echo "OK" || echo "MISSING - add CLAUDE_CODE_OAUTH_TOKEN to .env"
 
 echo -e "\n2. Env file copied for container?"
 [ -f data/env/env ] && echo "OK" || echo "MISSING - will be created on first run"
 
 echo -e "\n3. Docker daemon reachable?"
-docker info &>/dev/null && echo "OK" || echo "NOT RUNNING - start Docker Desktop (macOS) or run sudo systemctl start docker (Linux)"
+docker info &>/dev/null && echo "OK" || echo "NOT RUNNING - run sudo systemctl start docker"
 
 echo -e "\n4. Container image exists?"
 echo '{}' | docker run -i --entrypoint /bin/echo guardian-core-agent:latest "OK" 2>/dev/null || echo "MISSING - run ./container/build.sh"
 
 echo -e "\n5. Session mount path correct?"
-grep -q "/home/node/.claude" src/container-runner.ts 2>/dev/null && echo "OK" || echo "WRONG - should mount to /home/node/.claude/, not /root/.claude/"
+grep -q "home/node/.claude" platform/lib/guardian/kernel/container_runner.ex 2>/dev/null && echo "OK" || echo "WRONG - should mount to /home/node/.claude/, not /root/.claude/"
 
 echo -e "\n6. Groups directory?"
 ls -la groups/ 2>/dev/null || echo "MISSING - run setup"

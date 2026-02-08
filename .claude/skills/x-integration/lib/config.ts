@@ -14,10 +14,10 @@ const PROJECT_ROOT = process.env.GUARDIAN_CORE_ROOT || process.cwd();
  * Configuration object with all settings
  */
 export const config = {
-  // Chrome executable path
-  // Default: standard macOS Chrome location
+  // Chromium executable path
+  // Default: standard Linux Chromium location
   // Override: CHROME_PATH environment variable
-  chromePath: process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+  chromePath: process.env.CHROME_PATH || '/usr/bin/chromium',
 
   // Browser profile directory for persistent login sessions
   browserDataDir: path.join(PROJECT_ROOT, 'data', 'x-browser-profile'),

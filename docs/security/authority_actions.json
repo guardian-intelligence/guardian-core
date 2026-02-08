@@ -1,0 +1,49 @@
+{
+  "authority_actions": {
+    "status": "ACTIVE",
+    "date": "2026-02-07",
+    "source_rfc": "docs/rfcs/RFC_AGENT_RUNTIME_BEDROCK.md",
+    "canonical_action_types": [
+      {
+        "action_type": "messaging.send",
+        "origin": "send_message",
+        "risk_tier_min": 1
+      },
+      {
+        "action_type": "scheduler.create",
+        "origin": "schedule_task",
+        "risk_tier_min": 1
+      },
+      {
+        "action_type": "voice.call",
+        "origin": "make_phone_call",
+        "risk_tier_min": 1
+      },
+      {
+        "action_type": "admin.register_group",
+        "origin": "register_group",
+        "risk_tier_min": 2
+      },
+      {
+        "action_type": "scheduler.pause",
+        "origin": "task action",
+        "risk_tier_min": 1
+      },
+      {
+        "action_type": "scheduler.resume",
+        "origin": "task action",
+        "risk_tier_min": 1
+      },
+      {
+        "action_type": "scheduler.cancel",
+        "origin": "task action",
+        "risk_tier_min": 1
+      }
+    ],
+    "coverage_policy": {
+      "deny_by_default": true,
+      "coverage_rule": "Every canonical action_type MUST have exactly one entry in authority_surface_map for the enforced profile.",
+      "enforcement_gate": "SP-GATE-AUTHORITY-SURFACE"
+    }
+  }
+}

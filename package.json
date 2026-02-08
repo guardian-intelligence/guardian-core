@@ -10,11 +10,7 @@
     "deploy:brain:app": "cd platform && mix deploy.brain --app",
     "deploy:brain:container": "cd platform && mix deploy.brain --container",
     "deploy:brain:all": "cd platform && mix deploy.brain --all",
-    "deploy:platform": "cd platform && mix deploy.platform",
-    "secrets:backup": "cd platform && mix secrets.backup",
-    "secrets:restore": "cd platform && mix secrets.restore",
-    "secrets:deploy": "cd platform && mix secrets.deploy",
-    "secrets:verify": "cd platform && mix secrets.verify"
+    "deploy:platform": "cd platform && mix deploy.platform"
   },
   "engines": {
     "node": ">=20"

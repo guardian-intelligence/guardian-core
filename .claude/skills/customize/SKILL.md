@@ -18,12 +18,11 @@ This skill helps users add capabilities or modify behavior. Use AskUserQuestion 
 
 | File | Purpose |
 |------|---------|
-| `src/config.ts` | Assistant name, trigger pattern, directories |
-| `src/index.ts` | Message routing, WhatsApp connection, agent invocation |
-| `src/db.ts` | Database initialization and queries |
-| `src/types.ts` | TypeScript interfaces |
-| `src/whatsapp-auth.ts` | Standalone WhatsApp authentication script |
-| `.mcp.json` | MCP server configuration (reference) |
+| `platform/lib/guardian/kernel/config.ex` | Kernel paths and config |
+| `platform/lib/guardian/kernel/whatsapp/message_router.ex` | Message routing |
+| `platform/lib/guardian/kernel/container_runner.ex` | Agent container spawning |
+| `platform/lib/guardian/kernel/task_scheduler.ex` | Scheduled tasks |
+| `data/registered_groups.json` | Registered groups and triggers |
 | `groups/CLAUDE.md` | Global memory/persona |
 
 ## Common Customization Patterns
@@ -38,8 +37,8 @@ Questions to ask:
 
 Implementation pattern:
 1. Find/add MCP server for the channel
-2. Add connection and message handling in `src/index.ts`
-3. Store messages in the database (update `src/db.ts` if needed)
+2. Add connection and message handling in the kernel
+3. Store messages in the database (update Ecto schemas if needed)
 4. Ensure responses route back to correct channel
 
 ### Adding a New MCP Integration
@@ -50,8 +49,8 @@ Questions to ask:
 - Which groups should have access?
 
 Implementation:
-1. Add MCP server to the `mcpServers` config in `src/index.ts`
-2. Add tools to `allowedTools` array
+1. Add MCP server config to the container runner
+2. Add tools to `allowedTools` in the agent runner
 3. Document in `groups/CLAUDE.md`
 
 ### Changing Assistant Behavior
@@ -60,7 +59,7 @@ Questions to ask:
 - What aspect? (name, trigger, persona, response style)
 - Apply to all groups or specific ones?
 
-Simple changes → edit `src/config.ts`
+Simple changes → edit kernel config or `data/registered_groups.json`
 Persona changes → edit `groups/CLAUDE.md`
 Per-group behavior → edit specific group's `CLAUDE.md`
 
@@ -72,14 +71,14 @@ Questions to ask:
 - Does it need new MCP tools?
 
 Implementation:
-1. Add command handling in `processMessage()` in `src/index.ts`
+1. Add command handling in the message router
 2. Check for the command before the trigger pattern check
 
 ### Changing Deployment
 
 Questions to ask:
-- Target platform? (Linux server, Docker, different Mac)
-- Service manager? (systemd, Docker, supervisord)
+- Target platform? (Linux server, Docker)
+- Service manager? (systemd, Docker)
 
 Implementation:
 1. Create appropriate service files
@@ -91,9 +90,8 @@ Implementation:
 Always tell the user:
 ```bash
 # Rebuild and restart
-bun run build
-launchctl unload ~/Library/LaunchAgents/com.guardian-core.plist
-launchctl load ~/Library/LaunchAgents/com.guardian-core.plist
+cd platform && mix compile
+systemctl --user restart guardian-core
 ```
 
 ## Example Interaction
@@ -103,6 +101,6 @@ User: "Add Telegram as an input channel"
 1. Ask: "Should Telegram use the same @Andy trigger, or a different one?"
 2. Ask: "Should Telegram messages create separate conversation contexts, or share with WhatsApp groups?"
 3. Find Telegram MCP or library
-4. Add connection handling in index.ts
-5. Update message storage in db.ts
+4. Add connection handling in the kernel
+5. Update message storage in Ecto schemas
 6. Tell user how to authenticate and test

@@ -9,10 +9,14 @@ WorkingDirectory={{PROJECT_ROOT}}
 Restart=always
 RestartSec=5
 Environment=HOME={{HOME}}
-Environment=PATH={{HOME}}/.nix-profile/bin:/usr/local/bin:/usr/bin:/bin
+Environment=PATH={{HOME}}/.nix-profile/bin:/run/wrappers/bin:/etc/profiles/per-user/rumi/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:/usr/local/bin:/usr/bin:/bin
 Environment=MIX_ENV=prod
 Environment=GUARDIAN_PROJECT_ROOT={{PROJECT_ROOT}}
 Environment=ASSISTANT_NAME=Rumi
+Environment=PHX_SERVER=true
+Environment=PORT=4001
+Environment=RELEASE_NODE=guardian_core@localhost
+EnvironmentFile=/run/secrets/guardian-core-env
 
 StandardOutput=append:{{PROJECT_ROOT}}/logs/guardian-core.log
 StandardError=append:{{PROJECT_ROOT}}/logs/guardian-core.error.log

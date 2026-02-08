@@ -16,11 +16,11 @@ Guardian Core gives you the core functionality without that mess.
 
 ### Small Enough to Understand
 
-The entire codebase should be something you can read and understand. One Node.js process. A handful of source files. No microservices, no message queues, no abstraction layers.
+The entire codebase should be something you can read and understand. One Elixir OTP application. A handful of source files. No microservices, no message queues, no abstraction layers.
 
 ### Security Through True Isolation
 
-Instead of application-level permission systems trying to prevent agents from accessing things, agents run in actual Linux containers (Docker). The isolation is at the OS level. Agents can only see what's explicitly mounted. Bash access is safe because commands run inside the container, not on your Mac.
+Instead of application-level permission systems trying to prevent agents from accessing things, agents run in actual Linux containers (Docker). The isolation is at the OS level. Agents can only see what's explicitly mounted. Bash access is safe because commands run inside the container, not on the host.
 
 ### Built for One User
 
@@ -56,12 +56,8 @@ Skills to add or switch to different messaging platforms:
 
 ### Container Runtime
 The project uses Docker for isolated agent execution:
-- Docker runtime is supported on macOS and Linux
+- Docker runtime runs on Linux (NixOS)
 - Keep runtime docs and skills aligned with Docker-only commands
-
-### Platform Support
-- `/setup-linux` - Make the full setup work on Linux (depends on Docker conversion)
-- `/setup-windows` - Windows support via WSL2 + Docker
 
 ---
 
@@ -175,8 +171,8 @@ A personal Claude assistant accessible via WhatsApp, with minimal custom code.
 - `/customize` - General-purpose skill for adding capabilities (new channels like Telegram, new integrations, behavior changes)
 
 ### Deployment
-- Runs on local Mac via launchd
-- Single Node.js process handles everything
+- Runs on Linux via systemd
+- Single Elixir OTP application handles everything
 
 ---
 

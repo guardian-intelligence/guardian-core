@@ -2,17 +2,21 @@
   "index": {
     "scope": "Single-operator Elixir/OTP assistant with Dolt and capability-gated adapters; production target is NixOS",
     "source_of_truth": [
-      "docs/security/index.json",
-      "docs/security/security_policy.json",
-      "docs/security/security_checklist.json",
-      "docs/security/threat_model.json",
-      "docs/security/secrets_management.json",
-      "docs/security/incident_response.json",
-      "docs/security/release_procedure.json",
-      "docs/security/signing_verification.json",
+      "docs/security/authority_actions.json",
+      "docs/security/authority_surface_map.json",
+      "docs/security/continuity_kernel.json",
       "docs/security/crypto_posture.json",
+      "docs/security/dr_contract.json",
       "docs/security/elixir_eval.json",
+      "docs/security/incident_response.json",
+      "docs/security/index.json",
       "docs/security/orchestration_runbook.json",
+      "docs/security/release_procedure.json",
+      "docs/security/secrets_management.json",
+      "docs/security/security_checklist.json",
+      "docs/security/security_policy.json",
+      "docs/security/signing_verification.json",
+      "docs/security/threat_model.json",
       "docs/security/waivers.json"
     ],
     "markdown_docs": "human-readable mirrors; JSON corpus is normative for automated review and implementation agents",
@@ -112,6 +116,34 @@
         "path": "waivers/",
         "json_path": "waivers.json",
         "purpose": "Active and expired security waivers",
+        "authoritative": true
+      },
+      {
+        "id": "SEC-DOC-13",
+        "path": "AUTHORITY_ACTIONS.json",
+        "json_path": "authority_actions.json",
+        "purpose": "Canonical action registry for authority-bearing operation coverage",
+        "authoritative": true
+      },
+      {
+        "id": "SEC-DOC-14",
+        "path": "AUTHORITY_SURFACE_MAP.json",
+        "json_path": "authority_surface_map.json",
+        "purpose": "Profile-aware action -> service-unit authority mapping with deployment manifest anchors",
+        "authoritative": true
+      },
+      {
+        "id": "SEC-DOC-15",
+        "path": "DR_CONTRACT.json",
+        "json_path": "dr_contract.json",
+        "purpose": "Executable disaster recovery contract and post-restore gate requirements",
+        "authoritative": true
+      },
+      {
+        "id": "SEC-DOC-16",
+        "path": "CONTINUITY_KERNEL.json",
+        "json_path": "continuity_kernel.json",
+        "purpose": "Ordered Continuity Kernel controls (Authority Gate through service blast-radius split)",
         "authoritative": true
       }
     ],

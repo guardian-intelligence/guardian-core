@@ -1,16 +1,16 @@
 # Guardian Core
 
-A multi-agent system with two backends: an Elixir Phoenix API for webhook handling (GitHub tools, signature verification) and a TypeScript kernel that routes WhatsApp messages to Claude agents running in isolated Docker containers. The entire toolchain and production server are defined declaratively through Nix Flakes.
+A multi-agent system with two backends: an Elixir Phoenix API for webhook handling (GitHub tools, signature verification) and an Elixir OTP kernel that routes WhatsApp messages to Claude agents running in isolated Docker containers. The entire toolchain and production server are defined declaratively through Nix Flakes.
 
 ## Architecture
 
 ```
-WhatsApp ──→ TS Kernel (packages/kernel/) ──→ Docker Container
-              │                                  │
-              ├─ Message routing                 ├─ Claude Agent SDK
-              ├─ SQLite (chats, tasks)           ├─ Isolated filesystem
-              ├─ Task scheduler                  ├─ IPC MCP tools
-              └─ IPC watcher                     └─ Per-group persona & memory
+WhatsApp ──→ Elixir Kernel (platform/lib/guardian/kernel/) ──→ Docker Container
+              │                                                  │
+              ├─ Message routing                                 ├─ Claude Agent SDK
+              ├─ SQLite (chats, tasks)                           ├─ Isolated filesystem
+              ├─ Task scheduler                                  ├─ IPC MCP tools
+              └─ IPC watcher                                     └─ Per-group persona & memory
 
 ElevenLabs ──→ Phoenix API (platform/) ──→ GitHub API
                │
@@ -24,17 +24,11 @@ ElevenLabs ──→ Phoenix API (platform/) ──→ GitHub API
 
 ```
 guardian-core/
-├── platform/                  # Elixir Phoenix API (port 4000)
-│   ├── lib/guardian/          #   GitHub App client, business logic
+├── platform/                  # Elixir Phoenix API + OTP kernel
+│   ├── lib/guardian/          #   Kernel, GitHub App client, business logic
 │   ├── lib/guardian_web/      #   Controllers, plugs, router
 │   ├── config/                #   Environment configs (dev/test/prod/runtime)
 │   └── test/                  #   ExUnit tests
-├── packages/
-│   ├── kernel/                # TS WhatsApp kernel
-│   │   ├── src/               #   index, db, container-runner, task-scheduler
-│   │   └── test/              #   Vitest tests
-│   ├── shared/                # Shared TS types (errors, schemas, protocol)
-│   └── deploy/                # Deploy scripts (brain, secrets)
 ├── container/                 # Docker image for agent containers
 │   ├── Dockerfile
 │   └── agent-runner/          #   MCP IPC bridge (runs inside container)
@@ -42,12 +36,10 @@ guardian-core/
 │   ├── nixos/                 # NixOS server config (rumi-vps)
 │   │   ├── configuration.nix  #   Main config (Caddy, Docker, SSH, Tailscale)
 │   │   └── services/          #   guardian-core.nix, rumi-platform.nix
-│   ├── launchd/               # macOS service templates
 │   └── systemd/               # Linux service templates
-├── scripts/                   # Deploy scripts
 ├── groups/                    # Per-group memory and personas
 ├── flake.nix                  # Nix devShell + NixOS config
-└── package.json               # Bun workspace root
+└── package.json               # Convenience deploy script aliases
 ```
 
 ## Infrastructure
@@ -56,9 +48,7 @@ guardian-core/
 
 The `flake.nix` devShell provides the complete toolchain:
 
-- **Node.js 22** — host runtime
-- **Bun 1.3.8** — package manager, test runner, build tool (version pinned via `assert`)
-- **Elixir 1.18 / Erlang/OTP 27** — Phoenix platform backend
+- **Elixir 1.18 / Erlang/OTP 27** — kernel and Phoenix platform backend
 - **git**, **docker**, **age** — operations and secrets
 
 ```bash
@@ -83,14 +73,8 @@ Prerequisites: [Nix with flakes enabled](https://zero-to-nix.com/start/install)
 ```bash
 git clone <repo-url> && cd guardian-core
 nix develop
-bun install
 
-# TS Kernel
-bun run dev                     # Hot reload
-bun run test                    # Vitest (115 tests)
-bun run typecheck               # tsc -b
-
-# Phoenix Platform
+# Phoenix Platform + Kernel
 cd platform && mix deps.get
 cd platform && mix test         # ExUnit
 cd platform && mix phx.server   # Port 4000
@@ -98,17 +82,17 @@ cd platform && mix phx.server   # Port 4000
 
 ## Deploying
 
-Two systems: **brain** (Guardian Core kernel, local) and **platform** (Elixir Phoenix, rumi-vps).
+Two systems: **brain** (Guardian Core kernel) and **platform** (Elixir Phoenix, rumi-vps).
 
 ```bash
 # Brain (Guardian Core)
-bun run deploy:brain            # Smart deploy (detects what changed)
-bun run deploy:brain:app        # Host app only
-bun run deploy:brain:container  # Container image only
-bun run deploy:brain:all        # Full rebuild
+cd platform && mix deploy.brain               # Smart deploy (detects what changed)
+cd platform && mix deploy.brain --app         # Host app only
+cd platform && mix deploy.brain --container   # Container image only
+cd platform && mix deploy.brain --all         # Full rebuild
 
 # Platform (Elixir Phoenix → rumi-vps)
-bun run deploy:platform         # test, rsync, build release, restart
+cd platform && mix deploy.platform            # test, rsync, build release, restart
 ```
 
 ## Environment Variables
@@ -122,11 +106,13 @@ bun run deploy:platform         # test, rsync, build release, restart
 | `GITHUB_APP_ID` | prod | GitHub App ID |
 | `GITHUB_APP_PRIVATE_KEY` | prod | GitHub App RSA private key (PEM, `\n` escaped) |
 | `GITHUB_APP_INSTALLATION_ID` | prod | GitHub App installation ID |
-| `ELEVENLABS_WEBHOOK_SECRET` | prod | HMAC secret for webhook signature verification |
+| `ELEVENLABS_WEBHOOK_SECRET` | no | HMAC secret for webhook signature verification |
 
 ### Guardian Kernel (`.env`)
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `ANTHROPIC_API_KEY` | yes | Claude API key |
-| `WHATSAPP_PHONE_ID` | yes | WhatsApp Business phone number ID |
+| `CLAUDE_CODE_OAUTH_TOKEN` | yes | Claude OAuth token |
+| `ELEVENLABS_API_KEY` | yes | ElevenLabs API key |
+| `ELEVENLABS_AGENT_ID` | yes | ElevenLabs agent ID |
+| `ELEVENLABS_PHONE_NUMBER_ID` | no | ElevenLabs phone number (for outbound calls) |

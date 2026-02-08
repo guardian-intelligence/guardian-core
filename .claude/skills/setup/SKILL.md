@@ -12,7 +12,7 @@ Run all commands automatically. Only pause when user action is required (scannin
 ## 1. Install Dependencies
 
 ```bash
-bun install
+cd platform && mix deps.get
 ```
 
 ## 2. Install Container Runtime
@@ -26,7 +26,6 @@ which docker && docker info >/dev/null 2>&1 && echo "Docker: installed and runni
 
 If Docker is not available, install/start it before continuing:
 
-- macOS: Install Docker Desktop and open it once.
 - Linux: Install Docker Engine, then start with `sudo systemctl start docker`.
 
 Then verify:
@@ -39,11 +38,6 @@ docker info
 Continue to Section 3 once Docker is confirmed running.
 
 ## 3. Configure Claude Authentication
-
-Ask the user:
-> Do you want to use your **Claude subscription** (Pro/Max) or an **Anthropic API key**?
-
-### Option 1: Claude Subscription (Recommended)
 
 Tell the user:
 > Open another terminal window and run:
@@ -58,28 +52,6 @@ If they give you the token, add it to `.env`:
 
 ```bash
 echo "CLAUDE_CODE_OAUTH_TOKEN=<token>" > .env
-```
-
-### Option 2: API Key
-
-Ask if they have an existing key to copy or need to create one.
-
-**Copy existing:**
-```bash
-grep "^ANTHROPIC_API_KEY=" /path/to/source/.env > .env
-```
-
-**Create new:**
-```bash
-echo 'ANTHROPIC_API_KEY=' > .env
-```
-
-Tell the user to add their key from https://console.anthropic.com/
-
-**Verify:**
-```bash
-KEY=$(grep "^ANTHROPIC_API_KEY=" .env | cut -d= -f2)
-[ -n "$KEY" ] && echo "API key configured: ${KEY:0:10}...${KEY: -4}" || echo "Missing"
 ```
 
 ## 4. Build Container Image
@@ -182,7 +154,7 @@ For group:
 After user confirms, start the app briefly to capture the message:
 
 ```bash
-timeout 10 bun run dev || true
+cd platform && timeout 10 mix phx.server || true
 ```
 
 Then find the JID from the database:
@@ -319,64 +291,25 @@ Tell the user:
 > }
 > ```
 
-## 10. Configure launchd Service
+## 10. Deploy the Service
 
-Generate the plist file with correct paths automatically:
-
-```bash
-NODE_PATH=$(which node)
-PROJECT_PATH=$(pwd)
-HOME_PATH=$HOME
-
-cat > ~/Library/LaunchAgents/com.guardian-core.plist << EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>Label</key>
-    <string>com.guardian-core</string>
-    <key>ProgramArguments</key>
-    <array>
-        <string>${NODE_PATH}</string>
-        <string>${PROJECT_PATH}/dist/index.js</string>
-    </array>
-    <key>WorkingDirectory</key>
-    <string>${PROJECT_PATH}</string>
-    <key>RunAtLoad</key>
-    <true/>
-    <key>KeepAlive</key>
-    <true/>
-    <key>EnvironmentVariables</key>
-    <dict>
-        <key>PATH</key>
-        <string>/usr/local/bin:/usr/bin:/bin:${HOME_PATH}/.local/bin</string>
-        <key>HOME</key>
-        <string>${HOME_PATH}</string>
-    </dict>
-    <key>StandardOutPath</key>
-    <string>${PROJECT_PATH}/logs/guardian-core.log</string>
-    <key>StandardErrorPath</key>
-    <string>${PROJECT_PATH}/logs/guardian-core.error.log</string>
-</dict>
-</plist>
-EOF
-
-echo "Created launchd plist with:"
-echo "  Node: ${NODE_PATH}"
-echo "  Project: ${PROJECT_PATH}"
-```
-
-Build and start the service:
+Use the brain deploy Mix task which handles building the Elixir release, installing the systemd service template, and starting the service:
 
 ```bash
-bun run build
-mkdir -p logs
-launchctl load ~/Library/LaunchAgents/com.guardian-core.plist
+cd platform && mix deploy.brain --all
 ```
+
+This will:
+1. Compile the Elixir app
+2. Run tests
+3. Build the release
+4. Rebuild the container image
+5. Install the systemd service
+6. Start and verify the service
 
 Verify it's running:
 ```bash
-launchctl list | grep guardian-core
+systemctl --user status guardian-core
 ```
 
 ## 11. Test
@@ -397,7 +330,7 @@ The user should receive a response in WhatsApp.
 
 **Container agent fails with "Claude Code process exited with code 1"**:
 - Ensure the container runtime is running:
-  - Docker: `docker info` (start Docker Desktop on macOS, or `sudo systemctl start docker` on Linux)
+  - Docker: `docker info` (run `sudo systemctl start docker` if not running)
 - Check container logs: `cat groups/main/logs/container-*.log | tail -50`
 
 **No response to messages**:
@@ -406,11 +339,10 @@ The user should receive a response in WhatsApp.
 - Check `logs/guardian-core.log` for errors
 
 **WhatsApp disconnected**:
-- The service will show a macOS notification
 - Run `bun run auth` to re-authenticate
-- Restart the service: `launchctl kickstart -k gui/$(id -u)/com.guardian-core`
+- Restart the service: `systemctl --user restart guardian-core`
 
-**Unload service**:
+**Stop service**:
 ```bash
-launchctl unload ~/Library/LaunchAgents/com.guardian-core.plist
+systemctl --user stop guardian-core
 ```

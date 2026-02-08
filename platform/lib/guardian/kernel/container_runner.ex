@@ -226,7 +226,7 @@ defmodule Guardian.Kernel.ContainerRunner do
       if exists_fn.(env_file) do
         case read_file.(env_file) do
           {:ok, content} ->
-            allowed_vars = ["CLAUDE_CODE_OAUTH_TOKEN", "ANTHROPIC_API_KEY", "GITHUB_TOKEN"]
+            allowed_vars = ["CLAUDE_CODE_OAUTH_TOKEN", "GITHUB_TOKEN"]
 
             filtered =
               content

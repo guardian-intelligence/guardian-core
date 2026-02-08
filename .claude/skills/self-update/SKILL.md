@@ -1,6 +1,6 @@
 ---
 name: self-update
-description: Deploy Guardian Core (brain) or platform (Elixir Phoenix). Use when user says "deploy", "update", "self-update", "push changes", or "ship it". Covers local Mac/Linux brain and remote Phoenix platform.
+description: Deploy Guardian Core (brain) or platform (Elixir Phoenix). Use when user says "deploy", "update", "self-update", "push changes", or "ship it". Covers local Linux brain and remote Phoenix platform.
 ---
 
 # Self-Update / Deploy
@@ -9,7 +9,7 @@ Two systems can be deployed from this repo:
 
 | System | Alias | Where | Command |
 |--------|-------|-------|---------|
-| **Guardian Core** | brain | Local Mac (launchd) or Linux (systemd) | `cd platform && mix deploy.brain` |
+| **Guardian Core** | brain | Linux (systemd) | `cd platform && mix deploy.brain` |
 | **Phoenix Platform** | platform | OVH VPS (`rumi-server`, `/opt/guardian-platform`) | `cd platform && mix deploy.platform` |
 
 ## Decision Tree
@@ -32,7 +32,7 @@ The brain deploy Mix task (`mix deploy.brain`) handles:
 3. `mix test` (aborts on failure)
 4. `mix release --overwrite` (builds Elixir release)
 5. Container image rebuild (if container files changed)
-6. Install launchd/systemd service from template
+6. Install systemd service from template
 7. Restart the service
 8. Verify the service is running
 
@@ -54,7 +54,7 @@ cd platform && mix deploy.brain --dry-run     # Preview without executing
 | Tests fail | Fix failing tests — deploy aborts on test failure |
 | Service won't start | Check `logs/guardian-core.log` and `logs/guardian-core.error.log` |
 | Container build fails | Run `docker builder prune -af` then retry |
-| launchd not loading | `launchctl load ~/Library/LaunchAgents/com.guardian-core.plist` |
+| Service not starting | `systemctl --user status guardian-core` and check `journalctl --user -u guardian-core` |
 
 ## Deploying Platform (Elixir Phoenix)
 

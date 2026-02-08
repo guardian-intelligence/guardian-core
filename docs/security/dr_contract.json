@@ -1,0 +1,223 @@
+{
+  "dr_contract": {
+    "status": "ACTIVE",
+    "date": "2026-02-07",
+    "topology_class": "CLASS_S_SINGLE_NODE_RECOVERABILITY",
+    "backup_contract": {
+      "max_backup_interval_s": 300,
+      "max_replication_lag_s": 300,
+      "max_restore_data_loss_s": 300,
+      "consistency_point": "recovery_point_tuple",
+      "retention_days": 35,
+      "verification_method": [
+        "monthly_full_restore",
+        "daily_backup_integrity_hash_check"
+      ]
+    },
+    "recovery_point_tuple": {
+      "capture_scope": "atomic",
+      "required_fields": [
+        "dolt_commit",
+        "outbox_hwm",
+        "intent_ledger_hash",
+        "receipt_set_hash",
+        "jti_store_hash",
+        "policy_version",
+        "crypto_policy_version",
+        "flake_lock_hash",
+        "nix_toplevel_hash",
+        "unit_hashes",
+        "private_config_hash",
+        "recovery_epoch"
+      ],
+      "anti_replay_material": [
+        "jti_store_hash",
+        "recovery_epoch"
+      ],
+      "reject_restore_if_missing": true
+    },
+    "token_epoch_fencing": {
+      "required_claim": "recovery_epoch",
+      "validator_must_enforce": true,
+      "rollback_action": [
+        "increment_recovery_epoch",
+        "rotate_token_issuer_keys"
+      ],
+      "reject_older_epoch_tokens": true
+    },
+    "time_integrity_gate": {
+      "tier2_startup_requires": [
+        "clock_synced",
+        "root_distance_lt_threshold"
+      ],
+      "root_distance_threshold_s": 5,
+      "sustained_skew_alert_seconds": 60,
+      "on_fail": "BLOCK_TIER2_PLUS"
+    },
+    "runtime_modes": {
+      "FULL": {
+        "allow_action_classes": [
+          "tier0",
+          "tier1",
+          "tier2",
+          "tier3"
+        ],
+        "policy_predicate": "mode == FULL"
+      },
+      "DEGRADED_TIER01_ONLY": {
+        "allow_action_classes": [
+          "tier0",
+          "tier1"
+        ],
+        "deny_action_classes": [
+          "tier2",
+          "tier3"
+        ],
+        "policy_predicate": "mode == DEGRADED_TIER01_ONLY"
+      },
+      "READ_ONLY": {
+        "allow_action_classes": [
+          "read_only"
+        ],
+        "deny_action_classes": [
+          "mutations"
+        ],
+        "policy_predicate": "mode == READ_ONLY"
+      },
+      "RECOVERY": {
+        "allow_action_classes": [
+          "internal_reconciliation"
+        ],
+        "deny_action_classes": [
+          "external_side_effects"
+        ],
+        "policy_predicate": "mode == RECOVERY"
+      }
+    },
+    "headscale_dependency_isolation": {
+      "tailnet_control_plane": "headscale",
+      "oob_alerting_channel": "independent_phone_or_sms",
+      "oob_control_channel": "direct_public_ssh_or_provider_console",
+      "independence_required": true
+    },
+    "operator_continuity": {
+      "primary_principal": "root_human",
+      "delegated_emergency_principals_required": true,
+      "minimum_delegated_principals": 2,
+      "sealed_credentials_required": true,
+      "revocation_playbook_required": true
+    },
+    "service_principal_separation": {
+      "required": true,
+      "rule": "authoritative services must not share the same unix principal",
+      "on_violation": "BLOCK_RELEASE"
+    },
+    "post_restore_security_gate": {
+      "required_release_gates": [
+        "SP-GATE-CREDO",
+        "SP-GATE-CRYPTO-VERSION-SYNC",
+        "SP-GATE-DEPS-AUDIT",
+        "SP-GATE-DIALYZER",
+        "SP-GATE-EVIDENCE-EXISTS",
+        "SP-GATE-HEX-AUDIT",
+        "SP-GATE-POLICY-COVERAGE",
+        "SP-GATE-SECRETS",
+        "SP-GATE-TEST-COVERAGE",
+        "SP-GATE-WAIVER-NONWAIVABLE"
+      ],
+      "additional_checks": [
+        "recovery_point_tuple_valid",
+        "remote_log_anchor_chain_valid",
+        "external_reconciliation_complete"
+      ],
+      "tier2_enablement_requires_all_pass": true
+    },
+    "recovery_bundle": {
+      "required_fields": [
+        "flake_lock_hash",
+        "nixos_generation_id",
+        "toplevel_derivation_hash",
+        "systemd_unit_hashes",
+        "sops_recipient_fingerprint",
+        "authority_surface_map_hash"
+      ],
+      "acceptance_modes": [
+        "exact_match",
+        "authorized_divergence"
+      ],
+      "authorized_divergence_requires": [
+        "divergence_reason_code",
+        "expires_at",
+        "incident_ticket_id",
+        "operator_signature",
+        "post_restore_security_gate_pass",
+        "return_to_exact_match_plan"
+      ],
+      "expired_divergence_action": "BLOCK_TIER2_PLUS_UNTIL_RECONCILED"
+    },
+    "external_reconciliation": {
+      "required_before_replay": true,
+      "contracts": [
+        {
+          "adapter": "whatsapp",
+          "requirements": [
+            "fetch_provider_receipts",
+            "rebuild_idempotency_map",
+            "mark_confirmed_actions_before_replay"
+          ]
+        },
+        {
+          "adapter": "voice",
+          "requirements": [
+            "fetch_provider_receipts",
+            "rebuild_idempotency_map",
+            "mark_confirmed_actions_before_replay"
+          ]
+        }
+      ]
+    },
+    "retention_schedule": {
+      "evidence_bundles_days": 365,
+      "audit_logs_days": 365,
+      "receipts_and_idempotency_days": 365,
+      "legal_hold_override": true,
+      "cryptographic_deletion_required": true
+    },
+    "drill_matrix": [
+      {
+        "drill": "full_bare_metal_restore",
+        "minimum_frequency": "monthly"
+      },
+      {
+        "drill": "token_epoch_replay",
+        "minimum_frequency": "weekly"
+      },
+      {
+        "drill": "headscale_loss",
+        "minimum_frequency": "weekly"
+      },
+      {
+        "drill": "sops_key_loss",
+        "minimum_frequency": "monthly"
+      },
+      {
+        "drill": "nif_crash_integrity_reconcile",
+        "minimum_frequency": "monthly"
+      }
+    ],
+    "activation_criteria": {
+      "required_for_active_status": [
+        "post_restore_security_gate_defined",
+        "drill_matrix_defined",
+        "drill_matrix_executed_on_schedule",
+        "backup_contract_fields_defined",
+        "authority_surface_map_validated"
+      ]
+    },
+    "drill_recency_windows_days": {
+      "weekly": 9,
+      "monthly": 40,
+      "on_violation": "BLOCK_TIER2_PLUS_AFTER_RESTORE"
+    }
+  }
+}

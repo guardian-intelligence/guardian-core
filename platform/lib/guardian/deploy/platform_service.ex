@@ -1,6 +1,6 @@
 defmodule Guardian.Deploy.PlatformService do
   @moduledoc """
-  Behaviour for OS service management (launchd on macOS, systemd on Linux).
+  Behaviour for systemd service management on Linux.
   """
 
   @callback install_service_template(keyword()) :: :ok | {:error, String.t(), String.t()}
@@ -11,7 +11,6 @@ defmodule Guardian.Deploy.PlatformService do
   @spec impl() :: module()
   def impl do
     case :os.type() do
-      {:unix, :darwin} -> Guardian.Deploy.Platform.Darwin
       {:unix, :linux} -> Guardian.Deploy.Platform.Linux
       other -> raise "Unsupported platform: #{inspect(other)}"
     end

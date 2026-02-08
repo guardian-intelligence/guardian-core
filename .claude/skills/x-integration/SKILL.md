@@ -28,12 +28,12 @@ Before using this skill, ensure:
    ```bash
    bun pm ls playwright dotenv-cli || bun install playwright dotenv-cli
    ```
-3. **CHROME_PATH configured** in `.env` (if Chrome is not at default location):
+3. **CHROME_PATH configured** in `.env` (if Chromium is not at default location):
    ```bash
-   # Find your Chrome path
-   mdfind "kMDItemCFBundleIdentifier == 'com.google.Chrome'" 2>/dev/null | head -1
-   # Add to .env
-   CHROME_PATH=/path/to/Google Chrome.app/Contents/MacOS/Google Chrome
+   # Find your Chromium path
+   which chromium || which google-chrome
+   # Add to .env if needed
+   CHROME_PATH=/usr/bin/chromium
    ```
 
 ## Quick Start
@@ -48,9 +48,9 @@ bunx dotenv -e .env -- bun .claude/skills/x-integration/scripts/setup.ts
 # Verify: Output shows "COPY .claude/skills/x-integration/agent.ts"
 
 # 3. Rebuild host and restart service
-bun run build
-launchctl kickstart -k gui/$(id -u)/com.guardian-core
-# Verify: launchctl list | grep guardian-core shows PID and exit code 0
+cd platform && mix compile
+systemctl --user restart guardian-core
+# Verify: systemctl --user status guardian-core shows active
 ```
 
 ## Configuration
@@ -59,7 +59,7 @@ launchctl kickstart -k gui/$(id -u)/com.guardian-core
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `CHROME_PATH` | `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` | Chrome executable path |
+| `CHROME_PATH` | `/usr/bin/chromium` | Chromium executable path |
 | `GUARDIAN_CORE_ROOT` | `process.cwd()` | Project root directory |
 | `LOG_LEVEL` | `info` | Logging level (debug, info, warn, error) |
 
@@ -67,7 +67,7 @@ Set in `.env` file (loaded via `dotenv-cli` at runtime):
 
 ```bash
 # .env
-CHROME_PATH=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+CHROME_PATH=/usr/bin/chromium
 ```
 
 ### Configuration File
@@ -117,7 +117,7 @@ Paths relative to project root:
                        │ IPC (file system)
                        ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  Host (macOS)                                               │
+│  Host (Linux)                                               │
 │  └── src/index.ts → processTaskIpc()                       │
 │      └── host.ts → handleXIpc()                         │
 │          └── spawn subprocess → scripts/*.ts               │
@@ -270,13 +270,13 @@ cat data/x-auth.json  # Should show {"authenticated": true, ...}
 ### 4. Restart Service
 
 ```bash
-bun run build
-launchctl kickstart -k gui/$(id -u)/com.guardian-core
+cd platform && mix compile
+systemctl --user restart guardian-core
 ```
 
 **Verify success:**
 ```bash
-launchctl list | grep guardian-core  # Should show PID and exit code 0 or -
+systemctl --user status guardian-core  # Should show active (running)
 ```
 
 ## Usage via WhatsApp
@@ -342,7 +342,7 @@ echo '{"content":"Test"}' | bun .claude/skills/x-integration/scripts/post.ts
 
 ```bash
 bunx dotenv -e .env -- bun .claude/skills/x-integration/scripts/setup.ts
-launchctl kickstart -k gui/$(id -u)/com.guardian-core
+systemctl --user restart guardian-core
 ```
 
 ### Browser Lock Files

@@ -1,1 +1,652 @@
-{"security_checklist":{"status":"ACTIVE","sections":[{"id":"CHK-BOUNDARY-AUTHORITY","name":"Boundary and Authority","checks":[{"id":"CHK-BOUNDARY-AUTHORITY-01","desc":"No ambient authority; all effects kernel-mediated via capability-gated outbox","sev":"MUST","surf":"RUNTIME","gate_id":"SP-INV-001","test_id":"TEST-CHK-BOUNDARY-AUTHORITY-01","evidence_artifact":"artifacts/security/CHK-BOUNDARY-AUTHORITY-01.json"},{"id":"CHK-BOUNDARY-AUTHORITY-02","desc":"Outcomes are receipt-bound and evidence-bound","sev":"MUST","surf":"RUNTIME","gate_id":"SP-INV-001","test_id":"TEST-CHK-BOUNDARY-AUTHORITY-02","evidence_artifact":"artifacts/security/CHK-BOUNDARY-AUTHORITY-02.json"},{"id":"CHK-BOUNDARY-AUTHORITY-03","desc":"Delegation strict-subset: scope, budgets, stop predicates, classification","sev":"MUST","surf":"RUNTIME","gate_id":"SP-INV-001","test_id":"TEST-CHK-BOUNDARY-AUTHORITY-03","evidence_artifact":"artifacts/security/CHK-BOUNDARY-AUTHORITY-03.json"},{"id":"CHK-BOUNDARY-AUTHORITY-04","desc":"Missing/unverifiable delegation artifacts fail closed","sev":"MUST","surf":"RUNTIME","gate_id":"SP-INV-001","test_id":"TEST-CHK-BOUNDARY-AUTHORITY-04","evidence_artifact":"artifacts/security/CHK-BOUNDARY-AUTHORITY-04.json"}]},{"id":"CHK-IDENTITY-FRESHNESS","name":"Identity and Freshness","checks":[{"id":"CHK-IDENTITY-FRESHNESS-01","desc":"Identities self-certifying or losslessly mapped to canonical forms","sev":"MUST","surf":"RUNTIME","gate_id":"SP-RUNTIME-002","test_id":"TEST-CHK-IDENTITY-FRESHNESS-01","evidence_artifact":"artifacts/security/CHK-IDENTITY-FRESHNESS-01.json"},{"id":"CHK-IDENTITY-FRESHNESS-02","desc":"Identity verification uses proof-carrying objects, not linear scans","sev":"MUST","surf":"RUNTIME","gate_id":"SP-RUNTIME-002","test_id":"TEST-CHK-IDENTITY-FRESHNESS-02","evidence_artifact":"artifacts/security/CHK-IDENTITY-FRESHNESS-02.json"},{"id":"CHK-IDENTITY-FRESHNESS-03","desc":"Tier2+ actuation enforces freshness; deny on stale trust state","sev":"MUST","surf":"RUNTIME","gate_id":"SP-RUNTIME-002","test_id":"TEST-CHK-IDENTITY-FRESHNESS-03","evidence_artifact":"artifacts/security/CHK-IDENTITY-FRESHNESS-03.json"},{"id":"CHK-IDENTITY-FRESHNESS-04","desc":"Lease freshness uncertainty fails closed before actuation","sev":"MUST","surf":"RUNTIME","gate_id":"SP-RUNTIME-002","test_id":"TEST-CHK-IDENTITY-FRESHNESS-04","evidence_artifact":"artifacts/security/CHK-IDENTITY-FRESHNESS-04.json"}]},{"id":"CHK-RECEIPT-AUTH","name":"Receipt Authentication","checks":[{"id":"CHK-RECEIPT-AUTH-01","desc":"Fact auth explicit via direct sig or authority-seal verification","sev":"MUST","surf":"RUNTIME","gate_id":"SP-INV-002","test_id":"TEST-CHK-RECEIPT-AUTH-01","evidence_artifact":"artifacts/security/CHK-RECEIPT-AUTH-01.json"},{"id":"CHK-RECEIPT-AUTH-02","desc":"Receipt chain integrity: predecessor digests verified before acceptance","sev":"MUST","surf":"RUNTIME","gate_id":"SP-INV-002","test_id":"TEST-CHK-RECEIPT-AUTH-02","evidence_artifact":"artifacts/security/CHK-RECEIPT-AUTH-02.json"},{"id":"CHK-RECEIPT-AUTH-03","desc":"Payload bounds enforced before acceptance","sev":"MUST","surf":"RUNTIME","gate_id":"SP-INV-002","test_id":"TEST-CHK-RECEIPT-AUTH-03","evidence_artifact":"artifacts/security/CHK-RECEIPT-AUTH-03.json"},{"id":"CHK-RECEIPT-AUTH-04","desc":"Verification failures emit defects; no silent downgrade to allow","sev":"MUST","surf":"RUNTIME","gate_id":"SP-INV-002","test_id":"TEST-CHK-RECEIPT-AUTH-04","evidence_artifact":"artifacts/security/CHK-RECEIPT-AUTH-04.json"}]},{"id":"CHK-TOOL-CONTEXT","name":"Tool and Context Containment","checks":[{"id":"CHK-TOOL-CONTEXT-01","desc":"No raw tool-string bypass around typed mediation","sev":"MUST","surf":"RUNTIME","gate_id":"SP-RUNTIME-001","test_id":"TEST-CHK-TOOL-CONTEXT-01","evidence_artifact":"artifacts/security/CHK-TOOL-CONTEXT-01.json"},{"id":"CHK-TOOL-CONTEXT-02","desc":"Context reads allowlist-bound; out-of-policy reads deny default","sev":"MUST","surf":"RUNTIME","gate_id":"SP-RUNTIME-001","test_id":"TEST-CHK-TOOL-CONTEXT-02","evidence_artifact":"artifacts/security/CHK-TOOL-CONTEXT-02.json"},{"id":"CHK-TOOL-CONTEXT-03","desc":"Tier3+ uses hard-fail firewall: terminate or deny, not warn","sev":"MUST","surf":"RUNTIME","gate_id":"SP-RUNTIME-001","test_id":"TEST-CHK-TOOL-CONTEXT-03","evidence_artifact":"artifacts/security/CHK-TOOL-CONTEXT-03.json"},{"id":"CHK-TOOL-CONTEXT-04","desc":"Idempotency and preconditions for side-effecting tools","sev":"MUST","surf":"RUNTIME","gate_id":"SP-RUNTIME-001","test_id":"TEST-CHK-TOOL-CONTEXT-04","evidence_artifact":"artifacts/security/CHK-TOOL-CONTEXT-04.json"}]},{"id":"CHK-INJECTION-CONFIDENTIALITY","name":"Injection and Confidentiality","checks":[{"id":"CHK-INJECTION-CONFIDENTIALITY-01","desc":"Taint/integrity labels propagate across tool and summary paths","sev":"MUST","surf":"RUNTIME","gate_id":"SP-RUNTIME-004","test_id":"TEST-CHK-INJECTION-CONFIDENTIALITY-01","evidence_artifact":"artifacts/security/CHK-INJECTION-CONFIDENTIALITY-01.json"},{"id":"CHK-INJECTION-CONFIDENTIALITY-02","desc":"Confidentiality labels enforced on boundary emissions","sev":"MUST","surf":"RUNTIME","gate_id":"SP-RUNTIME-004","test_id":"TEST-CHK-INJECTION-CONFIDENTIALITY-02","evidence_artifact":"artifacts/security/CHK-INJECTION-CONFIDENTIALITY-02.json"},{"id":"CHK-INJECTION-CONFIDENTIALITY-03","desc":"Untrusted inputs cannot drive high-impact actuators without verifier","sev":"MUST","surf":"RUNTIME","gate_id":"SP-RUNTIME-004","test_id":"TEST-CHK-INJECTION-CONFIDENTIALITY-03","evidence_artifact":"artifacts/security/CHK-INJECTION-CONFIDENTIALITY-03.json"},{"id":"CHK-INJECTION-CONFIDENTIALITY-04","desc":"Logs/errors avoid sensitive leakage; redaction invariants held","sev":"MUST","surf":"RUNTIME","gate_id":"SP-RUNTIME-004","test_id":"TEST-CHK-INJECTION-CONFIDENTIALITY-04","evidence_artifact":"artifacts/security/CHK-INJECTION-CONFIDENTIALITY-04.json"}]},{"id":"CHK-FILES-ATOMICITY","name":"Path, File, and Atomicity Hygiene","checks":[{"id":"CHK-FILES-ATOMICITY-01","desc":"External path components validated and normalized","sev":"MUST","surf":"REPOSITORY","gate_id":"SP-DEP-002","test_id":"TEST-CHK-FILES-ATOMICITY-01","evidence_artifact":"artifacts/security/CHK-FILES-ATOMICITY-01.json"},{"id":"CHK-FILES-ATOMICITY-02","desc":"Resolved paths inside allowlisted roots after symlink resolution","sev":"MUST","surf":"REPOSITORY","gate_id":"SP-DEP-002","test_id":"TEST-CHK-FILES-ATOMICITY-02","evidence_artifact":"artifacts/security/CHK-FILES-ATOMICITY-02.json"},{"id":"CHK-FILES-ATOMICITY-03","desc":"Critical files use write-then-rename semantics","sev":"MUST","surf":"REPOSITORY","gate_id":"SP-DEP-002","test_id":"TEST-CHK-FILES-ATOMICITY-03","evidence_artifact":"artifacts/security/CHK-FILES-ATOMICITY-03.json"},{"id":"CHK-FILES-ATOMICITY-04","desc":"Temp files same-filesystem and cleaned on failure","sev":"SHOULD","surf":"REPOSITORY","gate_id":"SP-DEP-002","test_id":"TEST-CHK-FILES-ATOMICITY-04","evidence_artifact":"artifacts/security/CHK-FILES-ATOMICITY-04.json"}]},{"id":"CHK-CRYPTO-SERIALIZATION","name":"Cryptographic and Serialization Discipline","checks":[{"id":"CHK-CRYPTO-SERIALIZATION-01","desc":"Canonicalization deterministic for all signed/hashed artifacts","sev":"MUST","surf":"RUNTIME","gate_id":"SP-INV-004","test_id":"TEST-CHK-CRYPTO-SERIALIZATION-01","evidence_artifact":"artifacts/security/CHK-CRYPTO-SERIALIZATION-01.json"},{"id":"CHK-CRYPTO-SERIALIZATION-02","desc":"Collection ordering deterministic before hash/sign ops","sev":"MUST","surf":"RUNTIME","gate_id":"SP-INV-004","test_id":"TEST-CHK-CRYPTO-SERIALIZATION-02","evidence_artifact":"artifacts/security/CHK-CRYPTO-SERIALIZATION-02.json"},{"id":"CHK-CRYPTO-SERIALIZATION-03","desc":"Unknown-field behavior follows policy; fail-closed where required","sev":"MUST","surf":"RUNTIME","gate_id":"SP-INV-004","test_id":"TEST-CHK-CRYPTO-SERIALIZATION-03","evidence_artifact":"artifacts/security/CHK-CRYPTO-SERIALIZATION-03.json"},{"id":"CHK-CRYPTO-SERIALIZATION-04","desc":"Enforcement quantities unitful and unambiguous","sev":"MUST","surf":"RUNTIME","gate_id":"SP-INV-004","test_id":"TEST-CHK-CRYPTO-SERIALIZATION-04","evidence_artifact":"artifacts/security/CHK-CRYPTO-SERIALIZATION-04.json"}]},{"id":"CHK-CRYPTO-PQC","name":"PQC and Standards Alignment","checks":[{"id":"CHK-CRYPTO-PQC-01","desc":"Required Tier2+ primitives available at startup (BLAKE3, ML-KEM-768, ML-DSA-65)","sev":"MUST","surf":"RUNTIME","gate_id":"SP-CRYPTO-001","test_id":"TEST-CHK-CRYPTO-PQC-01","evidence_artifact":"artifacts/security/CHK-CRYPTO-PQC-01.json"},{"id":"CHK-CRYPTO-PQC-02","desc":"Algorithm downgrade attempts fail closed and emit security events","sev":"MUST","surf":"RUNTIME","gate_id":"SP-CRYPTO-001","test_id":"TEST-CHK-CRYPTO-PQC-02","evidence_artifact":"artifacts/security/CHK-CRYPTO-PQC-02.json"},{"id":"CHK-CRYPTO-PQC-03","desc":"KEM usage complies with SP 800-227 guidance (KEM-for-key-establishment, non-oracular failures, context-bound KDF)","sev":"MUST","surf":"RUNTIME","gate_id":"SP-CRYPTO-001","test_id":"TEST-CHK-CRYPTO-PQC-03","evidence_artifact":"artifacts/security/CHK-CRYPTO-PQC-03.json"},{"id":"CHK-CRYPTO-PQC-04","desc":"FIPS 140 validation claims are evidence-backed; no over-claim in release/docs","sev":"MUST","surf":"RELEASE","gate_id":"SP-CRYPTO-001","test_id":"TEST-CHK-CRYPTO-PQC-04","evidence_artifact":"artifacts/security/CHK-CRYPTO-PQC-04.json"},{"id":"CHK-CRYPTO-PQC-05","desc":"Standards watch items (FIPS-206, HQC track) reviewed at policy cadence","sev":"SHOULD","surf":"GOVERNANCE","gate_id":"SP-CRYPTO-001","test_id":"TEST-CHK-CRYPTO-PQC-05","evidence_artifact":"artifacts/security/CHK-CRYPTO-PQC-05.json"}]},{"id":"CHK-RISK-TIER","name":"Runtime Risk Tier Alignment","checks":[{"id":"CHK-RISK-TIER-01","desc":"Risk-tier assumptions match policy Tier 0-3 mapping","sev":"MUST","surf":"GOVERNANCE","gate_id":"SP-TIER-001","test_id":"TEST-CHK-RISK-TIER-01","evidence_artifact":"artifacts/security/CHK-RISK-TIER-01.json"},{"id":"CHK-RISK-TIER-02","desc":"Tier3 has mandatory sandbox boundary and stricter containment","sev":"MUST","surf":"RUNTIME","gate_id":"SP-TIER-001","test_id":"TEST-CHK-RISK-TIER-02","evidence_artifact":"artifacts/security/CHK-RISK-TIER-02.json"}]},{"id":"CHK-SUPPLY-CHAIN","name":"Supply Chain and Release Integrity","checks":[{"id":"CHK-SUPPLY-CHAIN-01","desc":"Security CI gates pass for release commit","sev":"MUST","surf":"CI","gate_id":"SP-REL-001","test_id":"TEST-CHK-SUPPLY-CHAIN-01","evidence_artifact":"artifacts/security/CHK-SUPPLY-CHAIN-01.json"},{"id":"CHK-SUPPLY-CHAIN-02","desc":"Sigstore identity-constrained verification intact","sev":"MUST","surf":"RELEASE","gate_id":"SP-REL-001","test_id":"TEST-CHK-SUPPLY-CHAIN-02","evidence_artifact":"artifacts/security/CHK-SUPPLY-CHAIN-02.json"},{"id":"CHK-SUPPLY-CHAIN-03","desc":"Provenance and SBOM outputs present and verifiable","sev":"MUST","surf":"RELEASE","gate_id":"SP-REL-001","test_id":"TEST-CHK-SUPPLY-CHAIN-03","evidence_artifact":"artifacts/security/CHK-SUPPLY-CHAIN-03.json"},{"id":"CHK-SUPPLY-CHAIN-04","desc":"Dependency changes reviewed as security-relevant","sev":"MUST","surf":"REPOSITORY","gate_id":"SP-REL-001","test_id":"TEST-CHK-SUPPLY-CHAIN-04","evidence_artifact":"artifacts/security/CHK-SUPPLY-CHAIN-04.json"}]},{"id":"CHK-NIXOS-SECRETS","name":"NixOS Infrastructure Secrets","checks":[{"id":"CHK-NIXOS-SECRETS-01","desc":"Public NixOS configs contain no secrets or host identifiers; private modules required","sev":"MUST","surf":"REPOSITORY","gate_id":"SP-SECRET-001","test_id":"TEST-CHK-NIXOS-SECRETS-01","evidence_artifact":"artifacts/security/CHK-NIXOS-SECRETS-01.json"},{"id":"CHK-NIXOS-SECRETS-02","desc":"Service environment injected via encrypted secrets; no plaintext .env files","sev":"MUST","surf":"RUNTIME","gate_id":"SP-SECRET-003","test_id":"TEST-CHK-NIXOS-SECRETS-02","evidence_artifact":"artifacts/security/CHK-NIXOS-SECRETS-02.json"},{"id":"CHK-NIXOS-SECRETS-03","desc":"Logs, errors, journal, and release artifacts contain no secrets","sev":"MUST","surf":"RUNTIME","gate_id":"SP-SECRET-002","test_id":"TEST-CHK-NIXOS-SECRETS-03","evidence_artifact":"artifacts/security/CHK-NIXOS-SECRETS-03.json"},{"id":"CHK-NIXOS-SECRETS-04","desc":"Secrets key custody and backups meet platform secure storage requirements","sev":"MUST","surf":"GOVERNANCE","gate_id":"SP-SECRET-003","test_id":"TEST-CHK-NIXOS-SECRETS-04","evidence_artifact":"artifacts/security/CHK-NIXOS-SECRETS-04.json"}]}],"merge_gate":[{"id":"CHK-GATE-01","desc":"Boundary and authority checks complete","required_checks":["CHK-BOUNDARY-AUTHORITY-01","CHK-BOUNDARY-AUTHORITY-02","CHK-BOUNDARY-AUTHORITY-03","CHK-BOUNDARY-AUTHORITY-04"],"verification":"all required_checks have passing test_id evidence"},{"id":"CHK-GATE-02","desc":"Identity, freshness, fail-closed verified","required_checks":["CHK-IDENTITY-FRESHNESS-01","CHK-IDENTITY-FRESHNESS-02","CHK-IDENTITY-FRESHNESS-03","CHK-IDENTITY-FRESHNESS-04"],"verification":"all required_checks have passing test_id evidence"},{"id":"CHK-GATE-03","desc":"Tool/context containment and injection controls verified","required_checks":["CHK-TOOL-CONTEXT-01","CHK-TOOL-CONTEXT-02","CHK-TOOL-CONTEXT-03","CHK-TOOL-CONTEXT-04","CHK-INJECTION-CONFIDENTIALITY-01","CHK-INJECTION-CONFIDENTIALITY-02","CHK-INJECTION-CONFIDENTIALITY-03","CHK-INJECTION-CONFIDENTIALITY-04"],"verification":"all required_checks have passing test_id evidence"},{"id":"CHK-GATE-04","desc":"Serialization and crypto discipline verified","required_checks":["CHK-CRYPTO-SERIALIZATION-01","CHK-CRYPTO-SERIALIZATION-02","CHK-CRYPTO-SERIALIZATION-03","CHK-CRYPTO-SERIALIZATION-04","CHK-RECEIPT-AUTH-01","CHK-RECEIPT-AUTH-02","CHK-RECEIPT-AUTH-03","CHK-RECEIPT-AUTH-04"],"verification":"all required_checks have passing test_id evidence"},{"id":"CHK-GATE-05","desc":"Release and supply-chain checks verified","required_checks":["CHK-SUPPLY-CHAIN-01","CHK-SUPPLY-CHAIN-02","CHK-SUPPLY-CHAIN-03","CHK-SUPPLY-CHAIN-04","CHK-FILES-ATOMICITY-01","CHK-FILES-ATOMICITY-02","CHK-FILES-ATOMICITY-03","CHK-FILES-ATOMICITY-04"],"verification":"all required_checks have passing test_id evidence"},{"id":"CHK-GATE-06","desc":"PQC standards alignment and downgrade controls verified","required_checks":["CHK-CRYPTO-PQC-01","CHK-CRYPTO-PQC-02","CHK-CRYPTO-PQC-03","CHK-CRYPTO-PQC-04","CHK-CRYPTO-PQC-05","CHK-RISK-TIER-01","CHK-RISK-TIER-02"],"verification":"all required_checks have passing test_id evidence"},{"id":"CHK-GATE-07","desc":"NixOS infrastructure secrets controls verified","required_checks":["CHK-NIXOS-SECRETS-01","CHK-NIXOS-SECRETS-02","CHK-NIXOS-SECRETS-03","CHK-NIXOS-SECRETS-04"],"verification":"all required_checks have passing test_id evidence"}],"crypto_posture":"PQC active day 1; Blake3 + ML-KEM-768 + ML-DSA-65 with SP 800-227-aligned KEM usage","enforcement_schema":{"required_check_fields":["id","desc","sev","surf","gate_id","test_id","evidence_artifact"],"on_missing":"BLOCK_RELEASE","policy_gate_id":"SP-GATE-POLICY-COVERAGE","rollout":"ACTIVE"}}}
+{
+  "security_checklist": {
+    "status": "ACTIVE",
+    "sections": [
+      {
+        "id": "CHK-BOUNDARY-AUTHORITY",
+        "name": "Boundary and Authority",
+        "checks": [
+          {
+            "id": "CHK-BOUNDARY-AUTHORITY-01",
+            "desc": "No ambient authority; all effects kernel-mediated via capability-gated outbox",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-INV-001",
+            "test_id": "TEST-CHK-BOUNDARY-AUTHORITY-01",
+            "evidence_artifact": "artifacts/security/CHK-BOUNDARY-AUTHORITY-01.json"
+          },
+          {
+            "id": "CHK-BOUNDARY-AUTHORITY-02",
+            "desc": "Outcomes are receipt-bound and evidence-bound",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-INV-001",
+            "test_id": "TEST-CHK-BOUNDARY-AUTHORITY-02",
+            "evidence_artifact": "artifacts/security/CHK-BOUNDARY-AUTHORITY-02.json"
+          },
+          {
+            "id": "CHK-BOUNDARY-AUTHORITY-03",
+            "desc": "Delegation strict-subset: scope, budgets, stop predicates, classification",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-INV-001",
+            "test_id": "TEST-CHK-BOUNDARY-AUTHORITY-03",
+            "evidence_artifact": "artifacts/security/CHK-BOUNDARY-AUTHORITY-03.json"
+          },
+          {
+            "id": "CHK-BOUNDARY-AUTHORITY-04",
+            "desc": "Missing/unverifiable delegation artifacts fail closed",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-INV-001",
+            "test_id": "TEST-CHK-BOUNDARY-AUTHORITY-04",
+            "evidence_artifact": "artifacts/security/CHK-BOUNDARY-AUTHORITY-04.json"
+          }
+        ]
+      },
+      {
+        "id": "CHK-IDENTITY-FRESHNESS",
+        "name": "Identity and Freshness",
+        "checks": [
+          {
+            "id": "CHK-IDENTITY-FRESHNESS-01",
+            "desc": "Identities self-certifying or losslessly mapped to canonical forms",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-RUNTIME-002",
+            "test_id": "TEST-CHK-IDENTITY-FRESHNESS-01",
+            "evidence_artifact": "artifacts/security/CHK-IDENTITY-FRESHNESS-01.json"
+          },
+          {
+            "id": "CHK-IDENTITY-FRESHNESS-02",
+            "desc": "Identity verification uses proof-carrying objects, not linear scans",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-RUNTIME-002",
+            "test_id": "TEST-CHK-IDENTITY-FRESHNESS-02",
+            "evidence_artifact": "artifacts/security/CHK-IDENTITY-FRESHNESS-02.json"
+          },
+          {
+            "id": "CHK-IDENTITY-FRESHNESS-03",
+            "desc": "Tier2+ actuation enforces freshness; deny on stale trust state",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-RUNTIME-002",
+            "test_id": "TEST-CHK-IDENTITY-FRESHNESS-03",
+            "evidence_artifact": "artifacts/security/CHK-IDENTITY-FRESHNESS-03.json"
+          },
+          {
+            "id": "CHK-IDENTITY-FRESHNESS-04",
+            "desc": "Lease freshness uncertainty fails closed before actuation",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-RUNTIME-002",
+            "test_id": "TEST-CHK-IDENTITY-FRESHNESS-04",
+            "evidence_artifact": "artifacts/security/CHK-IDENTITY-FRESHNESS-04.json"
+          }
+        ]
+      },
+      {
+        "id": "CHK-RECEIPT-AUTH",
+        "name": "Receipt Authentication",
+        "checks": [
+          {
+            "id": "CHK-RECEIPT-AUTH-01",
+            "desc": "Fact auth explicit via direct sig or authority-seal verification",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-INV-002",
+            "test_id": "TEST-CHK-RECEIPT-AUTH-01",
+            "evidence_artifact": "artifacts/security/CHK-RECEIPT-AUTH-01.json"
+          },
+          {
+            "id": "CHK-RECEIPT-AUTH-02",
+            "desc": "Receipt chain integrity: predecessor digests verified before acceptance",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-INV-002",
+            "test_id": "TEST-CHK-RECEIPT-AUTH-02",
+            "evidence_artifact": "artifacts/security/CHK-RECEIPT-AUTH-02.json"
+          },
+          {
+            "id": "CHK-RECEIPT-AUTH-03",
+            "desc": "Payload bounds enforced before acceptance",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-INV-002",
+            "test_id": "TEST-CHK-RECEIPT-AUTH-03",
+            "evidence_artifact": "artifacts/security/CHK-RECEIPT-AUTH-03.json"
+          },
+          {
+            "id": "CHK-RECEIPT-AUTH-04",
+            "desc": "Verification failures emit defects; no silent downgrade to allow",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-INV-002",
+            "test_id": "TEST-CHK-RECEIPT-AUTH-04",
+            "evidence_artifact": "artifacts/security/CHK-RECEIPT-AUTH-04.json"
+          }
+        ]
+      },
+      {
+        "id": "CHK-TOOL-CONTEXT",
+        "name": "Tool and Context Containment",
+        "checks": [
+          {
+            "id": "CHK-TOOL-CONTEXT-01",
+            "desc": "No raw tool-string bypass around typed mediation",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-RUNTIME-001",
+            "test_id": "TEST-CHK-TOOL-CONTEXT-01",
+            "evidence_artifact": "artifacts/security/CHK-TOOL-CONTEXT-01.json"
+          },
+          {
+            "id": "CHK-TOOL-CONTEXT-02",
+            "desc": "Context reads allowlist-bound; out-of-policy reads deny default",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-RUNTIME-001",
+            "test_id": "TEST-CHK-TOOL-CONTEXT-02",
+            "evidence_artifact": "artifacts/security/CHK-TOOL-CONTEXT-02.json"
+          },
+          {
+            "id": "CHK-TOOL-CONTEXT-03",
+            "desc": "Tier3+ uses hard-fail firewall: terminate or deny, not warn",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-RUNTIME-001",
+            "test_id": "TEST-CHK-TOOL-CONTEXT-03",
+            "evidence_artifact": "artifacts/security/CHK-TOOL-CONTEXT-03.json"
+          },
+          {
+            "id": "CHK-TOOL-CONTEXT-04",
+            "desc": "Idempotency and preconditions for side-effecting tools",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-RUNTIME-001",
+            "test_id": "TEST-CHK-TOOL-CONTEXT-04",
+            "evidence_artifact": "artifacts/security/CHK-TOOL-CONTEXT-04.json"
+          }
+        ]
+      },
+      {
+        "id": "CHK-INJECTION-CONFIDENTIALITY",
+        "name": "Injection and Confidentiality",
+        "checks": [
+          {
+            "id": "CHK-INJECTION-CONFIDENTIALITY-01",
+            "desc": "Taint/integrity labels propagate across tool and summary paths",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-RUNTIME-004",
+            "test_id": "TEST-CHK-INJECTION-CONFIDENTIALITY-01",
+            "evidence_artifact": "artifacts/security/CHK-INJECTION-CONFIDENTIALITY-01.json"
+          },
+          {
+            "id": "CHK-INJECTION-CONFIDENTIALITY-02",
+            "desc": "Confidentiality labels enforced on boundary emissions",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-RUNTIME-004",
+            "test_id": "TEST-CHK-INJECTION-CONFIDENTIALITY-02",
+            "evidence_artifact": "artifacts/security/CHK-INJECTION-CONFIDENTIALITY-02.json"
+          },
+          {
+            "id": "CHK-INJECTION-CONFIDENTIALITY-03",
+            "desc": "Untrusted inputs cannot drive high-impact actuators without verifier",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-RUNTIME-004",
+            "test_id": "TEST-CHK-INJECTION-CONFIDENTIALITY-03",
+            "evidence_artifact": "artifacts/security/CHK-INJECTION-CONFIDENTIALITY-03.json"
+          },
+          {
+            "id": "CHK-INJECTION-CONFIDENTIALITY-04",
+            "desc": "Logs/errors avoid sensitive leakage; redaction invariants held",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-RUNTIME-004",
+            "test_id": "TEST-CHK-INJECTION-CONFIDENTIALITY-04",
+            "evidence_artifact": "artifacts/security/CHK-INJECTION-CONFIDENTIALITY-04.json"
+          }
+        ]
+      },
+      {
+        "id": "CHK-FILES-ATOMICITY",
+        "name": "Path, File, and Atomicity Hygiene",
+        "checks": [
+          {
+            "id": "CHK-FILES-ATOMICITY-01",
+            "desc": "External path components validated and normalized",
+            "sev": "MUST",
+            "surf": "REPOSITORY",
+            "gate_id": "SP-DEP-002",
+            "test_id": "TEST-CHK-FILES-ATOMICITY-01",
+            "evidence_artifact": "artifacts/security/CHK-FILES-ATOMICITY-01.json"
+          },
+          {
+            "id": "CHK-FILES-ATOMICITY-02",
+            "desc": "Resolved paths inside allowlisted roots after symlink resolution",
+            "sev": "MUST",
+            "surf": "REPOSITORY",
+            "gate_id": "SP-DEP-002",
+            "test_id": "TEST-CHK-FILES-ATOMICITY-02",
+            "evidence_artifact": "artifacts/security/CHK-FILES-ATOMICITY-02.json"
+          },
+          {
+            "id": "CHK-FILES-ATOMICITY-03",
+            "desc": "Critical files use write-then-rename semantics",
+            "sev": "MUST",
+            "surf": "REPOSITORY",
+            "gate_id": "SP-DEP-002",
+            "test_id": "TEST-CHK-FILES-ATOMICITY-03",
+            "evidence_artifact": "artifacts/security/CHK-FILES-ATOMICITY-03.json"
+          },
+          {
+            "id": "CHK-FILES-ATOMICITY-04",
+            "desc": "Temp files same-filesystem and cleaned on failure",
+            "sev": "SHOULD",
+            "surf": "REPOSITORY",
+            "gate_id": "SP-DEP-002",
+            "test_id": "TEST-CHK-FILES-ATOMICITY-04",
+            "evidence_artifact": "artifacts/security/CHK-FILES-ATOMICITY-04.json"
+          }
+        ]
+      },
+      {
+        "id": "CHK-CRYPTO-SERIALIZATION",
+        "name": "Cryptographic and Serialization Discipline",
+        "checks": [
+          {
+            "id": "CHK-CRYPTO-SERIALIZATION-01",
+            "desc": "Canonicalization deterministic for all signed/hashed artifacts",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-INV-004",
+            "test_id": "TEST-CHK-CRYPTO-SERIALIZATION-01",
+            "evidence_artifact": "artifacts/security/CHK-CRYPTO-SERIALIZATION-01.json"
+          },
+          {
+            "id": "CHK-CRYPTO-SERIALIZATION-02",
+            "desc": "Collection ordering deterministic before hash/sign ops",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-INV-004",
+            "test_id": "TEST-CHK-CRYPTO-SERIALIZATION-02",
+            "evidence_artifact": "artifacts/security/CHK-CRYPTO-SERIALIZATION-02.json"
+          },
+          {
+            "id": "CHK-CRYPTO-SERIALIZATION-03",
+            "desc": "Unknown-field behavior follows policy; fail-closed where required",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-INV-004",
+            "test_id": "TEST-CHK-CRYPTO-SERIALIZATION-03",
+            "evidence_artifact": "artifacts/security/CHK-CRYPTO-SERIALIZATION-03.json"
+          },
+          {
+            "id": "CHK-CRYPTO-SERIALIZATION-04",
+            "desc": "Enforcement quantities unitful and unambiguous",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-INV-004",
+            "test_id": "TEST-CHK-CRYPTO-SERIALIZATION-04",
+            "evidence_artifact": "artifacts/security/CHK-CRYPTO-SERIALIZATION-04.json"
+          }
+        ]
+      },
+      {
+        "id": "CHK-CRYPTO-PQC",
+        "name": "PQC and Standards Alignment",
+        "checks": [
+          {
+            "id": "CHK-CRYPTO-PQC-01",
+            "desc": "Required Tier2+ primitives available at startup (BLAKE3, ML-KEM-768, ML-DSA-65)",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-CRYPTO-001",
+            "test_id": "TEST-CHK-CRYPTO-PQC-01",
+            "evidence_artifact": "artifacts/security/CHK-CRYPTO-PQC-01.json"
+          },
+          {
+            "id": "CHK-CRYPTO-PQC-02",
+            "desc": "Algorithm downgrade attempts fail closed and emit security events",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-CRYPTO-001",
+            "test_id": "TEST-CHK-CRYPTO-PQC-02",
+            "evidence_artifact": "artifacts/security/CHK-CRYPTO-PQC-02.json"
+          },
+          {
+            "id": "CHK-CRYPTO-PQC-03",
+            "desc": "KEM usage complies with SP 800-227 guidance (KEM-for-key-establishment, non-oracular failures, context-bound KDF)",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-CRYPTO-001",
+            "test_id": "TEST-CHK-CRYPTO-PQC-03",
+            "evidence_artifact": "artifacts/security/CHK-CRYPTO-PQC-03.json"
+          },
+          {
+            "id": "CHK-CRYPTO-PQC-04",
+            "desc": "FIPS 140 validation claims are evidence-backed; no over-claim in release/docs",
+            "sev": "MUST",
+            "surf": "RELEASE",
+            "gate_id": "SP-CRYPTO-001",
+            "test_id": "TEST-CHK-CRYPTO-PQC-04",
+            "evidence_artifact": "artifacts/security/CHK-CRYPTO-PQC-04.json"
+          },
+          {
+            "id": "CHK-CRYPTO-PQC-05",
+            "desc": "Standards watch items (FIPS-206, HQC track) reviewed at policy cadence",
+            "sev": "SHOULD",
+            "surf": "GOVERNANCE",
+            "gate_id": "SP-CRYPTO-001",
+            "test_id": "TEST-CHK-CRYPTO-PQC-05",
+            "evidence_artifact": "artifacts/security/CHK-CRYPTO-PQC-05.json"
+          }
+        ]
+      },
+      {
+        "id": "CHK-RISK-TIER",
+        "name": "Runtime Risk Tier Alignment",
+        "checks": [
+          {
+            "id": "CHK-RISK-TIER-01",
+            "desc": "Risk-tier assumptions match policy Tier 0-3 mapping",
+            "sev": "MUST",
+            "surf": "GOVERNANCE",
+            "gate_id": "SP-TIER-001",
+            "test_id": "TEST-CHK-RISK-TIER-01",
+            "evidence_artifact": "artifacts/security/CHK-RISK-TIER-01.json"
+          },
+          {
+            "id": "CHK-RISK-TIER-02",
+            "desc": "Tier3 has mandatory sandbox boundary and stricter containment",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-TIER-001",
+            "test_id": "TEST-CHK-RISK-TIER-02",
+            "evidence_artifact": "artifacts/security/CHK-RISK-TIER-02.json"
+          }
+        ]
+      },
+      {
+        "id": "CHK-SUPPLY-CHAIN",
+        "name": "Supply Chain and Release Integrity",
+        "checks": [
+          {
+            "id": "CHK-SUPPLY-CHAIN-01",
+            "desc": "Security CI gates pass for release commit",
+            "sev": "MUST",
+            "surf": "CI",
+            "gate_id": "SP-REL-001",
+            "test_id": "TEST-CHK-SUPPLY-CHAIN-01",
+            "evidence_artifact": "artifacts/security/CHK-SUPPLY-CHAIN-01.json"
+          },
+          {
+            "id": "CHK-SUPPLY-CHAIN-02",
+            "desc": "Sigstore identity-constrained verification intact",
+            "sev": "MUST",
+            "surf": "RELEASE",
+            "gate_id": "SP-REL-001",
+            "test_id": "TEST-CHK-SUPPLY-CHAIN-02",
+            "evidence_artifact": "artifacts/security/CHK-SUPPLY-CHAIN-02.json"
+          },
+          {
+            "id": "CHK-SUPPLY-CHAIN-03",
+            "desc": "Provenance and SBOM outputs present and verifiable",
+            "sev": "MUST",
+            "surf": "RELEASE",
+            "gate_id": "SP-REL-001",
+            "test_id": "TEST-CHK-SUPPLY-CHAIN-03",
+            "evidence_artifact": "artifacts/security/CHK-SUPPLY-CHAIN-03.json"
+          },
+          {
+            "id": "CHK-SUPPLY-CHAIN-04",
+            "desc": "Dependency changes reviewed as security-relevant",
+            "sev": "MUST",
+            "surf": "REPOSITORY",
+            "gate_id": "SP-REL-001",
+            "test_id": "TEST-CHK-SUPPLY-CHAIN-04",
+            "evidence_artifact": "artifacts/security/CHK-SUPPLY-CHAIN-04.json"
+          }
+        ]
+      },
+      {
+        "id": "CHK-NIXOS-SECRETS",
+        "name": "NixOS Infrastructure Secrets",
+        "checks": [
+          {
+            "id": "CHK-NIXOS-SECRETS-01",
+            "desc": "Public NixOS configs contain no secrets or host identifiers; private modules required",
+            "sev": "MUST",
+            "surf": "REPOSITORY",
+            "gate_id": "SP-SECRET-001",
+            "test_id": "TEST-CHK-NIXOS-SECRETS-01",
+            "evidence_artifact": "artifacts/security/CHK-NIXOS-SECRETS-01.json"
+          },
+          {
+            "id": "CHK-NIXOS-SECRETS-02",
+            "desc": "Service environment injected via encrypted secrets; no plaintext .env files",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-SECRET-003",
+            "test_id": "TEST-CHK-NIXOS-SECRETS-02",
+            "evidence_artifact": "artifacts/security/CHK-NIXOS-SECRETS-02.json"
+          },
+          {
+            "id": "CHK-NIXOS-SECRETS-03",
+            "desc": "Logs, errors, journal, and release artifacts contain no secrets",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-SECRET-002",
+            "test_id": "TEST-CHK-NIXOS-SECRETS-03",
+            "evidence_artifact": "artifacts/security/CHK-NIXOS-SECRETS-03.json"
+          },
+          {
+            "id": "CHK-NIXOS-SECRETS-04",
+            "desc": "Secrets key custody and backups meet platform secure storage requirements",
+            "sev": "MUST",
+            "surf": "GOVERNANCE",
+            "gate_id": "SP-SECRET-003",
+            "test_id": "TEST-CHK-NIXOS-SECRETS-04",
+            "evidence_artifact": "artifacts/security/CHK-NIXOS-SECRETS-04.json"
+          }
+        ]
+      },
+      {
+        "id": "CHK-CONTINUITY-KERNEL",
+        "name": "Continuity Kernel",
+        "checks": [
+          {
+            "id": "CHK-CONTINUITY-KERNEL-01",
+            "desc": "Authority Gate enforced through canonical envelope mutation path and coverage-complete authority surface map",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-CK-001",
+            "test_id": "TEST-CHK-CONTINUITY-KERNEL-01",
+            "evidence_artifact": "artifacts/security/CHK-CONTINUITY-KERNEL-01.json"
+          },
+          {
+            "id": "CHK-CONTINUITY-KERNEL-02",
+            "desc": "Recovery State Compiler emits signed RecoveryPoint object with required tuple fields",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-CK-002",
+            "test_id": "TEST-CHK-CONTINUITY-KERNEL-02",
+            "evidence_artifact": "artifacts/security/CHK-CONTINUITY-KERNEL-02.json"
+          },
+          {
+            "id": "CHK-CONTINUITY-KERNEL-03",
+            "desc": "Restore Gate enforces RECOVERY mode and hard-disables Tier2+ until post-restore checks pass",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-CK-003",
+            "test_id": "TEST-CHK-CONTINUITY-KERNEL-03",
+            "evidence_artifact": "artifacts/security/CHK-CONTINUITY-KERNEL-03.json"
+          },
+          {
+            "id": "CHK-CONTINUITY-KERNEL-04",
+            "desc": "Epoch fence enforced in Tier2+ token schema and rollback flow",
+            "sev": "MUST",
+            "surf": "RUNTIME",
+            "gate_id": "SP-CK-004",
+            "test_id": "TEST-CHK-CONTINUITY-KERNEL-04",
+            "evidence_artifact": "artifacts/security/CHK-CONTINUITY-KERNEL-04.json"
+          },
+          {
+            "id": "CHK-CONTINUITY-KERNEL-05",
+            "desc": "Dual control plane includes independent break-glass path outside tailnet trust",
+            "sev": "MUST",
+            "surf": "INFRA",
+            "gate_id": "SP-CK-005",
+            "test_id": "TEST-CHK-CONTINUITY-KERNEL-05",
+            "evidence_artifact": "artifacts/security/CHK-CONTINUITY-KERNEL-05.json"
+          },
+          {
+            "id": "CHK-CONTINUITY-KERNEL-06",
+            "desc": "NixOS reproducibility lock and emergency-divergence procedure are both defined and gated",
+            "sev": "MUST",
+            "surf": "RELEASE",
+            "gate_id": "SP-CK-006",
+            "test_id": "TEST-CHK-CONTINUITY-KERNEL-06",
+            "evidence_artifact": "artifacts/security/CHK-CONTINUITY-KERNEL-06.json"
+          },
+          {
+            "id": "CHK-CONTINUITY-KERNEL-07",
+            "desc": "Service blast-radius split enforced by per-service principals and secret ACL segregation",
+            "sev": "MUST",
+            "surf": "INFRA",
+            "gate_id": "SP-CK-007",
+            "test_id": "TEST-CHK-CONTINUITY-KERNEL-07",
+            "evidence_artifact": "artifacts/security/CHK-CONTINUITY-KERNEL-07.json"
+          }
+        ]
+      }
+    ],
+    "merge_gate": [
+      {
+        "id": "CHK-GATE-01",
+        "desc": "Boundary and authority checks complete",
+        "required_checks": [
+          "CHK-BOUNDARY-AUTHORITY-01",
+          "CHK-BOUNDARY-AUTHORITY-02",
+          "CHK-BOUNDARY-AUTHORITY-03",
+          "CHK-BOUNDARY-AUTHORITY-04"
+        ],
+        "verification": "all required_checks have passing test_id evidence"
+      },
+      {
+        "id": "CHK-GATE-02",
+        "desc": "Identity, freshness, fail-closed verified",
+        "required_checks": [
+          "CHK-IDENTITY-FRESHNESS-01",
+          "CHK-IDENTITY-FRESHNESS-02",
+          "CHK-IDENTITY-FRESHNESS-03",
+          "CHK-IDENTITY-FRESHNESS-04"
+        ],
+        "verification": "all required_checks have passing test_id evidence"
+      },
+      {
+        "id": "CHK-GATE-03",
+        "desc": "Tool/context containment and injection controls verified",
+        "required_checks": [
+          "CHK-TOOL-CONTEXT-01",
+          "CHK-TOOL-CONTEXT-02",
+          "CHK-TOOL-CONTEXT-03",
+          "CHK-TOOL-CONTEXT-04",
+          "CHK-INJECTION-CONFIDENTIALITY-01",
+          "CHK-INJECTION-CONFIDENTIALITY-02",
+          "CHK-INJECTION-CONFIDENTIALITY-03",
+          "CHK-INJECTION-CONFIDENTIALITY-04"
+        ],
+        "verification": "all required_checks have passing test_id evidence"
+      },
+      {
+        "id": "CHK-GATE-04",
+        "desc": "Serialization and crypto discipline verified",
+        "required_checks": [
+          "CHK-CRYPTO-SERIALIZATION-01",
+          "CHK-CRYPTO-SERIALIZATION-02",
+          "CHK-CRYPTO-SERIALIZATION-03",
+          "CHK-CRYPTO-SERIALIZATION-04",
+          "CHK-RECEIPT-AUTH-01",
+          "CHK-RECEIPT-AUTH-02",
+          "CHK-RECEIPT-AUTH-03",
+          "CHK-RECEIPT-AUTH-04"
+        ],
+        "verification": "all required_checks have passing test_id evidence"
+      },
+      {
+        "id": "CHK-GATE-05",
+        "desc": "Release and supply-chain checks verified",
+        "required_checks": [
+          "CHK-SUPPLY-CHAIN-01",
+          "CHK-SUPPLY-CHAIN-02",
+          "CHK-SUPPLY-CHAIN-03",
+          "CHK-SUPPLY-CHAIN-04",
+          "CHK-FILES-ATOMICITY-01",
+          "CHK-FILES-ATOMICITY-02",
+          "CHK-FILES-ATOMICITY-03",
+          "CHK-FILES-ATOMICITY-04"
+        ],
+        "verification": "all required_checks have passing test_id evidence"
+      },
+      {
+        "id": "CHK-GATE-06",
+        "desc": "PQC standards alignment and downgrade controls verified",
+        "required_checks": [
+          "CHK-CRYPTO-PQC-01",
+          "CHK-CRYPTO-PQC-02",
+          "CHK-CRYPTO-PQC-03",
+          "CHK-CRYPTO-PQC-04",
+          "CHK-CRYPTO-PQC-05",
+          "CHK-RISK-TIER-01",
+          "CHK-RISK-TIER-02"
+        ],
+        "verification": "all required_checks have passing test_id evidence"
+      },
+      {
+        "id": "CHK-GATE-07",
+        "desc": "NixOS infrastructure secrets controls verified",
+        "required_checks": [
+          "CHK-NIXOS-SECRETS-01",
+          "CHK-NIXOS-SECRETS-02",
+          "CHK-NIXOS-SECRETS-03",
+          "CHK-NIXOS-SECRETS-04"
+        ],
+        "verification": "all required_checks have passing test_id evidence"
+      },
+      {
+        "id": "CHK-GATE-08",
+        "desc": "Continuity kernel controls verified and release-gated",
+        "required_checks": [
+          "CHK-CONTINUITY-KERNEL-01",
+          "CHK-CONTINUITY-KERNEL-02",
+          "CHK-CONTINUITY-KERNEL-03",
+          "CHK-CONTINUITY-KERNEL-04",
+          "CHK-CONTINUITY-KERNEL-05",
+          "CHK-CONTINUITY-KERNEL-06",
+          "CHK-CONTINUITY-KERNEL-07"
+        ],
+        "verification": "all required_checks have passing test_id evidence"
+      }
+    ],
+    "crypto_posture": "PQC active day 1; Blake3 + ML-KEM-768 + ML-DSA-65 with SP 800-227-aligned KEM usage",
+    "enforcement_schema": {
+      "required_check_fields": [
+        "id",
+        "desc",
+        "sev",
+        "surf",
+        "gate_id",
+        "test_id",
+        "evidence_artifact"
+      ],
+      "on_missing": "BLOCK_RELEASE",
+      "policy_gate_id": "SP-GATE-POLICY-COVERAGE",
+      "rollout": "ACTIVE"
+    }
+  }
+}

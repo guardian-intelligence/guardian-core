@@ -16,11 +16,13 @@ in
     requires = [ "docker.service" ];
     wantedBy = [ "multi-user.target" ];
 
-    path = [ pkgs.bun nodejs pkgs.docker-client pkgs.git ];
+    path = [ nodejs pkgs.docker-client pkgs.git ];
 
     environment = {
       HOME = "/home/rumi";
       ASSISTANT_NAME = "Rumi";
+      MIX_ENV = "prod";
+      GUARDIAN_PROJECT_ROOT = "/opt/guardian-core";
     };
 
     serviceConfig = {
@@ -28,7 +30,7 @@ in
       User = "rumi";
       Group = "users";
       WorkingDirectory = "/opt/guardian-core";
-      ExecStart = "${pkgs.nodejs_22}/bin/node /opt/guardian-core/dist/index.js";
+      ExecStart = "/opt/guardian-core/platform/_build/prod/rel/guardian/bin/guardian start";
       Restart = "always";
       RestartSec = 5;
       EnvironmentFile = envFile;

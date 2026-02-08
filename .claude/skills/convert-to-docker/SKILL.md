@@ -23,7 +23,6 @@ docker info
 ```
 
 If Docker is unavailable:
-- macOS: install/start Docker Desktop
 - Linux: install Docker Engine and run `sudo systemctl start docker`
 
 ### 2. Verify project runtime commands
@@ -52,9 +51,8 @@ Ensure runtime instructions use Docker-only commands.
 ### 5. Optional cleanup checks
 
 ```bash
-bun run typecheck
-bun run test
-bun run build
+cd platform && mix compile --warnings-as-errors
+cd platform && mix test
 ```
 
 ## Success Criteria

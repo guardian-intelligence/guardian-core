@@ -1,0 +1,79 @@
+{
+  "continuity_kernel": {
+    "status": "ACTIVE",
+    "date": "2026-02-07",
+    "description": "Continuity Kernel is the mandatory control-plane service boundary for privileged operations and disaster recovery safety.",
+    "ordered_controls": [
+      {
+        "order": 1,
+        "id": "CK-01-AUTHORITY-GATE",
+        "title": "Authority Gate",
+        "control_id": "SP-CK-001",
+        "gate_id": "SP-GATE-AUTHORITY-SURFACE",
+        "requirement": "Only EventEnvelope -> OutboxActionEnvelope -> ActionReceiptEnvelope paths may mutate world state with capability and policy checks."
+      },
+      {
+        "order": 2,
+        "id": "CK-02-RECOVERY-STATE-COMPILER",
+        "title": "Recovery State Compiler",
+        "control_id": "SP-CK-002",
+        "gate_id": "SP-GATE-RECOVERY-POINT-COMPILER",
+        "requirement": "Atomically emit signed RecoveryPoint objects every few minutes and before risky deploys."
+      },
+      {
+        "order": 3,
+        "id": "CK-03-RESTORE-GATE",
+        "title": "Restore Gate",
+        "control_id": "SP-CK-003",
+        "gate_id": "SP-GATE-DR-CONTRACT",
+        "requirement": "After restore, force mode=RECOVERY and keep Tier2+ hard-disabled until continuity checks pass."
+      },
+      {
+        "order": 4,
+        "id": "CK-04-EPOCH-FENCE",
+        "title": "Epoch Fence",
+        "control_id": "SP-CK-004",
+        "gate_id": "SP-GATE-EPOCH-FENCE",
+        "requirement": "All Tier2+ tokens must carry recovery_epoch; rollback must bump epoch and rotate issuer keys."
+      },
+      {
+        "order": 5,
+        "id": "CK-05-DUAL-CONTROL-PLANE",
+        "title": "Dual Control Plane",
+        "control_id": "SP-CK-005",
+        "gate_id": "SP-GATE-DUAL-CONTROL-PLANE",
+        "requirement": "Normal privileged control over tailnet plus independent non-tailnet break-glass channel for paging and emergency commands."
+      },
+      {
+        "order": 6,
+        "id": "CK-06-NIXOS-REPRO-LOCK",
+        "title": "NixOS Reproducibility Lock",
+        "control_id": "SP-CK-006",
+        "gate_id": "SP-GATE-CONTINUITY-KERNEL",
+        "requirement": "Recovery acceptance is bound to flake.lock/system derivation/unit hashes with explicit emergency-divergence procedure."
+      },
+      {
+        "order": 7,
+        "id": "CK-07-SERVICE-BLAST-RADIUS-SPLIT",
+        "title": "Service Blast-Radius Split",
+        "control_id": "SP-CK-007",
+        "gate_id": "SP-GATE-SERVICE-PRINCIPAL-SPLIT",
+        "requirement": "Per-service Unix users and per-service secret ACLs; shared runtime principals prohibited for critical services."
+      }
+    ],
+    "recovery_point_required_fields": [
+      "dolt_commit",
+      "outbox_hwm",
+      "intent_ledger_hash",
+      "receipt_set_hash",
+      "jti_store_hash",
+      "policy_version",
+      "crypto_policy_version",
+      "recovery_epoch",
+      "flake_lock_hash",
+      "nix_toplevel_hash",
+      "unit_hashes",
+      "private_config_hash"
+    ]
+  }
+}

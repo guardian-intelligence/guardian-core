@@ -260,6 +260,79 @@
         "on_fail": "BLOCK_RELEASE"
       }
     ],
+    "continuity_controls": [
+      {
+        "id": "SP-CK-001",
+        "desc": "Authority Gate enforced: only EventEnvelope -> OutboxActionEnvelope -> ActionReceiptEnvelope may mutate external state",
+        "lvl": "MUST",
+        "surf": [
+          "RUNTIME",
+          "RELEASE"
+        ],
+        "on_fail": "BLOCK_RELEASE"
+      },
+      {
+        "id": "SP-CK-002",
+        "desc": "Recovery State Compiler emits signed RecoveryPoint objects on schedule and before risky deploys",
+        "lvl": "MUST",
+        "surf": [
+          "RUNTIME",
+          "RELEASE"
+        ],
+        "on_fail": "BLOCK_RELEASE"
+      },
+      {
+        "id": "SP-CK-003",
+        "desc": "Restore Gate enforces RECOVERY mode with Tier2+ disabled until post-restore security gates pass",
+        "lvl": "MUST",
+        "surf": [
+          "RUNTIME",
+          "RELEASE"
+        ],
+        "on_fail": "BLOCK_RELEASE"
+      },
+      {
+        "id": "SP-CK-004",
+        "desc": "Epoch Fence enforced on Tier2+ tokens with mandatory issuer key rotation on rollback",
+        "lvl": "MUST",
+        "surf": [
+          "RUNTIME",
+          "GOVERNANCE"
+        ],
+        "on_fail": "DENY"
+      },
+      {
+        "id": "SP-CK-005",
+        "desc": "Dual control plane exists: tailnet path for normal ops and an independent break-glass channel",
+        "lvl": "MUST",
+        "surf": [
+          "INFRA",
+          "GOVERNANCE"
+        ],
+        "on_fail": "BLOCK_RELEASE"
+      },
+      {
+        "id": "SP-CK-006",
+        "desc": "NixOS reproducibility lock with explicit emergency-divergence procedure",
+        "lvl": "MUST",
+        "surf": [
+          "RELEASE",
+          "INFRA"
+        ],
+        "on_fail": "BLOCK_RELEASE"
+      },
+      {
+        "id": "SP-CK-007",
+        "desc": "Service blast-radius split: per-service Unix principals and per-secret ACL separation",
+        "lvl": "MUST",
+        "surf": [
+          "INFRA",
+          "RUNTIME",
+          "RELEASE"
+        ],
+        "on_fail": "BLOCK_RELEASE"
+      }
+    ],
     "gates": [
       {
         "id": "SP-GATE-CREDO",
@@ -288,7 +361,7 @@
       },
       {
         "id": "SP-GATE-POLICY-COVERAGE",
-        "cmd": "jq -e --slurpfile policy docs/security/security_policy.json '[$policy[0].security_policy | (.posture,.invariants,.identity,.runtime_controls,.crypto_controls,.release,.dep_policy,.secrets,.vuln_process) | .[].id] as $valid_gates | all(.security_checklist.sections[].checks[]; has(\"gate_id\") and has(\"test_id\") and has(\"evidence_artifact\") and (.gate_id as $g | $valid_gates | index($g) != null))' docs/security/security_checklist.json >/dev/null",
+        "cmd": "jq -e --slurpfile policy docs/security/security_policy.json '[$policy[0].security_policy | (.posture,.invariants,.identity,.runtime_controls,.crypto_controls,.release,.continuity_controls,.dep_policy,.secrets,.vuln_process) | .[].id] as $valid_gates | all(.security_checklist.sections[].checks[]; has(\"gate_id\") and has(\"test_id\") and has(\"evidence_artifact\") and (.gate_id as $g | $valid_gates | index($g) != null))' docs/security/security_checklist.json >/dev/null",
         "on_fail": "BLOCK_RELEASE"
       },
       {
@@ -433,7 +506,8 @@
         "exp",
         "jti",
         "aud",
-        "scope_hash"
+        "scope_hash",
+        "recovery_epoch"
       ],
       "nonce_store": "dolt.unique_jti_per_subject",
       "on_replay": "DENY_AND_ALERT"
@@ -445,7 +519,14 @@
         "SP-REL-003",
         "SP-REL-004",
         "SP-SECRET-001",
-        "SP-SECRET-002"
+        "SP-SECRET-002",
+        "SP-CK-001",
+        "SP-CK-002",
+        "SP-CK-003",
+        "SP-CK-004",
+        "SP-CK-005",
+        "SP-CK-006",
+        "SP-CK-007"
       ],
       "active_waiver_violation_action": "BLOCK_RELEASE"
     }

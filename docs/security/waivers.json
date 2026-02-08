@@ -78,6 +78,13 @@
   ],
   "waiver_policy": {
     "non_waivable_control_ids": [
+      "SP-CK-001",
+      "SP-CK-002",
+      "SP-CK-003",
+      "SP-CK-004",
+      "SP-CK-005",
+      "SP-CK-006",
+      "SP-CK-007",
       "SP-REL-001",
       "SP-REL-002",
       "SP-REL-003",
@@ -99,7 +106,11 @@
     "max_duration_days": 30,
     "on_violation": "BLOCK_RELEASE",
     "on_schema_violation": "BLOCK_RELEASE",
-    "allowed_status_values": ["ACTIVE", "REVOKED", "EXPIRED"],
+    "allowed_status_values": [
+      "ACTIVE",
+      "REVOKED",
+      "EXPIRED"
+    ],
     "on_unknown_status": "BLOCK_RELEASE"
   }
 }

@@ -1,0 +1,224 @@
+{
+  "authority_surface_map": {
+    "status": "ACTIVE",
+    "date": "2026-02-07",
+    "enforced_profile": "CURRENT_STACK",
+    "profiles": [
+      {
+        "id": "CURRENT_STACK",
+        "description": "Current deployment topology and authority surfaces",
+        "activation_condition": "default"
+      },
+      {
+        "id": "BEDROCK_CUTOVER",
+        "description": "Elixir-first bedrock authority surfaces after migration gate",
+        "activation_condition": "Activated only after Bedrock cutover gate passes"
+      }
+    ],
+    "entries": [
+      {
+        "profile": "CURRENT_STACK",
+        "action_type": "messaging.send",
+        "authoritative_service_unit": "guardian-core",
+        "service_manifest": "infra/nixos/services/guardian-core.nix",
+        "service_user": "rumi",
+        "execstart_match": "ExecStart = \"${pkgs.nodejs_22}/bin/node /opt/guardian-core/dist/index.js\";",
+        "policy_gate_location": "Guardian.Kernel.IpcWatcher + Guardian.Kernel.WhatsApp.MessageRouter",
+        "binary_identity": {
+          "algorithm": "BLAKE3",
+          "manifest_path": "artifacts/release/runtime_binary_manifest.json",
+          "manifest_key": "guardian-core.execstart"
+        }
+      },
+      {
+        "profile": "CURRENT_STACK",
+        "action_type": "scheduler.create",
+        "authoritative_service_unit": "guardian-core",
+        "service_manifest": "infra/nixos/services/guardian-core.nix",
+        "service_user": "rumi",
+        "execstart_match": "ExecStart = \"${pkgs.nodejs_22}/bin/node /opt/guardian-core/dist/index.js\";",
+        "policy_gate_location": "Guardian.Kernel.TaskScheduler",
+        "binary_identity": {
+          "algorithm": "BLAKE3",
+          "manifest_path": "artifacts/release/runtime_binary_manifest.json",
+          "manifest_key": "guardian-core.execstart"
+        }
+      },
+      {
+        "profile": "CURRENT_STACK",
+        "action_type": "voice.call",
+        "authoritative_service_unit": "guardian-core",
+        "service_manifest": "infra/nixos/services/guardian-core.nix",
+        "service_user": "rumi",
+        "execstart_match": "ExecStart = \"${pkgs.nodejs_22}/bin/node /opt/guardian-core/dist/index.js\";",
+        "policy_gate_location": "Guardian.Kernel.PhoneCaller",
+        "binary_identity": {
+          "algorithm": "BLAKE3",
+          "manifest_path": "artifacts/release/runtime_binary_manifest.json",
+          "manifest_key": "guardian-core.execstart"
+        }
+      },
+      {
+        "profile": "CURRENT_STACK",
+        "action_type": "admin.register_group",
+        "authoritative_service_unit": "guardian-core",
+        "service_manifest": "infra/nixos/services/guardian-core.nix",
+        "service_user": "rumi",
+        "execstart_match": "ExecStart = \"${pkgs.nodejs_22}/bin/node /opt/guardian-core/dist/index.js\";",
+        "policy_gate_location": "Guardian.Kernel.State.register_group/3",
+        "binary_identity": {
+          "algorithm": "BLAKE3",
+          "manifest_path": "artifacts/release/runtime_binary_manifest.json",
+          "manifest_key": "guardian-core.execstart"
+        }
+      },
+      {
+        "profile": "CURRENT_STACK",
+        "action_type": "scheduler.pause",
+        "authoritative_service_unit": "guardian-core",
+        "service_manifest": "infra/nixos/services/guardian-core.nix",
+        "service_user": "rumi",
+        "execstart_match": "ExecStart = \"${pkgs.nodejs_22}/bin/node /opt/guardian-core/dist/index.js\";",
+        "policy_gate_location": "Guardian.Kernel.TaskScheduler",
+        "binary_identity": {
+          "algorithm": "BLAKE3",
+          "manifest_path": "artifacts/release/runtime_binary_manifest.json",
+          "manifest_key": "guardian-core.execstart"
+        }
+      },
+      {
+        "profile": "CURRENT_STACK",
+        "action_type": "scheduler.resume",
+        "authoritative_service_unit": "guardian-core",
+        "service_manifest": "infra/nixos/services/guardian-core.nix",
+        "service_user": "rumi",
+        "execstart_match": "ExecStart = \"${pkgs.nodejs_22}/bin/node /opt/guardian-core/dist/index.js\";",
+        "policy_gate_location": "Guardian.Kernel.TaskScheduler",
+        "binary_identity": {
+          "algorithm": "BLAKE3",
+          "manifest_path": "artifacts/release/runtime_binary_manifest.json",
+          "manifest_key": "guardian-core.execstart"
+        }
+      },
+      {
+        "profile": "CURRENT_STACK",
+        "action_type": "scheduler.cancel",
+        "authoritative_service_unit": "guardian-core",
+        "service_manifest": "infra/nixos/services/guardian-core.nix",
+        "service_user": "rumi",
+        "execstart_match": "ExecStart = \"${pkgs.nodejs_22}/bin/node /opt/guardian-core/dist/index.js\";",
+        "policy_gate_location": "Guardian.Kernel.TaskScheduler",
+        "binary_identity": {
+          "algorithm": "BLAKE3",
+          "manifest_path": "artifacts/release/runtime_binary_manifest.json",
+          "manifest_key": "guardian-core.execstart"
+        }
+      },
+      {
+        "profile": "BEDROCK_CUTOVER",
+        "action_type": "messaging.send",
+        "authoritative_service_unit": "rumi-platform",
+        "service_manifest": "infra/nixos/services/rumi-platform.nix",
+        "service_user": "guardian-platform",
+        "execstart_match": "ExecStart = \"/opt/guardian-platform/bin/guardian start\";",
+        "policy_gate_location": "Guardian.PolicyKernel.decide/2",
+        "binary_identity": {
+          "algorithm": "BLAKE3",
+          "manifest_path": "artifacts/release/runtime_binary_manifest.json",
+          "manifest_key": "rumi-platform.execstart"
+        }
+      },
+      {
+        "profile": "BEDROCK_CUTOVER",
+        "action_type": "scheduler.create",
+        "authoritative_service_unit": "rumi-platform",
+        "service_manifest": "infra/nixos/services/rumi-platform.nix",
+        "service_user": "guardian-platform",
+        "execstart_match": "ExecStart = \"/opt/guardian-platform/bin/guardian start\";",
+        "policy_gate_location": "Guardian.PolicyKernel.decide/2",
+        "binary_identity": {
+          "algorithm": "BLAKE3",
+          "manifest_path": "artifacts/release/runtime_binary_manifest.json",
+          "manifest_key": "rumi-platform.execstart"
+        }
+      },
+      {
+        "profile": "BEDROCK_CUTOVER",
+        "action_type": "voice.call",
+        "authoritative_service_unit": "rumi-platform",
+        "service_manifest": "infra/nixos/services/rumi-platform.nix",
+        "service_user": "guardian-platform",
+        "execstart_match": "ExecStart = \"/opt/guardian-platform/bin/guardian start\";",
+        "policy_gate_location": "Guardian.PolicyKernel.decide/2",
+        "binary_identity": {
+          "algorithm": "BLAKE3",
+          "manifest_path": "artifacts/release/runtime_binary_manifest.json",
+          "manifest_key": "rumi-platform.execstart"
+        }
+      },
+      {
+        "profile": "BEDROCK_CUTOVER",
+        "action_type": "admin.register_group",
+        "authoritative_service_unit": "rumi-platform",
+        "service_manifest": "infra/nixos/services/rumi-platform.nix",
+        "service_user": "guardian-platform",
+        "execstart_match": "ExecStart = \"/opt/guardian-platform/bin/guardian start\";",
+        "policy_gate_location": "Guardian.PolicyKernel.decide/2",
+        "binary_identity": {
+          "algorithm": "BLAKE3",
+          "manifest_path": "artifacts/release/runtime_binary_manifest.json",
+          "manifest_key": "rumi-platform.execstart"
+        }
+      },
+      {
+        "profile": "BEDROCK_CUTOVER",
+        "action_type": "scheduler.pause",
+        "authoritative_service_unit": "rumi-platform",
+        "service_manifest": "infra/nixos/services/rumi-platform.nix",
+        "service_user": "guardian-platform",
+        "execstart_match": "ExecStart = \"/opt/guardian-platform/bin/guardian start\";",
+        "policy_gate_location": "Guardian.PolicyKernel.decide/2",
+        "binary_identity": {
+          "algorithm": "BLAKE3",
+          "manifest_path": "artifacts/release/runtime_binary_manifest.json",
+          "manifest_key": "rumi-platform.execstart"
+        }
+      },
+      {
+        "profile": "BEDROCK_CUTOVER",
+        "action_type": "scheduler.resume",
+        "authoritative_service_unit": "rumi-platform",
+        "service_manifest": "infra/nixos/services/rumi-platform.nix",
+        "service_user": "guardian-platform",
+        "execstart_match": "ExecStart = \"/opt/guardian-platform/bin/guardian start\";",
+        "policy_gate_location": "Guardian.PolicyKernel.decide/2",
+        "binary_identity": {
+          "algorithm": "BLAKE3",
+          "manifest_path": "artifacts/release/runtime_binary_manifest.json",
+          "manifest_key": "rumi-platform.execstart"
+        }
+      },
+      {
+        "profile": "BEDROCK_CUTOVER",
+        "action_type": "scheduler.cancel",
+        "authoritative_service_unit": "rumi-platform",
+        "service_manifest": "infra/nixos/services/rumi-platform.nix",
+        "service_user": "guardian-platform",
+        "execstart_match": "ExecStart = \"/opt/guardian-platform/bin/guardian start\";",
+        "policy_gate_location": "Guardian.PolicyKernel.decide/2",
+        "binary_identity": {
+          "algorithm": "BLAKE3",
+          "manifest_path": "artifacts/release/runtime_binary_manifest.json",
+          "manifest_key": "rumi-platform.execstart"
+        }
+      }
+    ],
+    "constraints": {
+      "enforced_profile_must_have_complete_action_coverage": true,
+      "enforced_profile_must_map_to_existing_systemd_units": true,
+      "binary_identity_algorithm_must_match_crypto_primary": "BLAKE3",
+      "service_principal_separation_required": false,
+      "service_principal_separation_planned_control": "SP-CK-007"
+    }
+  }
+}

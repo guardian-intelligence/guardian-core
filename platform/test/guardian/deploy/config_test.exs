@@ -11,10 +11,6 @@ defmodule Guardian.Deploy.ConfigTest do
   end
 
   describe "derived paths" do
-    test "secrets_dir is under project root" do
-      assert String.starts_with?(Config.secrets_dir(), Config.project_root())
-    end
-
     test "config_dir is under home" do
       assert String.starts_with?(Config.config_dir(), System.user_home!())
     end
@@ -41,9 +37,5 @@ defmodule Guardian.Deploy.ConfigTest do
       assert Enum.all?(paths, &is_binary/1)
     end
 
-    test "archive names are .age files" do
-      assert String.ends_with?(Config.primary_env_archive(), ".age")
-      assert String.ends_with?(Config.server_env_archive(), ".age")
-    end
   end
 end

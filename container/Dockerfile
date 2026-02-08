@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install -y \
     libxshmfence1 \
     curl \
     git \
+    unzip \
     && rm -rf /var/lib/apt/lists/* \
     # Install GitHub CLI
     && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
@@ -47,11 +48,11 @@ RUN bun add -g agent-browser @anthropic-ai/claude-code
 # Create app directory
 WORKDIR /app
 
+# Copy shared package to ../shared so file:../shared resolves
+COPY .shared-cache/ /shared/
+
 # Copy package files first for better caching
 COPY agent-runner/package.json agent-runner/bun.lock ./
-
-# Copy shared package (pre-built by build.sh)
-COPY .shared-cache/ /app/node_modules/@guardian/shared/
 
 # Install dependencies
 RUN bun install
